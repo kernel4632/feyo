@@ -40,6 +40,9 @@ import "@kernel4632/feyo/style.css";
 <feyo-button variant="filled">保存</feyo-button>
 ```
 
+当前导出的组件包括：按钮、文本框、复选框、开关、滑块、进度条、菜单、对话框、
+标签页、按钮组和布局容器。
+
 自定义元素使用普通页面 DOM（light DOM）。注册入口会将组件样式安装到页面中的一个
 `<style id="feyo-component-styles">`，重复导入不会重复安装。仍需导入
 `@kernel4632/feyo/style.css`，它提供全局设计 token 和基础样式。

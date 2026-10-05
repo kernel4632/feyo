@@ -1,6 +1,6 @@
 {
   "name": "@kernel4632/feyo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "FEYO (Flow, Ease, Yield, Orientation) - a high-focus Web UI design system and component library.",
   "type": "module",
   "license": "MIT",
