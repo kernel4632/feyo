@@ -1,0 +1,753 @@
+<!--
+日期选择器：弹出月历，用一个隐藏的原生输入框参与表单提交与必填校验。
+值统一是 ISO 字符串 YYYY-MM-DD 或 null，方便直接存后端，不用再做时区换算。
+所有日期都由“年月日本地数字”算出，不用 Date 字符串解析，因此不会跨时区偏移。
+Vue 用 v-model 和 v-model:open 同步状态；原生 HTML 直接写属性即可。
+表单重置会回到挂载时的值；清除选择返回 null。
+调用示例：
+   <feyo-date-picker name="birthday" label="生日" required></feyo-date-picker>
+   <feyo-date-picker v-model="day" v-model:open="pickerOpen" min="2024-01-01" max="2024-12-31"
+     first-day="1" locale="en-GB" clearable placeholder="选择日期" />
+-->
+<script setup>
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useHost, useId, watch } from "vue";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import { ArrowLeft01Icon, ArrowRight01Icon, Calendar01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+
+defineOptions({ inheritAttrs: false });
+const attrs = useAttrs();
+const host = getCurrentInstance()?.ce ? useHost() : null;
+
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: null,
+  },
+  min: {
+    type: String,
+    default: null,
+  },
+  max: {
+    type: String,
+    default: null,
+  },
+  open: Boolean,
+  label: {
+    type: String,
+    default: "",
+  },
+  placeholder: {
+    type: String,
+    default: "Select date",
+  },
+  name: String,
+  disabled: Boolean,
+  required: Boolean,
+  clearable: Boolean,
+  firstDay: {
+    type: Number,
+    default: 1,
+  },
+  locale: {
+    type: String,
+    default: "en-GB",
+  },
+  // 允许调用方直接给 7 个星期名，顺序按 firstDay 排列。
+  weekdays: {
+    type: Array,
+    default: null,
+  },
+  previousMonthLabel: {
+    type: String,
+    default: "Previous month",
+  },
+  nextMonthLabel: {
+    type: String,
+    default: "Next month",
+  },
+  clearLabel: {
+    type: String,
+    default: "Clear date",
+  },
+});
+
+const emit = defineEmits(["update:modelValue", "change", "update:open"]);
+
+const root = ref(null);
+const trigger = ref(null);
+const nativeInput = ref(null);
+const localValue = ref(props.modelValue);
+const localOpen = ref(false);
+const viewYear = ref(new Date().getFullYear());
+const viewMonth = ref(new Date().getMonth());
+const focusedIso = ref("");
+const todayKey = ref("");
+let ownerDocument;
+let initialValue;
+
+const baseId = `feyo-date-picker-${useId()}`;
+const labelId = `${baseId}-label`;
+const triggerId = `${baseId}-trigger`;
+const gridId = `${baseId}-grid`;
+const titleId = `${baseId}-title`;
+
+// --- 日期和 ISO 互转：全部走本地年月日，避免 Date 字符串解析带来时区偏移 ---
+function pad(number) {
+  return String(number).padStart(2, "0");
+}
+
+function toIso(year, monthIndex, day) {
+  return `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
+}
+
+function fromIso(iso) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return { year, monthIndex: month - 1, day };
+}
+
+function localDate(iso) {
+  const { year, monthIndex, day } = fromIso(iso);
+  return new Date(year, monthIndex, day);
+}
+
+function todayIso() {
+  const now = new Date();
+  return toIso(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function shiftIso(iso, days) {
+  const date = localDate(iso);
+  date.setDate(date.getDate() + days);
+  return toIso(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function daysInMonth(year, monthIndex) {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function monthStartIso(year, monthIndex) {
+  const date = new Date(year, monthIndex, 1);
+  return toIso(date.getFullYear(), date.getMonth(), 1);
+}
+
+function monthEndIso(year, monthIndex) {
+  const date = new Date(year, monthIndex + 1, 0);
+  return toIso(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+// 越界的焦点被拉到最近的合法日期上，避免键盘走到选不了的格子里。
+function clampToBounds(iso) {
+  if (props.min && iso < props.min) return props.min;
+  if (props.max && iso > props.max) return props.max;
+  return iso;
+}
+
+// --- 语言：locale 来自调用方，拼错会抛错，所以在这里换回默认语言一次 ---
+function safeFormatter(options) {
+  try {
+    return new Intl.DateTimeFormat(props.locale || "en-GB", options);
+  } catch {
+    return new Intl.DateTimeFormat("en-GB", options);
+  }
+}
+
+const monthFormatter = computed(() => safeFormatter({ year: "numeric", month: "long" }));
+const weekdayFormatter = computed(() => safeFormatter({ weekday: "short" }));
+const dayFormatter = computed(() => safeFormatter({ year: "numeric", month: "long", day: "numeric" }));
+
+const displayText = computed(() => (localValue.value ? dayFormatter.value.format(localDate(localValue.value)) : props.placeholder));
+const monthTitle = computed(() => monthFormatter.value.format(new Date(viewYear.value, viewMonth.value, 1)));
+
+const weekdayLabels = computed(() => {
+  if (props.weekdays?.length === 7) return props.weekdays;
+  const names = [];
+  // 2024-01-07 是周日，往后取 7 天就得到固定的一整周，不受运行时的今天影响。
+  for (let index = 0; index < 7; index += 1) {
+    names.push(weekdayFormatter.value.format(new Date(2024, 0, 7 + index)));
+  }
+  const shift = props.firstDay === 0 ? 0 : 1;
+  return names.slice(shift).concat(names.slice(0, shift));
+});
+
+const gridDays = computed(() => {
+  const firstOfMonth = new Date(viewYear.value, viewMonth.value, 1);
+  // firstDay 0 表示周日开头，算出当月第一天要向前退几格。
+  const lead = (firstOfMonth.getDay() - (props.firstDay === 0 ? 0 : 1) + 7) % 7;
+  const cells = [];
+  for (let index = 0; index < 42; index += 1) {
+    const date = new Date(viewYear.value, viewMonth.value, 1 - lead + index);
+    const iso = toIso(date.getFullYear(), date.getMonth(), date.getDate());
+    cells.push({
+      iso,
+      day: date.getDate(),
+      outside: date.getMonth() !== viewMonth.value,
+      disabled: (props.min && iso < props.min) || (props.max && iso > props.max),
+      label: dayFormatter.value.format(date),
+    });
+  }
+  return cells;
+});
+
+const weeks = computed(() => Array.from({ length: 6 }, (_, week) => gridDays.value.slice(week * 7, week * 7 + 7)));
+// 上个月还剩一天可用就允许翻过去，只有整月都在范围外才禁用。
+const canGoPrevious = computed(() => !props.min || monthEndIso(viewYear.value, viewMonth.value - 1) >= props.min);
+// 上个月还剩一天可用就允许翻过去，只有整月都在范围外才禁用。
+const canGoNext = computed(() => !props.max || monthStartIso(viewYear.value, viewMonth.value + 1) <= props.max);
+
+// --- 打开和关闭：不管调用方有没有回写 open 属性，界面都能自己开合 ---
+function showCalendar(notify) {
+  if (props.disabled) return;
+  todayKey.value = todayIso();
+  // 打开时优先落在已选的日期上，其次是今天，最后是范围里最近的一天。
+  focusedIso.value = clampToBounds(localValue.value || todayKey.value);
+  const focus = fromIso(focusedIso.value);
+  viewYear.value = focus.year;
+  viewMonth.value = focus.monthIndex;
+  localOpen.value = true;
+  if (notify) emit("update:open", true);
+  nextTick(focusFocusedDay);
+}
+
+function hideCalendar(notify, returnFocus) {
+  if (!localOpen.value) return;
+  localOpen.value = false;
+  if (notify) emit("update:open", false);
+  if (returnFocus) nextTick(() => trigger.value?.focus());
+}
+
+function toggleCalendar() {
+  if (localOpen.value) hideCalendar(true, true);
+  else showCalendar(true);
+}
+
+function focusFocusedDay() {
+  if (!localOpen.value || !focusedIso.value) return;
+  root.value?.querySelector(`#${gridId}-day-${focusedIso.value}`)?.focus();
+}
+
+// --- 提交一次选择；重复选择同一天不重复发出 change ---
+function updateValue(iso) {
+  if (props.disabled || iso === localValue.value) return;
+  localValue.value = iso;
+  emit("update:modelValue", iso);
+  emit("change", iso);
+}
+
+function selectDay(day) {
+  if (day.disabled) return;
+  focusedIso.value = day.iso;
+  updateValue(day.iso);
+  hideCalendar(true, true);
+}
+
+function clearValue() {
+  updateValue(null);
+  hideCalendar(true, true);
+}
+
+function resetValue(event) {
+  // 原生 reset 可以被取消，等默认动作跑完再把显示值和提交值一起还原。
+  queueMicrotask(() => {
+    if (event.defaultPrevented) return;
+    const changed = localValue.value !== initialValue;
+    localValue.value = initialValue;
+    if (nativeInput.value) nativeInput.value.value = initialValue || "";
+    focusedIso.value = clampToBounds(initialValue || todayIso());
+    if (changed) emit("update:modelValue", localValue.value);
+  });
+}
+
+function handleInvalid(event) {
+  event.preventDefault();
+  nextTick(() => trigger.value?.focus());
+}
+
+// --- 键盘：焦点按天移动，跨月时同步翻到对应月份 ---
+function moveFocus(targetIso) {
+  const clamped = clampToBounds(targetIso);
+  const next = fromIso(clamped);
+  focusedIso.value = clamped;
+  viewYear.value = next.year;
+  viewMonth.value = next.monthIndex;
+  nextTick(focusFocusedDay);
+}
+
+function changeMonth(step) {
+  const date = new Date(viewYear.value, viewMonth.value + step, 1);
+  const year = date.getFullYear();
+  const monthIndex = date.getMonth();
+  viewYear.value = year;
+  viewMonth.value = monthIndex;
+  // 焦点跟着翻页走，同一天号落到新月份，不存在的日号取该月最后一天。
+  const current = fromIso(focusedIso.value);
+  const day = Math.min(current.day, daysInMonth(year, monthIndex));
+  moveFocus(clampToBounds(toIso(year, monthIndex, day)));
+}
+
+function handleTriggerKeydown(event) {
+  if (props.disabled || !["ArrowDown", "ArrowUp", "PageUp", "PageDown"].includes(event.key)) return;
+  event.preventDefault();
+  showCalendar(true);
+}
+
+function handleGridKeydown(event) {
+  if (event.isComposing) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    hideCalendar(true, true);
+    return;
+  }
+  // Enter 和空格由原生按钮自己激活，这里只处理换日和翻页。
+  if (!event.target.closest(".feyo-date-picker__day")) return;
+  const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+  let target = null;
+  if (event.key in moves) target = shiftIso(focusedIso.value, moves[event.key]);
+  else if (event.key === "PageUp" || event.key === "PageDown") {
+    const step = event.key === "PageUp" ? -1 : 1;
+    const date = new Date(viewYear.value, viewMonth.value + step, 1);
+    const year = date.getFullYear();
+    const monthIndex = date.getMonth();
+    const current = fromIso(focusedIso.value);
+    target = toIso(year, monthIndex, Math.min(current.day, daysInMonth(year, monthIndex)));
+  } else if (event.key === "Home" || event.key === "End") {
+    const weekday = localDate(focusedIso.value).getDay();
+    const start = props.firstDay === 0 ? 0 : 1;
+    const offset = (weekday - start + 7) % 7;
+    target = event.key === "Home" ? shiftIso(focusedIso.value, -offset) : shiftIso(focusedIso.value, 6 - offset);
+  }
+  if (!target) return;
+  event.preventDefault();
+  moveFocus(target);
+}
+
+function handleOutside(event) {
+  if (localOpen.value && !event.composedPath().includes(root.value)) hideCalendar(false, false);
+}
+
+watch(() => props.modelValue, (value) => {
+  localValue.value = value;
+});
+
+watch(() => props.open, (open) => {
+  if (open) showCalendar(false);
+  else hideCalendar(false, false);
+}, { immediate: true });
+
+watch(() => props.disabled, (disabled) => { if (disabled) hideCalendar(false, false); });
+
+onMounted(() => {
+  initialValue = props.modelValue;
+  todayKey.value = todayIso();
+  ownerDocument = root.value.ownerDocument;
+  ownerDocument.addEventListener("pointerdown", handleOutside);
+  ownerDocument.addEventListener("focusin", handleOutside);
+  nativeInput.value.form?.addEventListener("reset", resetValue);
+});
+
+onBeforeUnmount(() => {
+  ownerDocument.removeEventListener("pointerdown", handleOutside);
+  ownerDocument.removeEventListener("focusin", handleOutside);
+});
+</script>
+
+<template>
+  <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="feyo-date-picker" :class="{ 'feyo-date-picker--open': localOpen, 'feyo-date-picker--disabled': disabled }">
+    <span v-if="label" :id="labelId" class="feyo-date-picker__label">
+      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
+    </span>
+
+    <div class="feyo-date-picker__control" :class="{ 'feyo-date-picker__control--clearable': clearable && localValue }">
+      <button
+        :id="triggerId"
+        ref="trigger"
+        class="feyo-date-picker__trigger"
+        type="button"
+        role="combobox"
+        aria-haspopup="grid"
+        :aria-expanded="localOpen"
+        :aria-controls="gridId"
+        :aria-labelledby="label ? labelId : undefined"
+        :aria-label="label ? undefined : placeholder"
+        :aria-required="required || undefined"
+        :disabled="disabled"
+        @click="toggleCalendar"
+        @keydown="handleTriggerKeydown"
+      >
+        <span class="feyo-date-picker__trigger-label" :class="{ 'feyo-date-picker__trigger-label--placeholder': !localValue }">
+          {{ displayText }}
+        </span>
+        <HugeiconsIcon class="feyo-date-picker__icon" :icon="Calendar01Icon" :size="20" aria-hidden="true" />
+      </button>
+      <button
+        v-if="clearable && localValue"
+        class="feyo-date-picker__clear"
+        type="button"
+        :aria-label="clearLabel"
+        :title="clearLabel"
+        :disabled="disabled"
+        @click.stop="clearValue"
+      >
+        <HugeiconsIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
+      </button>
+    </div>
+
+    <!-- 隐藏输入框带着真实 ISO 值：原生表单能读到它，必填校验也能在这里触发。 -->
+    <input
+      ref="nativeInput"
+      class="feyo-date-picker__native"
+      type="text"
+      :name="name"
+      :value="localValue || ''"
+      :required="required"
+      :disabled="disabled"
+      tabindex="-1"
+      aria-hidden="true"
+      @input.stop
+      @change.stop
+      @invalid="handleInvalid"
+    >
+
+    <div v-if="localOpen" class="feyo-date-picker__popup" @keydown="handleGridKeydown">
+      <div class="feyo-date-picker__head">
+        <button
+          class="feyo-date-picker__nav"
+          type="button"
+          :aria-label="previousMonthLabel"
+          :title="previousMonthLabel"
+          :disabled="disabled || !canGoPrevious"
+          @click="changeMonth(-1)"
+        >
+          <HugeiconsIcon :icon="ArrowLeft01Icon" :size="18" aria-hidden="true" />
+        </button>
+        <span :id="titleId" class="feyo-date-picker__month">{{ monthTitle }}</span>
+        <button
+          class="feyo-date-picker__nav"
+          type="button"
+          :aria-label="nextMonthLabel"
+          :title="nextMonthLabel"
+          :disabled="disabled || !canGoNext"
+          @click="changeMonth(1)"
+        >
+          <HugeiconsIcon :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div :id="gridId" class="feyo-date-picker__grid" role="grid" :aria-labelledby="titleId">
+        <div class="feyo-date-picker__row" role="row">
+          <span
+            v-for="(weekday, index) in weekdayLabels"
+            :key="index"
+            class="feyo-date-picker__weekday"
+            role="columnheader"
+          >{{ weekday }}</span>
+        </div>
+        <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="feyo-date-picker__row" role="row">
+          <div
+            v-for="day in week"
+            :key="day.iso"
+            class="feyo-date-picker__cell"
+            role="gridcell"
+            :aria-selected="day.iso === localValue"
+          >
+            <button
+              :id="`${gridId}-day-${day.iso}`"
+              class="feyo-date-picker__day"
+              :class="{
+                'feyo-date-picker__day--outside': day.outside,
+                'feyo-date-picker__day--today': day.iso === todayKey,
+                'feyo-date-picker__day--selected': day.iso === localValue,
+              }"
+              type="button"
+              :aria-label="day.label"
+              :aria-current="day.iso === todayKey ? 'date' : undefined"
+              :disabled="day.disabled"
+              :tabindex="day.iso === focusedIso ? 0 : -1"
+              @click="selectDay(day)"
+            >{{ day.day }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.feyo-date-picker {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  max-width: 320px;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--feyo-space-1);
+  color: var(--feyo-color-on-surface);
+  font-family: var(--feyo-font-family);
+}
+
+.feyo-date-picker__label {
+  color: var(--feyo-color-on-surface-variant);
+  font-size: var(--feyo-font-size-sm);
+  font-weight: var(--feyo-font-weight-medium);
+}
+
+.feyo-date-picker__control {
+  position: relative;
+  display: flex;
+  min-height: 42px;
+}
+
+.feyo-date-picker__trigger {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--feyo-space-3);
+  padding: 0 var(--feyo-space-4);
+  border: 1px solid var(--feyo-color-outline);
+  border-radius: var(--feyo-radius-sm);
+  color: var(--feyo-color-on-surface);
+  background: var(--feyo-color-surface-container);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--feyo-duration-fast) var(--feyo-ease-standard), background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+
+  &:hover:not(:disabled),
+  .feyo-date-picker--open & {
+    border-color: var(--feyo-color-primary);
+    background: var(--feyo-color-surface-container-high);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--feyo-color-primary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: var(--feyo-opacity-disabled);
+  }
+}
+
+.feyo-date-picker__control--clearable .feyo-date-picker__trigger {
+  padding-right: 44px;
+}
+
+.feyo-date-picker__trigger-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feyo-date-picker__trigger-label--placeholder {
+  color: var(--feyo-color-on-surface-variant);
+}
+
+.feyo-date-picker__icon {
+  flex: 0 0 auto;
+  color: var(--feyo-color-on-surface-variant);
+}
+
+.feyo-date-picker__clear {
+  position: absolute;
+  top: 50%;
+  right: 36px;
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--feyo-radius-full);
+  color: var(--feyo-color-on-surface-variant);
+  background: var(--feyo-color-transparent);
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    color: var(--feyo-color-primary);
+    background: var(--feyo-color-surface-container-high);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--feyo-color-primary);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: var(--feyo-opacity-disabled);
+  }
+}
+
+.feyo-date-picker__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.feyo-date-picker__popup {
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + var(--feyo-space-2));
+  left: 0;
+  width: max(100%, 268px);
+  padding: var(--feyo-space-2);
+  border: 1px solid var(--feyo-color-outline);
+  border-radius: var(--feyo-radius-md);
+  background: var(--feyo-color-surface-container);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
+  animation: feyo-date-picker-enter var(--feyo-duration-fast) var(--feyo-ease-emphasized);
+}
+
+.feyo-date-picker__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--feyo-space-2);
+  padding: 0 var(--feyo-space-1) var(--feyo-space-2);
+}
+
+.feyo-date-picker__month {
+  font-size: var(--feyo-font-size-md);
+  font-weight: var(--feyo-font-weight-medium);
+  text-align: center;
+}
+
+.feyo-date-picker__nav {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--feyo-radius-full);
+  color: var(--feyo-color-on-surface-variant);
+  background: var(--feyo-color-transparent);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--feyo-color-primary);
+    background: var(--feyo-color-surface-container-high);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--feyo-color-primary);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: var(--feyo-opacity-disabled);
+  }
+}
+
+.feyo-date-picker__grid {
+  display: grid;
+  gap: 2px;
+}
+
+.feyo-date-picker__row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.feyo-date-picker__weekday {
+  padding: var(--feyo-space-1) 0;
+  color: var(--feyo-color-on-surface-variant);
+  font-size: var(--feyo-font-size-xs);
+  font-weight: var(--feyo-font-weight-medium);
+  text-align: center;
+}
+
+.feyo-date-picker__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feyo-date-picker__day {
+  display: inline-flex;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--feyo-radius-full);
+  color: var(--feyo-color-on-surface);
+  background: var(--feyo-color-transparent);
+  font: inherit;
+  font-size: var(--feyo-font-size-md);
+  cursor: pointer;
+  transition: background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+
+  &:hover:not(:disabled) {
+    background: var(--feyo-color-surface-container-high);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--feyo-color-primary);
+    outline-offset: -2px;
+  }
+
+  &--outside {
+    color: var(--feyo-color-on-surface-variant);
+    opacity: var(--feyo-opacity-disabled);
+  }
+
+  &--today:not(.feyo-date-picker__day--selected) {
+    color: var(--feyo-color-primary);
+    box-shadow: inset 0 0 0 1px var(--feyo-color-primary);
+  }
+
+  &--selected,
+  &--selected:hover:not(:disabled) {
+    color: var(--feyo-color-on-primary);
+    background: var(--feyo-color-primary);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: var(--feyo-opacity-disabled);
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feyo-date-picker__trigger,
+  .feyo-date-picker__day {
+    transition: none;
+  }
+
+  .feyo-date-picker__popup {
+    animation: none;
+  }
+}
+
+@keyframes feyo-date-picker-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+</style>

@@ -10,6 +10,7 @@ export { default as FeyoButton } from "./components/button/button.ce.vue";
 export { default as FeyoButtonGroup } from "./components/button-group/button-group.ce.vue";
 export { default as FeyoCard } from "./components/card/card.ce.vue";
 export { default as FeyoCheckbox } from "./components/checkbox/checkbox.ce.vue";
+export { default as FeyoDatePicker } from "./components/date-picker/date-picker.ce.vue";
 export { default as FeyoDialog } from "./components/dialog/dialog.ce.vue";
 export { default as FeyoDivider } from "./components/divider/divider.ce.vue";
 export { default as FeyoEmptyState } from "./components/empty-state/empty-state.ce.vue";
@@ -17,6 +18,7 @@ export { default as FeyoIconButton } from "./components/icon-button/icon-button.
 export { default as FeyoLayout } from "./components/layout/layout.ce.vue";
 export { default as FeyoMenu } from "./components/menu/menu.ce.vue";
 export { default as FeyoNotification } from "./components/notification/notification.ce.vue";
+export { default as FeyoPagination } from "./components/pagination/pagination.ce.vue";
 export { default as FeyoProgress } from "./components/progress/progress.ce.vue";
 export { default as FeyoSelect } from "./components/select/select.ce.vue";
 export { default as FeyoSlider } from "./components/slider/slider.ce.vue";
@@ -25,6 +27,7 @@ export { default as FeyoTable } from "./components/table/table.ce.vue";
 export { default as FeyoTabs } from "./components/tabs/tabs.ce.vue";
 export { default as FeyoTextField } from "./components/text-field/text-field.ce.vue";
 export { default as FeyoTooltip } from "./components/tooltip/tooltip.ce.vue";
+export { default as FeyoTree } from "./components/tree/tree.ce.vue";
 
 export const componentNames = [
   "FeyoBadge",
@@ -32,6 +35,7 @@ export const componentNames = [
   "FeyoButtonGroup",
   "FeyoCard",
   "FeyoCheckbox",
+  "FeyoDatePicker",
   "FeyoDialog",
   "FeyoDivider",
   "FeyoEmptyState",
@@ -39,6 +43,7 @@ export const componentNames = [
   "FeyoLayout",
   "FeyoMenu",
   "FeyoNotification",
+  "FeyoPagination",
   "FeyoProgress",
   "FeyoSelect",
   "FeyoSlider",
@@ -46,5 +51,6 @@ export const componentNames = [
   "FeyoTable",
   "FeyoTabs",
   "FeyoTextField",
-  "FeyoTooltip"
+  "FeyoTooltip",
+  "FeyoTree"
 ];

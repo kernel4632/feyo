@@ -200,6 +200,318 @@ test("select filtering and keyboard skip disabled options", async ({ page }) => 
   await expect(page.locator("#after")).toBeFocused();
 });
 
+test("date picker selects ISO dates and disables days outside min/max", async ({ page }) => {
+  await mount(page, '<feyo-date-picker id="date" label="Date" locale="en-GB" min="2024-02-10" max="2024-02-20"></feyo-date-picker>', { date: { modelValue: "2024-02-15" } });
+  const picker = page.locator("#date");
+  const trigger = picker.getByRole("combobox");
+  await expect(trigger).toContainText("15 February 2024");
+  await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(picker.getByRole("button", { name: "9 February 2024", exact: true })).toBeDisabled();
+  await expect(picker.getByRole("button", { name: "21 February 2024", exact: true })).toBeDisabled();
+  await expect(picker.getByRole("button", { name: "10 February 2024", exact: true })).toBeEnabled();
+  await expect(picker.getByRole("button", { name: "20 February 2024", exact: true })).toBeEnabled();
+  await expect(picker.getByRole("button", { name: "Previous month" })).toBeDisabled();
+  await expect(picker.getByRole("button", { name: "Next month" })).toBeDisabled();
+  await picker.getByRole("button", { name: "20 February 2024", exact: true }).click();
+  await expect(picker.locator("input")).toHaveValue("2024-02-20");
+  await expect(trigger).toContainText("20 February 2024");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).toBeFocused();
+  await expect(picker.getByRole("grid")).toHaveCount(0);
+  expect((await events(page, "date", "update:modelValue")).map((event) => event.detail)).toEqual([["2024-02-20"]]);
+  expect((await events(page, "date", "change")).map((event) => event.detail)).toEqual([["2024-02-20"]]);
+  await trigger.click();
+  await expect(picker.locator('[role="gridcell"][aria-selected="true"] button')).toHaveAccessibleName("20 February 2024");
+  await picker.getByRole("button", { name: "20 February 2024", exact: true }).click();
+  expect(await events(page, "date", "change")).toHaveLength(1);
+  expect(await events(page, "date", "update:modelValue")).toHaveLength(1);
+});
+
+test("date picker arrows cross months, clamp to bounds and Escape returns focus", async ({ page }) => {
+  await mount(page, '<feyo-date-picker id="date" label="Date" locale="en-GB" min="2024-02-28" max="2024-03-07"></feyo-date-picker>', { date: { modelValue: "2024-02-29" } });
+  const picker = page.locator("#date");
+  const trigger = picker.getByRole("combobox");
+  await trigger.press("ArrowDown");
+  await expect(picker.getByRole("button", { name: "29 February 2024", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(picker.getByRole("button", { name: "1 March 2024", exact: true })).toBeFocused();
+  await expect(picker.locator(".feyo-date-picker__month")).toHaveText("March 2024");
+  await page.keyboard.press("ArrowDown");
+  await expect(picker.getByRole("button", { name: "7 March 2024", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(picker.getByRole("button", { name: "7 March 2024", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowUp");
+  await expect(picker.getByRole("button", { name: "29 February 2024", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(picker.getByRole("button", { name: "28 February 2024", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(picker.getByRole("button", { name: "28 February 2024", exact: true })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(picker.getByRole("grid")).toHaveCount(0);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).toBeFocused();
+  await expect(picker.locator("input")).toHaveValue("2024-02-29");
+  expect(await events(page, "date", "change")).toHaveLength(0);
+  expect(await events(page, "date", "update:modelValue")).toHaveLength(0);
+  expect((await events(page, "date", "update:open")).map((event) => event.detail)).toEqual([[true], [false]]);
+});
+
+for (const initial of [null, "2024-02-15"]) {
+  test(`date picker required FormData and reset restore ${initial || "empty"}`, async ({ page }) => {
+    await mount(page, '<form id="form"><feyo-date-picker id="date" name="birthday" label="Birthday" locale="en-GB" min="2024-02-10" max="2024-02-20" required></feyo-date-picker><button type="reset">Reset</button></form>', { date: { modelValue: initial } });
+    const picker = page.locator("#date");
+    const native = picker.locator("input");
+    const trigger = picker.getByRole("combobox");
+    await expect(native).toHaveValue(initial || "");
+    expect(await native.evaluate((el) => el.validity.valueMissing)).toBe(initial === null);
+    expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("birthday"))).toBe(initial || "");
+    if (initial === null) {
+      await page.evaluate(() => document.getElementById("form").reportValidity());
+      await expect(trigger).toBeFocused();
+    }
+    await trigger.click();
+    await picker.getByRole("button", { name: "20 February 2024", exact: true }).click();
+    await expect(native).toHaveValue("2024-02-20");
+    expect(await page.evaluate(() => document.getElementById("form").checkValidity())).toBe(true);
+    expect(await page.evaluate(() => Object.fromEntries(new FormData(document.getElementById("form"))))).toEqual({ birthday: "2024-02-20" });
+    await page.getByRole("button", { name: "Reset", exact: true }).click();
+    await expect(native).toHaveValue(initial || "");
+    await expect(trigger).toContainText(initial ? "15 February 2024" : "Select date");
+    expect(await native.evaluate((el) => el.validity.valueMissing)).toBe(initial === null);
+    expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("birthday"))).toBe(initial || "");
+    expect((await events(page, "date", "update:modelValue")).map((event) => event.detail)).toEqual([["2024-02-20"], [initial]]);
+    expect(await events(page, "date", "change")).toHaveLength(1);
+    // A later render must keep the reset value rather than resurrecting the selection.
+    await page.evaluate(() => { document.getElementById("date").disabled = true; });
+    await expect(native).toBeDisabled();
+    await page.evaluate(() => { document.getElementById("date").disabled = false; });
+    await expect(native).toBeEnabled();
+    await expect(native).toHaveValue(initial || "");
+    await expect(trigger).toContainText(initial ? "15 February 2024" : "Select date");
+  });
+}
+
+test("tree expands and collapses nested levels without selecting them", async ({ page }) => {
+  await mount(page, '<feyo-tree id="tree" selectable></feyo-tree>', { tree: { items: [
+    { value: "docs", label: "Docs", children: [{ value: "guides", label: "Guides", children: [{ value: "start", label: "Getting started" }] }, { value: "readme", label: "README" }] },
+    { value: "other", label: "Other" },
+  ] } });
+  const tree = page.locator("#tree");
+  const docs = tree.getByRole("treeitem").filter({ hasText: "Docs" });
+  const guides = tree.getByRole("treeitem").filter({ hasText: "Guides" });
+  await expect(tree.getByRole("treeitem")).toHaveCount(2);
+  await expect(docs).toHaveAttribute("aria-expanded", "false");
+  await tree.getByRole("button", { name: "展开 Docs", exact: true }).click();
+  await expect(docs).toHaveAttribute("aria-expanded", "true");
+  await expect(tree.getByRole("treeitem")).toHaveCount(4);
+  await expect(guides).toHaveAttribute("aria-level", "2");
+  await tree.getByRole("button", { name: "展开 Guides", exact: true }).click();
+  await expect(guides).toHaveAttribute("aria-expanded", "true");
+  await expect(tree.getByRole("treeitem", { name: "Getting started", exact: true })).toHaveAttribute("aria-level", "3");
+  await expect(tree.getByRole("treeitem")).toHaveCount(5);
+  await tree.getByRole("button", { name: "收起 Docs", exact: true }).click();
+  await expect(docs).toHaveAttribute("aria-expanded", "false");
+  await expect(tree.getByRole("treeitem")).toHaveCount(2);
+  await tree.getByRole("button", { name: "展开 Docs", exact: true }).click();
+  await expect(tree.getByRole("treeitem")).toHaveCount(5);
+  await tree.getByRole("button", { name: "收起 Guides", exact: true }).click();
+  await expect(guides).toHaveAttribute("aria-expanded", "false");
+  await expect(tree.getByRole("treeitem", { name: "Getting started", exact: true })).toHaveCount(0);
+  await expect(tree.locator('[role="treeitem"][aria-selected="true"]')).toHaveCount(0);
+  expect(await events(page, "tree", "update:modelValue")).toHaveLength(0);
+});
+
+test("tree single selection is local and external updates do not echo events", async ({ page }) => {
+  await mount(page, '<feyo-tree id="tree" selectable></feyo-tree>', { tree: { modelValue: "b", items: [{ value: "a", label: "Alpha" }, { value: "b", label: "Beta" }] } });
+  const alpha = page.locator("#tree").getByRole("treeitem", { name: "Alpha", exact: true });
+  const beta = page.locator("#tree").getByRole("treeitem", { name: "Beta", exact: true });
+  await expect(beta).toHaveAttribute("aria-selected", "true");
+  await alpha.click();
+  await expect(alpha).toHaveAttribute("aria-selected", "true");
+  await expect(beta).toHaveAttribute("aria-selected", "false");
+  await alpha.click();
+  expect((await events(page, "tree", "update:modelValue")).map((event) => event.detail)).toEqual([["a"]]);
+  await page.evaluate(() => { document.getElementById("tree").modelValue = "a"; });
+  await expect(alpha).toHaveAttribute("aria-selected", "true");
+  await page.evaluate(() => { document.getElementById("tree").modelValue = "b"; });
+  await expect(beta).toHaveAttribute("aria-selected", "true");
+  await expect(alpha).toHaveAttribute("aria-selected", "false");
+  expect(await events(page, "tree", "update:modelValue")).toHaveLength(1);
+  await beta.press("Space");
+  expect(await events(page, "tree", "update:modelValue")).toHaveLength(1);
+  await alpha.press("Enter");
+  await expect(alpha).toHaveAttribute("aria-selected", "true");
+  expect((await events(page, "tree", "update:modelValue")).map((event) => event.detail)).toEqual([["a"], ["a"]]);
+});
+
+test("tree multiple selection toggles locally and skips disabled nodes", async ({ page }) => {
+  await mount(page, '<feyo-tree id="tree" selectable multiple></feyo-tree>', { tree: { modelValue: ["hidden"], items: [{ value: "a", label: "Alpha" }, { value: "b", label: "Beta", disabled: true }, { value: "c", label: "Gamma" }] } });
+  const tree = page.locator("#tree");
+  const alpha = tree.getByRole("treeitem", { name: "Alpha", exact: true });
+  const beta = tree.getByRole("treeitem", { name: "Beta", exact: true });
+  const gamma = tree.getByRole("treeitem", { name: "Gamma", exact: true });
+  await expect(tree.getByRole("tree")).toHaveAttribute("aria-multiselectable", "true");
+  await expect(beta).toHaveAttribute("aria-disabled", "true");
+  await alpha.click();
+  await alpha.press("ArrowDown");
+  await expect(gamma).toBeFocused();
+  await gamma.press("Space");
+  await expect(alpha).toHaveAttribute("aria-selected", "true");
+  await expect(gamma).toHaveAttribute("aria-selected", "true");
+  await beta.press("Enter");
+  await expect(beta).toHaveAttribute("aria-selected", "false");
+  await alpha.click();
+  await expect(alpha).toHaveAttribute("aria-selected", "false");
+  expect((await events(page, "tree", "update:modelValue")).map((event) => event.detail)).toEqual([[["hidden", "a"]], [["hidden", "a", "c"]], [["hidden", "c"]]]);
+  await page.evaluate(() => { document.getElementById("tree").modelValue = ["a"]; });
+  await expect(alpha).toHaveAttribute("aria-selected", "true");
+  await expect(gamma).toHaveAttribute("aria-selected", "false");
+  expect(await events(page, "tree", "update:modelValue")).toHaveLength(3);
+});
+
+test("tree keyboard expands, enters children, returns to parents and navigates visible nodes", async ({ page }) => {
+  await mount(page, '<feyo-tree id="tree" selectable></feyo-tree>', { tree: { items: [
+    { value: "docs", label: "Docs", children: [{ value: "blocked", label: "Blocked", disabled: true }, { value: "readme", label: "README" }] },
+    { value: "other", label: "Other" },
+  ] } });
+  const tree = page.locator("#tree");
+  const docs = tree.getByRole("treeitem").filter({ hasText: "Docs" });
+  const readme = tree.getByRole("treeitem", { name: "README", exact: true });
+  const other = tree.getByRole("treeitem", { name: "Other", exact: true });
+  await expect(docs).toHaveAttribute("tabindex", "0");
+  await docs.press("ArrowRight");
+  await expect(docs).toHaveAttribute("aria-expanded", "true");
+  await expect(docs).toBeFocused();
+  await docs.press("ArrowRight");
+  await expect(readme).toBeFocused();
+  await expect(readme).toHaveAttribute("tabindex", "0");
+  await readme.press("ArrowLeft");
+  await expect(docs).toBeFocused();
+  await docs.press("End");
+  await expect(other).toBeFocused();
+  await other.press("ArrowUp");
+  await expect(readme).toBeFocused();
+  await readme.press("ArrowDown");
+  await expect(other).toBeFocused();
+  await other.press("Home");
+  await expect(docs).toBeFocused();
+  await docs.press("ArrowLeft");
+  await expect(docs).toHaveAttribute("aria-expanded", "false");
+  await expect(tree.getByRole("treeitem")).toHaveCount(2);
+  await expect(docs).toBeFocused();
+  expect(await events(page, "tree", "update:modelValue")).toHaveLength(0);
+});
+
+test("pagination starts on modelValue with boundary pages and ellipses", async ({ page }) => {
+  await mount(page, '<feyo-pagination id="pagination" total="200" page-size="10"></feyo-pagination>', { pagination: { modelValue: 10 } });
+  const pagination = page.locator("#pagination");
+  const pages = pagination.getByRole("button", { name: /^第 \d+ 页$/ });
+  await expect(pages).toHaveText(["1", "9", "10", "11", "20"]);
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 10 页");
+  await expect(pagination.locator(".feyo-pagination__ellipsis")).toHaveCount(2);
+  await expect(pagination.locator(".feyo-pagination__ellipsis").first()).toHaveAttribute("aria-hidden", "true");
+  await pagination.getByRole("button", { name: "第 1 页", exact: true }).click();
+  await expect(pages).toHaveText(["1", "2", "20"]);
+  await expect(pagination.getByRole("button", { name: "上一页", exact: true })).toBeDisabled();
+  await expect(pagination.getByRole("button", { name: "下一页", exact: true })).toBeEnabled();
+  await expect(pagination.locator(".feyo-pagination__ellipsis")).toHaveCount(1);
+  await pagination.getByRole("button", { name: "第 20 页", exact: true }).click();
+  await expect(pages).toHaveText(["1", "19", "20"]);
+  await expect(pagination.getByRole("button", { name: "下一页", exact: true })).toBeDisabled();
+  await expect(pagination.getByRole("button", { name: "上一页", exact: true })).toBeEnabled();
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 20 页");
+  expect((await events(page, "pagination", "change")).map((event) => event.detail)).toEqual([[1], [20]]);
+  expect((await events(page, "pagination", "update:modelValue")).map((event) => event.detail)).toEqual([[1], [20]]);
+});
+
+test("pagination changes locally once and keyboard focus does not change the page", async ({ page }) => {
+  await mount(page, '<feyo-pagination id="pagination" total="50" page-size="10"></feyo-pagination>', { pagination: { modelValue: 2 } });
+  const pagination = page.locator("#pagination");
+  await pagination.getByRole("button", { name: "下一页", exact: true }).click();
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 3 页");
+  await pagination.getByRole("button", { name: "第 3 页", exact: true }).click();
+  expect(await events(page, "pagination", "change")).toHaveLength(1);
+  await pagination.getByRole("button", { name: "第 3 页", exact: true }).press("ArrowRight");
+  await expect(pagination.getByRole("button", { name: "第 4 页", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(pagination.getByRole("button", { name: "第 3 页", exact: true })).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(pagination.getByRole("button", { name: "第 5 页", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(pagination.getByRole("button", { name: "第 5 页", exact: true })).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(pagination.getByRole("button", { name: "第 1 页", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(pagination.getByRole("button", { name: "第 1 页", exact: true })).toBeFocused();
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 3 页");
+  expect(await events(page, "pagination", "change")).toHaveLength(1);
+  await page.keyboard.press("Enter");
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 1 页");
+  await pagination.getByRole("button", { name: "下一页", exact: true }).click();
+  await pagination.getByRole("button", { name: "上一页", exact: true }).click();
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 1 页");
+  expect((await events(page, "pagination", "change")).map((event) => event.detail)).toEqual([[3], [1], [2], [1]]);
+  expect((await events(page, "pagination", "update:modelValue")).map((event) => event.detail)).toEqual([[3], [1], [2], [1]]);
+  await page.evaluate(() => { document.getElementById("pagination").modelValue = 4; });
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 4 页");
+  expect(await events(page, "pagination", "change")).toHaveLength(4);
+  expect(await events(page, "pagination", "update:modelValue")).toHaveLength(4);
+});
+
+test("pagination keyboard focus skips ellipses without selecting another page", async ({ page }) => {
+  await mount(page, '<feyo-pagination id="pagination" total="200" page-size="10"></feyo-pagination>', { pagination: { modelValue: 10 } });
+  const pagination = page.locator("#pagination");
+  await pagination.getByRole("button", { name: "第 1 页", exact: true }).press("ArrowRight");
+  await expect(pagination.getByRole("button", { name: "第 9 页", exact: true })).toBeFocused();
+  await pagination.getByRole("button", { name: "第 11 页", exact: true }).press("ArrowRight");
+  await expect(pagination.getByRole("button", { name: "第 20 页", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(pagination.getByRole("button", { name: "第 11 页", exact: true })).toBeFocused();
+  await expect(pagination.locator('[aria-current="page"]')).toHaveAccessibleName("第 10 页");
+  expect(await events(page, "pagination", "change")).toHaveLength(0);
+  expect(await events(page, "pagination", "update:modelValue")).toHaveLength(0);
+});
+
+test("pagination disabled, empty and single-page states prevent navigation", async ({ page }) => {
+  await mount(page, '<feyo-pagination id="disabled" total="50" disabled></feyo-pagination><feyo-pagination id="empty" total="0"></feyo-pagination><feyo-pagination id="single" total="1"></feyo-pagination>', { disabled: { modelValue: 3 } });
+  const disabled = page.locator("#disabled");
+  await expect(disabled.getByRole("navigation")).toHaveAttribute("aria-disabled", "true");
+  await expect(disabled.locator('[aria-current="page"]')).toHaveAccessibleName("第 3 页");
+  for (const button of await disabled.getByRole("button").all()) {
+    await expect(button).toBeDisabled();
+    await expect(button).toHaveAttribute("tabindex", "-1");
+  }
+  await expect(page.locator("#empty").getByRole("navigation")).toHaveCount(0);
+  await expect(page.locator("#empty").getByRole("button")).toHaveCount(0);
+  const single = page.locator("#single");
+  await expect(single.getByRole("button", { name: /^第 \d+ 页$/ })).toHaveText(["1"]);
+  await expect(single.getByRole("button", { name: "上一页", exact: true })).toBeDisabled();
+  await expect(single.getByRole("button", { name: "下一页", exact: true })).toBeDisabled();
+  await expect(single.locator(".feyo-pagination__ellipsis")).toHaveCount(0);
+  await single.getByRole("button", { name: "第 1 页", exact: true }).click();
+  expect(await events(page, "single", "change")).toHaveLength(0);
+  expect(await events(page, "single", "update:modelValue")).toHaveLength(0);
+  // Enabling the same host must preserve its initial page without a model roundtrip.
+  await page.evaluate(() => { document.getElementById("disabled").disabled = false; });
+  await disabled.getByRole("button", { name: "下一页", exact: true }).click();
+  await expect(disabled.locator('[aria-current="page"]')).toHaveAccessibleName("第 4 页");
+  expect((await events(page, "disabled", "change")).map((event) => event.detail)).toEqual([[4]]);
+});
+
+test("date picker and pagination host ids stay unique after internal updates", async ({ page }) => {
+  await mount(page, '<feyo-date-picker id="date" label="Date" locale="en-GB"></feyo-date-picker><feyo-pagination id="pagination" total="30"></feyo-pagination>', { date: { modelValue: "2024-02-15" }, pagination: { modelValue: 2 } });
+  for (const id of ["date", "pagination"]) {
+    await expect(page.locator(`[id="${id}"]`)).toHaveCount(1);
+  }
+  await page.locator("#date").getByRole("combobox").click();
+  await page.locator("#date").getByRole("button", { name: "16 February 2024", exact: true }).click();
+  await page.locator("#pagination").getByRole("button", { name: "第 3 页", exact: true }).click();
+  for (const id of ["date", "pagination"]) {
+    await expect(page.locator(`[id="${id}"]`)).toHaveCount(1);
+  }
+});
+
 test("menu tabs and groups respond without event roundtrips", async ({ page }) => {
   const items = [{ value: "a", label: "Alpha" }, { value: "b", label: "Beta", disabled: true }, { value: "c", label: "Gamma" }];
   await mount(page, '<feyo-menu id="menu"></feyo-menu><feyo-tabs id="tabs"></feyo-tabs><feyo-button-group id="group" multiple></feyo-button-group>', { menu: { items }, tabs: { items }, group: { items } });
