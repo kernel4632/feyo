@@ -6,7 +6,10 @@
   <feyo-button round><template #leading>...</template>添加</feyo-button>
 -->
 <script setup>
-import { computed } from "vue";
+import { computed, ref, useAttrs } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   variant: {
@@ -22,6 +25,11 @@ const props = defineProps({
   round: Boolean,
 });
 
+const attrs = useAttrs();
+const root = ref(null);
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+
 const buttonVariant = computed(() => {
   const variants = ["filled", "tonal", "outlined", "text"];
   return variants.includes(props.variant) ? props.variant : "filled";
@@ -31,6 +39,8 @@ const buttonVariant = computed(() => {
 
 <template>
   <button
+    ref="root"
+    v-bind="forwardedAttrs"
     class="feyo-button"
     :class="[
       `feyo-button--${buttonVariant}`,
@@ -41,11 +51,11 @@ const buttonVariant = computed(() => {
     :aria-busy="loading || undefined"
   >
     <span v-if="loading" class="feyo-button__spinner" aria-hidden="true"></span>
-    <span v-else-if="$slots.leading" class="feyo-button__slot feyo-button__slot--leading">
+    <span v-else-if="$slots.leading || hasNativeSlot('leading')" class="feyo-button__slot feyo-button__slot--leading">
       <slot name="leading" />
     </span>
     <span class="feyo-button__label"><slot /></span>
-    <span v-if="$slots.trailing" class="feyo-button__slot feyo-button__slot--trailing">
+    <span v-if="$slots.trailing || hasNativeSlot('trailing')" class="feyo-button__slot feyo-button__slot--trailing">
       <slot name="trailing" />
     </span>
   </button>

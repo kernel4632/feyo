@@ -8,7 +8,10 @@
   <feyo-layout variant="panel" :max-width="640">表单内容</feyo-layout>
 -->
 <script setup>
-import { computed } from "vue";
+import { computed, ref, useAttrs } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   as: {
@@ -33,6 +36,11 @@ const props = defineProps({
   },
 });
 
+const attrs = useAttrs();
+const root = ref(null);
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+
 const semanticElement = computed(() => {
   const elements = ["main", "section", "div"];
   return elements.includes(props.as) ? props.as : "main";
@@ -40,7 +48,11 @@ const semanticElement = computed(() => {
 const layoutVariant = computed(() =>
   ["page", "panel"].includes(props.variant) ? props.variant : "page",
 );
-const dimension = (value) => (typeof value === "number" ? `${value}px` : value);
+const dimension = (value) => {
+  if (typeof value === "number") return `${value}px`;
+  if (typeof value === "string" && /^\d+(?:\.\d+)?$/.test(value.trim())) return `${value}px`;
+  return value;
+};
 const layoutStyle = computed(() => ({
   "--feyo-layout-max-width": dimension(props.maxWidth),
   "--feyo-layout-gap": dimension(props.gap),
@@ -51,18 +63,21 @@ const layoutStyle = computed(() => ({
 <template>
   <component
     :is="semanticElement"
+    ref="root"
+    v-bind="forwardedAttrs"
     class="feyo-layout"
     :class="`feyo-layout--${layoutVariant}`"
     :style="layoutStyle"
   >
-    <header v-if="$slots.header" class="feyo-layout__header"><slot name="header" /></header>
-    <div class="feyo-layout__content"><slot /></div>
-    <footer v-if="$slots.footer" class="feyo-layout__footer"><slot name="footer" /></footer>
+    <header v-if="$slots.header || hasNativeSlot('header')" class="feyo-layout__header"><slot name="header" /></header>
+    <div v-if="$slots.default || hasNativeSlot('default')" class="feyo-layout__content"><slot /></div>
+    <footer v-if="$slots.footer || hasNativeSlot('footer')" class="feyo-layout__footer"><slot name="footer" /></footer>
   </component>
 </template>
 
 <style scoped lang="scss">
 .feyo-layout {
+  box-sizing: border-box;
   width: 100%;
   max-width: var(--feyo-layout-max-width);
   margin: 0 auto;

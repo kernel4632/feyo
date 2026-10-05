@@ -6,7 +6,7 @@
   <feyo-icon-button aria-label="自定义动作"><MyIcon /></feyo-icon-button>
 -->
 <script setup>
-import { computed, useAttrs } from "vue";
+import { computed, getCurrentInstance, ref, useAttrs } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { Settings01Icon } from "@hugeicons/core-free-icons";
 
@@ -17,7 +17,7 @@ const props = defineProps({
     type: [Object, Array],
     default: null,
   },
-  ariaLabel: {
+  label: {
     type: String,
     default: "",
   },
@@ -38,7 +38,9 @@ const props = defineProps({
 });
 
 const attrs = useAttrs();
-const emit = defineEmits(["click"]);
+const root = ref(null);
+const isCustomElement = Boolean(getCurrentInstance()?.ce);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 
 const buttonVariant = computed(() => {
   const variants = ["filled", "tonal", "outlined", "text"];
@@ -50,20 +52,19 @@ const buttonSize = computed(() => {
   return sizes.includes(props.size) ? props.size : "default";
 });
 
-const accessibleLabel = computed(() => props.ariaLabel || attrs["aria-label"] || attrs.title || "图标按钮");
-const tooltip = computed(() => attrs.title || accessibleLabel.value || undefined);
+// Native ariaLabel/title remain browser attributes rather than conflicting CE props.
+function accessibleLabel() {
+  return props.label || attrs["aria-label"] || attrs.ariaLabel || attrs.title || "图标按钮";
+}
 const buttonIcon = computed(() => props.icon || Settings01Icon);
 const iconSize = computed(() => ({ small: 18, default: 20, large: 24 })[buttonSize.value]);
 
-// 原生 disabled 会阻止表单点击，组件事件只在这里向外转发一次。
-function handleClick(event) {
-  emit("click", event);
-}
 </script>
 
 <template>
   <button
-    v-bind="attrs"
+    ref="root"
+    v-bind="forwardedAttrs"
     class="feyo-icon-button"
     :class="[
       `feyo-icon-button--${buttonVariant}`,
@@ -71,10 +72,9 @@ function handleClick(event) {
     ]"
     :type="type"
     :disabled="disabled || loading"
-    :aria-label="accessibleLabel"
+    :aria-label="accessibleLabel()"
     :aria-busy="loading || undefined"
-    :title="tooltip"
-    @click.stop="handleClick"
+    :title="attrs.title || accessibleLabel()"
   >
     <span v-if="loading" class="feyo-icon-button__spinner" aria-hidden="true"></span>
     <span v-else class="feyo-icon-button__icon" aria-hidden="true">

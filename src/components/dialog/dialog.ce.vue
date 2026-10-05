@@ -1,24 +1,24 @@
 <!--
-对话框：提供带遮罩的可访问弹层，管理关闭、焦点和打开期间的页面滚动。
+对话框：使用原生 modal dialog 管理背景隔离、焦点和多层弹窗。
+title 沿用原生属性，作为 attrs 读取，不声明同名组件 prop。
 调用示例：
-  <feyo-dialog v-model="dialogOpen" title="删除项目" description="此操作无法撤销">
+  <feyo-dialog v-model:open="dialogOpen" title="删除项目" description="此操作无法撤销">
     <p>确定要继续吗？</p>
     <template #footer><button type="button" @click="dialogOpen = false">取消</button></template>
   </feyo-dialog>
 -->
 <script setup>
-import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import { useNativeSlots } from "../../utils/native-slots.js";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   open: {
     type: Boolean,
     default: false,
-  },
-  title: {
-    type: String,
-    default: "",
   },
   description: {
     type: String,
@@ -39,11 +39,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:open", "close"]);
+const attrs = useAttrs();
 const dialog = ref(null);
-const panel = ref(null);
-let returnFocus = null;
-let previousBodyOverflow = "";
-let bodyScrollLocked = false;
+const { hasNativeSlot, isCustomElement } = useNativeSlots(dialog);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+const localOpen = ref(props.open);
 
 const dialogSize = computed(() => {
   const sizes = ["small", "medium", "large"];
@@ -54,108 +54,74 @@ const titleId = `feyo-dialog-title-${dialogId}`;
 const descriptionId = `feyo-dialog-description-${dialogId}`;
 
 function close(reason = "close") {
-  if (!props.open) return;
+  if (!localOpen.value) return;
+  localOpen.value = false;
+  if (dialog.value?.open) dialog.value.close();
   emit("update:open", false);
   emit("close", reason);
 }
 
-function focusInitialElement() {
-  const target = dialog.value?.querySelector("[autofocus], button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])");
-  (target || panel.value)?.focus();
+function syncDialog() {
+  if (!dialog.value) return;
+  // The browser owns the focus return target; no deferred callback can read a cleared ref.
+  if (localOpen.value && !dialog.value.open) dialog.value.showModal();
+  else if (!localOpen.value && dialog.value.open) dialog.value.close();
 }
 
-function lockBodyScroll() {
-  if (bodyScrollLocked || typeof document === "undefined") return;
-  previousBodyOverflow = document.body.style.overflow;
-  document.body.style.overflow = "hidden";
-  bodyScrollLocked = true;
+function handleCancel(event) {
+  event.preventDefault();
+  if (props.closeOnEscape) close("escape");
 }
 
-function restoreBodyScroll() {
-  if (!bodyScrollLocked || typeof document === "undefined") return;
-  document.body.style.overflow = previousBodyOverflow;
-  bodyScrollLocked = false;
-}
-
-function openDialog() {
-  if (typeof document !== "undefined") returnFocus = document.activeElement;
-  lockBodyScroll();
-  nextTick(focusInitialElement);
-}
-
-function closeDialog() {
-  restoreBodyScroll();
-  if (returnFocus && typeof returnFocus.focus === "function") {
-    nextTick(() => returnFocus.focus());
-  }
-  returnFocus = null;
+function handleNativeClose() {
+  if (!dialog.value.open) close("native");
 }
 
 function handleKeydown(event) {
-  if (event.key === "Escape" && props.closeOnEscape) {
+  if (event.key !== "Tab" || !dialog.value) return;
+  const focusable = [...dialog.value.querySelectorAll(
+    "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])",
+  )];
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
     event.preventDefault();
-    close("escape");
-    return;
-  }
-
-  if (event.key === "Tab") {
-    const focusable = [...dialog.value.querySelectorAll(
-      "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])",
-    )];
-    if (!focusable.length) {
-      event.preventDefault();
-      panel.value?.focus();
-      return;
-    }
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
   }
 }
 
-watch(
-  () => props.open,
-  (open) => {
-    if (open) openDialog();
-    else closeDialog();
-  },
-  { immediate: true },
-);
-
-onBeforeUnmount(() => {
-  restoreBodyScroll();
-});
+watch(() => props.open, (open) => { localOpen.value = open; });
+watch(localOpen, syncDialog, { flush: "post" });
+onMounted(syncDialog);
+onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
 </script>
 
 <template>
-  <div
-    v-if="open"
+  <dialog
     ref="dialog"
+    v-bind="forwardedAttrs"
+    :title="undefined"
     class="feyo-dialog"
+    :aria-labelledby="attrs.title ? titleId : attrs['aria-labelledby']"
+    :aria-describedby="[attrs['aria-describedby'], description ? descriptionId : undefined].filter(Boolean).join(' ') || undefined"
+    @cancel.stop="handleCancel"
+    @close.stop="handleNativeClose"
     @keydown="handleKeydown"
+    @click.self="closeOnBackdrop && close('backdrop')"
   >
-    <div class="feyo-dialog__backdrop" aria-hidden="true" @click.self="closeOnBackdrop && close('backdrop')" />
     <div class="feyo-dialog__positioner">
       <section
-        ref="panel"
         class="feyo-dialog__panel"
         :class="`feyo-dialog__panel--${dialogSize}`"
-        role="dialog"
-        aria-modal="true"
-        :aria-labelledby="title ? titleId : undefined"
-        :aria-describedby="description ? descriptionId : undefined"
-        tabindex="-1"
       >
-        <header v-if="title || $slots.header" class="feyo-dialog__header">
+        <header v-if="attrs.title || $slots.header || hasNativeSlot('header')" class="feyo-dialog__header">
           <div class="feyo-dialog__heading">
-            <h2 v-if="title" :id="titleId" class="feyo-dialog__title">{{ title }}</h2>
-            <div v-if="$slots.header" class="feyo-dialog__header-slot"><slot name="header" /></div>
+            <h2 v-if="attrs.title" :id="titleId" class="feyo-dialog__title">{{ attrs.title }}</h2>
+            <div v-if="$slots.header || hasNativeSlot('header')" class="feyo-dialog__header-slot"><slot name="header" /></div>
           </div>
           <button class="feyo-dialog__close" type="button" aria-label="关闭对话框" @click="close('button')">
             <HugeiconsIcon :icon="Cancel01Icon" :size="20" color="currentColor" />
@@ -163,40 +129,49 @@ onBeforeUnmount(() => {
         </header>
 
         <p v-if="description" :id="descriptionId" class="feyo-dialog__description">{{ description }}</p>
-        <div class="feyo-dialog__body"><slot /></div>
-        <footer v-if="$slots.footer" class="feyo-dialog__footer"><slot name="footer" /></footer>
+        <div v-if="$slots.default || hasNativeSlot('default')" class="feyo-dialog__body"><slot /></div>
+        <footer v-if="$slots.footer || hasNativeSlot('footer')" class="feyo-dialog__footer"><slot name="footer" /></footer>
       </section>
     </div>
-  </div>
+  </dialog>
 </template>
 
 <style scoped lang="scss">
 .feyo-dialog {
+  box-sizing: border-box;
   position: fixed;
-  z-index: 1000;
   inset: 0;
-  display: grid;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  background: var(--feyo-color-transparent);
   place-items: center;
   color: var(--feyo-color-on-surface);
   font-family: var(--feyo-font-family);
-}
 
-.feyo-dialog__backdrop {
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, var(--feyo-color-surface) 72%, var(--feyo-color-transparent));
+  &[open] { display: grid; }
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--feyo-color-surface) 72%, var(--feyo-color-transparent));
+  }
 }
 
 .feyo-dialog__positioner {
   position: relative;
   z-index: 1;
   display: flex;
-  width: min(calc(100% - 32px), 920px);
-  max-height: calc(100% - 32px);
+  width: min(100%, 920px);
+  max-height: 100%;
   justify-content: center;
+  pointer-events: none;
 }
 
 .feyo-dialog__panel {
+  box-sizing: border-box;
   width: 100%;
   max-height: 100%;
   overflow: auto;
@@ -206,6 +181,7 @@ onBeforeUnmount(() => {
   background: var(--feyo-color-surface-container);
   box-shadow: 0 16px 40px color-mix(in srgb, var(--feyo-color-surface) 60%, var(--feyo-color-transparent));
   outline: none;
+  pointer-events: auto;
   animation: feyo-dialog-enter var(--feyo-duration-normal) var(--feyo-ease-emphasized);
 
   &--small {
@@ -305,9 +281,8 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 600px) {
-  .feyo-dialog__positioner {
-    width: min(calc(100% - 24px), 920px);
-    max-height: calc(100% - 24px);
+  .feyo-dialog {
+    padding: 12px;
   }
 
   .feyo-dialog__panel {

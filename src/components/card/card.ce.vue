@@ -8,7 +8,10 @@
   </feyo-card>
 -->
 <script setup>
-import { computed } from "vue";
+import { computed, ref, useAttrs } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   variant: {
@@ -19,7 +22,10 @@ const props = defineProps({
   disabled: Boolean,
 });
 
-const emit = defineEmits(["click"]);
+const attrs = useAttrs();
+const root = ref(null);
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 
 const cardVariant = computed(() => {
   const variants = ["surface", "outlined", "elevated"];
@@ -28,25 +34,30 @@ const cardVariant = computed(() => {
 
 function activate(event) {
   if (!props.clickable || props.disabled) return;
-  if (event.target !== event.currentTarget && event.target.closest?.("button, a, input, select, textarea, [role='button']")) return;
-  emit("click", event);
+  // Slotted controls own their actions, including custom elements with shadow roots.
+  const path = event.composedPath();
+  const cardIndex = path.indexOf(event.currentTarget);
+  if (path.slice(0, cardIndex).some((element) => element.matches?.("button, a, input, select, textarea, label, summary, [role='button'], [role='switch'], [role='checkbox'], [contenteditable], [tabindex]"))) {
+    event.stopPropagation();
+    return;
+  }
 }
 
 function handleKeydown(event) {
-  if (!props.clickable || props.disabled) return;
+  if (!props.clickable || props.disabled || event.target !== event.currentTarget || event.isComposing || event.repeat) return;
 
   if (event.key === "Enter") {
     event.preventDefault();
-    activate(event);
+    event.currentTarget.click();
   } else if (event.key === " ") {
     event.preventDefault();
   }
 }
 
 function handleKeyup(event) {
-  if (event.key !== " ") return;
+  if (!props.clickable || props.disabled || event.target !== event.currentTarget || event.isComposing || event.key !== " ") return;
   event.preventDefault();
-  activate(event);
+  event.currentTarget.click();
 }
 </script>
 
@@ -63,18 +74,21 @@ function handleKeyup(event) {
     :role="clickable ? 'button' : undefined"
     :tabindex="clickable && !disabled ? 0 : undefined"
     :aria-disabled="disabled ? 'true' : undefined"
-    @click.stop="activate"
+    ref="root"
+    v-bind="forwardedAttrs"
+    @click="activate"
     @keydown="handleKeydown"
     @keyup="handleKeyup"
   >
-    <header v-if="$slots.header" class="feyo-card__header"><slot name="header" /></header>
-    <div v-if="$slots.default" class="feyo-card__body"><slot /></div>
-    <footer v-if="$slots.footer" class="feyo-card__footer"><slot name="footer" /></footer>
+    <header v-if="$slots.header || hasNativeSlot('header')" class="feyo-card__header"><slot name="header" /></header>
+    <div v-if="$slots.default || hasNativeSlot('default')" class="feyo-card__body"><slot /></div>
+    <footer v-if="$slots.footer || hasNativeSlot('footer')" class="feyo-card__footer"><slot name="footer" /></footer>
   </article>
 </template>
 
 <style scoped lang="scss">
 .feyo-card {
+  box-sizing: border-box;
   display: flex;
   min-width: 0;
   flex-direction: column;

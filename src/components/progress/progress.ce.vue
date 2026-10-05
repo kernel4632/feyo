@@ -5,7 +5,7 @@
   <feyo-progress indeterminate label="正在连接" />
 -->
 <script setup>
-import { computed, useAttrs } from "vue";
+import { computed, getCurrentInstance, useAttrs } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -17,20 +17,25 @@ const props = defineProps({
 });
 
 const attrs = useAttrs();
-const safeValue = computed(() => Math.max(0, Math.min(props.max, props.value)));
+const isCustomElement = Boolean(getCurrentInstance()?.ce);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+const safeMax = computed(() => Number.isFinite(props.max) && props.max > 0 ? props.max : 100);
+const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math.min(safeMax.value, props.value)) : 0);
 </script>
 
 <template>
   <label class="feyo-progress">
     <span v-if="label" class="feyo-progress__label">{{ label }}</span>
-    <progress
-      v-bind="attrs"
-      class="feyo-progress__bar"
-      :class="{ 'feyo-progress__bar--indeterminate': indeterminate }"
-      :value="indeterminate ? undefined : safeValue"
-      :max="max"
-      :aria-label="label || undefined"
-    />
+    <span class="feyo-progress__track">
+       <progress
+         v-bind="forwardedAttrs"
+        class="feyo-progress__bar"
+        :value="indeterminate ? undefined : safeValue"
+        :max="safeMax"
+        :aria-label="attrs['aria-label'] || label || undefined"
+      />
+      <span v-if="indeterminate" class="feyo-progress__motion" aria-hidden="true"><span /></span>
+    </span>
   </label>
 </template>
 
@@ -73,8 +78,41 @@ const safeValue = computed(() => Math.max(0, Math.min(props.max, props.value)));
     background: var(--feyo-color-primary);
   }
 
-  &__bar--indeterminate::-webkit-progress-value {
-    background: var(--feyo-color-primary);
+  &__track {
+    position: relative;
+    display: block;
+    height: 8px;
+    overflow: hidden;
+    border-radius: var(--feyo-radius-full);
+  }
+
+  &__motion {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: var(--feyo-color-surface-container-high);
+    pointer-events: none;
+
+    > span {
+      display: block;
+      width: 40%;
+      height: 100%;
+      border-radius: var(--feyo-radius-full);
+      background: var(--feyo-color-primary);
+      animation: feyo-progress-motion 1.4s linear infinite;
+    }
+  }
+}
+
+@keyframes feyo-progress-motion {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feyo-progress__motion > span {
+    margin-inline: auto;
+    animation: none;
   }
 }
 </style>

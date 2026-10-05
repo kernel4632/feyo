@@ -1,14 +1,16 @@
 <!--
-菜单：提供可搜索的单选菜单，负责触发器、弹层、键盘选择和焦点返回。
+菜单：提供可搜索的单选菜单；items 使用 { value, label, disabled, description }。
 调用示例：
   <feyo-menu v-model="choice" :items="items" label="选择项目" searchable>
     <template #trigger="{ selectedItem }">{{ selectedItem?.label || '选择项目' }}</template>
   </feyo-menu>
 -->
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from "vue";
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useId, watch } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { ArrowDown01Icon, Search01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   open: {
@@ -36,6 +38,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:open", "update:modelValue", "change"]);
+const attrs = useAttrs();
+const isCustomElement = Boolean(getCurrentInstance()?.ce);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 
 const root = ref(null);
 const trigger = ref(null);
@@ -44,11 +49,13 @@ const menuPanel = ref(null);
 const itemButtons = ref([]);
 const query = ref("");
 const activeIndex = ref(-1);
-const returnFocus = ref(null);
+// Keep object-valued choices identical to the consumer's DOM property values.
+const localValue = shallowRef(props.modelValue);
+const localOpen = ref(props.open && !props.disabled);
+let ownerDocument;
 const menuId = `feyo-menu-${useId()}`;
 const triggerId = `${menuId}-trigger`;
 
-const isOpen = computed(() => props.open);
 const menuPlacement = computed(() => {
   const placements = ["bottom-start", "bottom-end", "top-start", "top-end"];
   return placements.includes(props.placement) ? props.placement : "bottom-start";
@@ -56,52 +63,35 @@ const menuPlacement = computed(() => {
 const visibleItems = computed(() => {
   const text = query.value.trim().toLocaleLowerCase();
   if (!text) return props.items;
-  return props.items.filter((item) => itemLabel(item).toLocaleLowerCase().includes(text));
+  return props.items.filter((item) => `${item.label} ${item.description || ""}`.toLocaleLowerCase().includes(text));
 });
-const selectedItem = computed(() => props.items.find((item) => itemValue(item) === props.modelValue) || null);
-const selectedLabel = computed(() => selectedItem.value ? itemLabel(selectedItem.value) : props.label);
-
-function itemValue(item) {
-  return item && typeof item === "object" && Object.prototype.hasOwnProperty.call(item, "value")
-    ? item.value
-    : item;
-}
-
-function itemLabel(item) {
-  if (item && typeof item === "object") {
-    return String(item.label ?? item.text ?? item.title ?? item.value ?? "");
-  }
-  return String(item ?? "");
-}
-
-function itemDisabled(item) {
-  return Boolean(item && typeof item === "object" && item.disabled);
-}
+const selectedItem = computed(() => props.items.find((item) => Object.is(item.value, localValue.value)) || null);
+const selectedLabel = computed(() => selectedItem.value ? selectedItem.value.label : props.label);
 
 function setItemRef(element, index) {
-  if (element) itemButtons.value[index] = element;
+  itemButtons.value[index] = element;
 }
 
 function firstEnabledIndex() {
-  return visibleItems.value.findIndex((item) => !itemDisabled(item));
+  return visibleItems.value.findIndex((item) => !item.disabled);
 }
 
 function lastEnabledIndex() {
   for (let index = visibleItems.value.length - 1; index >= 0; index -= 1) {
-    if (!itemDisabled(visibleItems.value[index])) return index;
+    if (!visibleItems.value[index].disabled) return index;
   }
   return -1;
 }
 
 function selectedVisibleIndex() {
-  const index = visibleItems.value.findIndex((item) => itemValue(item) === props.modelValue && !itemDisabled(item));
+  const index = visibleItems.value.findIndex((item) => Object.is(item.value, localValue.value) && !item.disabled);
   return index >= 0 ? index : firstEnabledIndex();
 }
 
 function focusItem(index) {
-  if (index < 0 || !visibleItems.value[index] || itemDisabled(visibleItems.value[index])) return;
+  if (index < 0 || !visibleItems.value[index] || visibleItems.value[index].disabled) return;
   activeIndex.value = index;
-  nextTick(() => itemButtons.value[index]?.focus());
+  nextTick(() => { if (localOpen.value) itemButtons.value[index]?.focus(); });
 }
 
 function moveActive(step) {
@@ -110,7 +100,7 @@ function moveActive(step) {
   let next = activeIndex.value;
   for (let attempts = 0; attempts < count; attempts += 1) {
     next = (next + step + count) % count;
-    if (!itemDisabled(visibleItems.value[next])) {
+    if (!visibleItems.value[next].disabled) {
       focusItem(next);
       return;
     }
@@ -118,28 +108,33 @@ function moveActive(step) {
 }
 
 function openMenu(preferLast = false) {
-  if (props.disabled || props.open) return;
-  if (typeof document !== "undefined") returnFocus.value = document.activeElement;
+  if (props.disabled || localOpen.value) return;
   query.value = "";
   activeIndex.value = preferLast ? lastEnabledIndex() : selectedVisibleIndex();
+  localOpen.value = true;
   emit("update:open", true);
 }
 
-function closeMenu() {
-  if (!props.open) return;
+function closeMenu(restoreFocus = true) {
+  if (!localOpen.value) return;
+  // Outside clicks and Tab keep their destination; explicit dismissal returns focus now.
+  if (restoreFocus) trigger.value?.focus();
+  localOpen.value = false;
   emit("update:open", false);
 }
 
 function toggleMenu() {
-  if (props.open) closeMenu();
+  if (localOpen.value) closeMenu();
   else openMenu();
 }
 
 function selectItem(item) {
-  if (itemDisabled(item)) return;
-  const value = itemValue(item);
-  emit("update:modelValue", value);
-  emit("change", value);
+  if (props.disabled || item.disabled) return;
+  if (!Object.is(item.value, localValue.value)) {
+    localValue.value = item.value;
+    emit("update:modelValue", item.value);
+    emit("change", item.value);
+  }
   closeMenu();
 }
 
@@ -149,7 +144,17 @@ function selectActive() {
 }
 
 function handleTriggerKeydown(event) {
-  if (props.disabled) return;
+  if (props.disabled || event.isComposing) return;
+  if (event.key === "Escape" && localOpen.value) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeMenu();
+    return;
+  }
+  if (event.key === "Tab") {
+    closeMenu(false);
+    return;
+  }
   if (event.key === "Enter" || event.key === " " || event.key === "ArrowDown") {
     event.preventDefault();
     openMenu();
@@ -160,6 +165,12 @@ function handleTriggerKeydown(event) {
 }
 
 function handleMenuKeydown(event) {
+  if (event.isComposing) return;
+  if (event.target === searchInput.value && [" ", "Home", "End"].includes(event.key)) return;
+  if (event.key === "Tab") {
+    closeMenu(false);
+    return;
+  }
   if (event.key === "ArrowDown") {
     event.preventDefault();
     moveActive(1);
@@ -177,51 +188,56 @@ function handleMenuKeydown(event) {
     selectActive();
   } else if (event.key === "Escape") {
     event.preventDefault();
+    event.stopPropagation();
     closeMenu();
   }
 }
 
-function handleOutsidePointerdown(event) {
-  if (props.open && root.value && !root.value.contains(event.target)) closeMenu();
-}
-
-function returnFocusToTrigger() {
-  const target = returnFocus.value || trigger.value;
-  if (target && typeof target.focus === "function") nextTick(() => target.focus());
-  returnFocus.value = null;
+function handleOutside(event) {
+  if (localOpen.value && !event.composedPath().includes(root.value)) closeMenu(false);
 }
 
 function focusOpenedMenu() {
+  if (!localOpen.value) return;
   if (props.searchable) {
     searchInput.value?.focus();
     return;
   }
-  const index = activeIndex.value >= 0 ? activeIndex.value : firstEnabledIndex();
+  const index = activeIndex.value >= 0 ? activeIndex.value : selectedVisibleIndex();
   if (index >= 0) focusItem(index);
   else menuPanel.value?.focus();
 }
 
-watch(
-  () => props.open,
-  (open, wasOpen) => {
-    if (open) nextTick(focusOpenedMenu);
-    else if (wasOpen) returnFocusToTrigger();
-  },
-  { immediate: true },
-);
+watch(() => props.modelValue, (value) => { localValue.value = value; });
+watch(() => props.open, (open) => {
+  if (open) {
+    query.value = "";
+    activeIndex.value = selectedVisibleIndex();
+  }
+  localOpen.value = open && !props.disabled;
+});
+watch(() => props.disabled, (disabled) => { if (disabled) closeMenu(false); });
+watch(localOpen, (open) => {
+  if (open) nextTick(focusOpenedMenu);
+}, { immediate: true });
 
 watch(visibleItems, () => {
-  if (activeIndex.value >= visibleItems.value.length || itemDisabled(visibleItems.value[activeIndex.value])) {
-    activeIndex.value = firstEnabledIndex();
-  }
-});
+  activeIndex.value = selectedVisibleIndex();
+}, { flush: "sync" });
 
-onMounted(() => document.addEventListener("pointerdown", handleOutsidePointerdown));
-onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsidePointerdown));
+onMounted(() => {
+  ownerDocument = root.value.ownerDocument;
+  ownerDocument.addEventListener("pointerdown", handleOutside);
+  ownerDocument.addEventListener("focusin", handleOutside);
+});
+onBeforeUnmount(() => {
+  ownerDocument.removeEventListener("pointerdown", handleOutside);
+  ownerDocument.removeEventListener("focusin", handleOutside);
+});
 </script>
 
 <template>
-  <div ref="root" class="feyo-menu" :class="{ 'feyo-menu--open': isOpen }">
+   <div ref="root" v-bind="forwardedAttrs" class="feyo-menu" :class="{ 'feyo-menu--open': localOpen }">
     <button
       :id="triggerId"
       ref="trigger"
@@ -229,19 +245,19 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
       type="button"
       :disabled="disabled"
       aria-haspopup="menu"
-      :aria-expanded="isOpen"
+      :aria-expanded="localOpen"
       :aria-controls="menuId"
       @click="toggleMenu"
       @keydown="handleTriggerKeydown"
     >
-      <slot name="trigger" :open="isOpen" :selected-item="selectedItem" :value="modelValue">
+      <slot name="trigger" :open="localOpen" :selected-item="selectedItem" :value="localValue">
         <span class="feyo-menu__trigger-label">{{ selectedLabel }}</span>
       </slot>
       <HugeiconsIcon class="feyo-menu__trigger-icon" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
     </button>
 
     <div
-      v-if="isOpen"
+      v-if="localOpen"
       ref="menuPanel"
       :id="menuId"
       class="feyo-menu__popup"
@@ -261,6 +277,8 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
           role="searchbox"
           aria-label="搜索菜单项"
           :aria-controls="menuId"
+          @input.stop
+          @change.stop
           @keydown.stop="handleMenuKeydown"
         >
       </div>
@@ -268,21 +286,24 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
       <div class="feyo-menu__items">
         <button
           v-for="(item, index) in visibleItems"
-          :key="itemValue(item) ?? index"
+          :key="index"
           :ref="(element) => setItemRef(element, index)"
           class="feyo-menu__item"
           type="button"
-          role="menuitem"
-          :disabled="itemDisabled(item)"
-          :aria-disabled="itemDisabled(item) || undefined"
-          :aria-selected="itemValue(item) === modelValue"
+          role="menuitemradio"
+          :disabled="item.disabled"
+          :aria-disabled="item.disabled || undefined"
+          :aria-checked="Object.is(item.value, localValue)"
           :tabindex="index === activeIndex ? 0 : -1"
           @click="selectItem(item)"
           @focus="activeIndex = index"
         >
-          <span class="feyo-menu__item-label">{{ itemLabel(item) }}</span>
+          <span class="feyo-menu__item-copy">
+            <span class="feyo-menu__item-label">{{ item.label }}</span>
+            <span v-if="item.description" class="feyo-menu__item-description">{{ item.description }}</span>
+          </span>
           <HugeiconsIcon
-            v-if="itemValue(item) === modelValue"
+            v-if="Object.is(item.value, localValue)"
             class="feyo-menu__item-check"
             :icon="Tick01Icon"
             :size="18"
@@ -305,6 +326,7 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
 }
 
 .feyo-menu__trigger {
+  box-sizing: border-box;
   display: inline-flex;
   width: 100%;
   min-height: 56px;
@@ -355,6 +377,7 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
 }
 
 .feyo-menu__popup {
+  box-sizing: border-box;
   position: absolute;
   z-index: 20;
   width: max(100%, 220px);
@@ -403,6 +426,7 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
 }
 
 .feyo-menu__search {
+  box-sizing: border-box;
   width: 100%;
   min-height: 40px;
   padding: 0 var(--feyo-space-3) 0 40px;
@@ -425,6 +449,7 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
 }
 
 .feyo-menu__item {
+  box-sizing: border-box;
   display: flex;
   width: 100%;
   min-height: 40px;
@@ -461,6 +486,19 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.feyo-menu__item-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--feyo-space-1);
+  padding-block: var(--feyo-space-2);
+}
+
+.feyo-menu__item-description {
+  color: var(--feyo-color-on-surface-variant);
+  font-size: var(--feyo-font-size-sm);
+  overflow-wrap: anywhere;
 }
 
 .feyo-menu__item-check {

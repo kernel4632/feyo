@@ -6,7 +6,7 @@
   </feyo-tabs>
 -->
 <script setup>
-import { computed, nextTick, ref, useId } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from "vue";
 
 const props = defineProps({
   modelValue: {
@@ -26,16 +26,18 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "change"]);
 
 const tabButtons = ref([]);
+const tabList = ref(null);
+const localValue = shallowRef(props.modelValue);
+const indicatorStyle = ref({ display: "none" });
+let resizeObserver;
 const tabsId = `feyo-tabs-${useId()}`;
 
 const tabOrientation = computed(() => props.orientation === "vertical" ? "vertical" : "horizontal");
 const activeIndex = computed(() => {
-  const selected = props.items.findIndex((item) => itemValue(item) === props.modelValue && !itemDisabled(item));
+  const selected = props.items.findIndex((item) => Object.is(itemValue(item), localValue.value) && !itemDisabled(item));
   if (selected >= 0) return selected;
   return props.items.findIndex((item) => !itemDisabled(item));
 });
-const activeItem = computed(() => props.items[activeIndex.value] || null);
-const panelId = `${tabsId}-panel`;
 
 function itemValue(item) {
   return item && typeof item === "object" && Object.prototype.hasOwnProperty.call(item, "value")
@@ -55,12 +57,14 @@ function itemDisabled(item) {
 }
 
 function setTabRef(element, index) {
-  if (element) tabButtons.value[index] = element;
+  tabButtons.value[index] = element;
 }
 
 function selectItem(item) {
   if (itemDisabled(item)) return;
   const value = itemValue(item);
+  if (Object.is(value, localValue.value)) return;
+  localValue.value = value;
   emit("update:modelValue", value);
   emit("change", value);
 }
@@ -84,6 +88,7 @@ function focusAndSelect(index) {
 }
 
 function handleKeydown(index, event) {
+  if (event.isComposing) return;
   const horizontal = tabOrientation.value === "horizontal";
   const forward = horizontal ? event.key === "ArrowRight" : event.key === "ArrowDown";
   const backward = horizontal ? event.key === "ArrowLeft" : event.key === "ArrowUp";
@@ -109,18 +114,46 @@ function handleKeydown(index, event) {
   const step = forward ? 1 : -1;
   focusAndSelect(enabledIndexFrom((index + step + props.items.length) % props.items.length, step));
 }
+
+// Measure the selected button, including gaps, wrapped labels and container resizing.
+function measureIndicator() {
+  const button = tabButtons.value[activeIndex.value];
+  if (!button || !tabList.value) {
+    indicatorStyle.value = { display: "none" };
+    return;
+  }
+  const list = tabList.value;
+  const bounds = button.getBoundingClientRect();
+  const listBounds = list.getBoundingClientRect();
+  indicatorStyle.value = tabOrientation.value === "horizontal"
+    ? { left: `${bounds.left - listBounds.left + list.scrollLeft - list.clientLeft}px`, width: `${bounds.width}px` }
+    : { top: `${bounds.top - listBounds.top + list.scrollTop - list.clientTop}px`, height: `${bounds.height}px` };
+}
+
+function observeTabs() {
+  resizeObserver?.disconnect();
+  if (tabList.value) resizeObserver?.observe(tabList.value);
+  for (const button of tabButtons.value) {
+    if (button?.isConnected) resizeObserver?.observe(button);
+  }
+  measureIndicator();
+}
+
+watch(() => props.modelValue, (value) => { localValue.value = value; });
+watch([activeIndex, tabOrientation, () => props.items], () => nextTick(observeTabs), { deep: true });
+onMounted(() => {
+  resizeObserver = new ResizeObserver(measureIndicator);
+  observeTabs();
+});
+onBeforeUnmount(() => resizeObserver?.disconnect());
 </script>
 
 <template>
   <div
     class="feyo-tabs"
     :class="`feyo-tabs--${tabOrientation}`"
-    :style="{
-      '--feyo-tabs-count': Math.max(1, items.length),
-      '--feyo-active-index': Math.max(0, activeIndex),
-    }"
   >
-    <div class="feyo-tabs__list" role="tablist" :aria-orientation="tabOrientation">
+    <div ref="tabList" class="feyo-tabs__list" role="tablist" :aria-orientation="tabOrientation">
       <button
         v-for="(item, index) in items"
         :id="`${tabsId}-tab-${index}`"
@@ -130,7 +163,7 @@ function handleKeydown(index, event) {
         type="button"
         role="tab"
         :aria-selected="index === activeIndex"
-        :aria-controls="panelId"
+        :aria-controls="`${tabsId}-panel-${index}`"
         :aria-disabled="itemDisabled(item) || undefined"
         :disabled="itemDisabled(item)"
         :tabindex="index === activeIndex ? 0 : -1"
@@ -141,18 +174,21 @@ function handleKeydown(index, event) {
           {{ itemLabel(item) }}
         </slot>
       </button>
-      <span class="feyo-tabs__indicator" aria-hidden="true" />
+      <span class="feyo-tabs__indicator" :style="indicatorStyle" aria-hidden="true" />
     </div>
 
     <section
-      :id="panelId"
+      v-for="(item, index) in items"
+      :id="`${tabsId}-panel-${index}`"
+      :key="index"
       class="feyo-tabs__panel"
       role="tabpanel"
-      :aria-labelledby="activeIndex >= 0 ? `${tabsId}-tab-${activeIndex}` : undefined"
+      :aria-labelledby="`${tabsId}-tab-${index}`"
+      :hidden="index !== activeIndex"
       tabindex="0"
     >
-      <slot name="panel" :item="activeItem" :index="activeIndex" :value="modelValue">
-        <slot :item="activeItem" :index="activeIndex" :value="modelValue" />
+      <slot v-if="index === activeIndex" name="panel" :item="item" :index="index" :value="localValue">
+        <slot :item="item" :index="index" :value="localValue" />
       </slot>
     </section>
   </div>
@@ -197,6 +233,7 @@ function handleKeydown(index, event) {
 }
 
 .feyo-tabs__tab {
+  box-sizing: border-box;
   position: relative;
   display: inline-flex;
   min-width: 0;
@@ -235,6 +272,7 @@ function handleKeydown(index, event) {
   }
 
   .feyo-tabs--vertical & {
+    flex: 0 0 auto;
     min-height: 48px;
     justify-content: flex-start;
     border-radius: var(--feyo-radius-sm) 0 0 var(--feyo-radius-sm);
@@ -244,8 +282,7 @@ function handleKeydown(index, event) {
 .feyo-tabs__indicator {
   position: absolute;
   bottom: 0;
-  left: calc((100% / var(--feyo-tabs-count)) * var(--feyo-active-index, 0));
-  width: calc(100% / var(--feyo-tabs-count));
+  left: 0;
   height: var(--feyo-tabs-indicator-height);
   border-radius: var(--feyo-radius-full) var(--feyo-radius-full) 0 0;
   background: var(--feyo-color-primary);
@@ -269,12 +306,11 @@ function handleKeydown(index, event) {
 }
 
 .feyo-tabs--vertical .feyo-tabs__indicator {
-  top: calc(var(--feyo-tabs-height) * var(--feyo-active-index, 0));
+  top: 0;
   right: 0;
   bottom: auto;
   left: auto;
   width: var(--feyo-tabs-indicator-height);
-  height: var(--feyo-tabs-height);
   border-radius: 0 var(--feyo-radius-full) var(--feyo-radius-full) 0;
   transform: none;
 }

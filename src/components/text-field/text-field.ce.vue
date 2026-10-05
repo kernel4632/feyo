@@ -6,7 +6,7 @@
   <feyo-text-field v-model="password" type="password" clearable></feyo-text-field>
 -->
 <script setup>
-import { computed, nextTick, ref, useAttrs, useId, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   Cancel01Icon,
@@ -67,6 +67,9 @@ const input = ref(null);
 const focused = ref(false);
 const passwordVisible = ref(false);
 const localValue = ref(props.modelValue);
+let composing = false;
+let resetValue;
+let ownerDocument;
 
 // The host keeps its public id; labels and descriptions use a separate internal id.
 const inputId = `feyo-text-field-${baseId}`;
@@ -83,25 +86,26 @@ const shouldFloatLabel = computed(() =>
 const actualType = computed(() =>
   props.type === "password" && passwordVisible.value ? "text" : props.type,
 );
-const describedBy = computed(() => {
+function describedBy() {
   const ids = [];
   if (props.error) ids.push(errorId);
   else if (props.hint) ids.push(hintId);
   if (attrs["aria-describedby"]) ids.push(attrs["aria-describedby"]);
   return ids.length > 0 ? ids.join(" ") : undefined;
-});
-const inputAriaLabel = computed(() =>
-  attrs["aria-label"] || (!props.label ? props.placeholder || undefined : undefined),
-);
-const inputAttrs = computed(() => {
+}
+function inputAriaLabel() {
+  return attrs["aria-label"] || attrs.ariaLabel || (!props.label ? props.placeholder || undefined : undefined);
+}
+function inputAttrs() {
   const forwarded = { ...attrs };
   delete forwarded.id;
   delete forwarded.class;
   delete forwarded.style;
   delete forwarded["aria-describedby"];
   delete forwarded["aria-label"];
+  delete forwarded.ariaLabel;
   return forwarded;
-});
+}
 
 watch(
   () => props.modelValue,
@@ -112,6 +116,7 @@ watch(
 );
 
 function handleInput(event) {
+  if (composing || event.isComposing || event.target.value === localValue.value) return;
   localValue.value = event.target.value;
   emit("update:modelValue", localValue.value);
 }
@@ -121,6 +126,7 @@ function handleChange() {
 }
 
 function clearValue() {
+  if (props.disabled || props.readonly || !localValue.value) return;
   localValue.value = "";
   emit("update:modelValue", localValue.value);
   emit("change", localValue.value);
@@ -132,6 +138,27 @@ function focus() {
 }
 
 defineExpose({ focus });
+
+// Reset to the mounted default, not the last user edit; reset does not emit change.
+function handleReset(event) {
+  if (event.target !== input.value.form) return;
+  queueMicrotask(() => {
+    if (event.defaultPrevented || !input.value) return;
+    composing = false;
+    const changed = localValue.value !== resetValue;
+    localValue.value = resetValue;
+    input.value.value = resetValue;
+    if (changed) emit("update:modelValue", resetValue);
+  });
+}
+
+onMounted(() => {
+  resetValue = localValue.value;
+  input.value.defaultValue = resetValue;
+  ownerDocument = input.value.ownerDocument;
+  ownerDocument.addEventListener("reset", handleReset, true);
+});
+onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, true));
 </script>
 
 <template>
@@ -165,7 +192,7 @@ defineExpose({ focus });
     <div class="feyo-text-field__control">
       <input
         ref="input"
-        v-bind="inputAttrs"
+        v-bind="inputAttrs()"
         :id="inputId"
         :name="name"
         :type="actualType"
@@ -174,13 +201,15 @@ defineExpose({ focus });
         :disabled="disabled"
         :readonly="readonly"
         :placeholder="placeholder"
-        :aria-label="inputAriaLabel"
-        :aria-describedby="describedBy"
+        :aria-label="inputAriaLabel()"
+        :aria-describedby="describedBy()"
         :aria-invalid="hasError || undefined"
         :aria-required="required || undefined"
         @focus="focused = true"
         @blur="focused = false"
         @input.stop="handleInput"
+        @compositionstart="composing = true"
+        @compositionend="composing = false; handleInput($event)"
         @change.stop="handleChange"
       />
 

@@ -4,7 +4,8 @@
   <feyo-switch v-model="enabled" name="enabled"><span>启用同步</span></feyo-switch>
 -->
 <script setup>
-import { ref, useAttrs, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -18,7 +19,13 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const attrs = useAttrs();
+const root = ref(null);
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 const localValue = ref(props.modelValue || attrs.checked === "" || attrs.checked === true);
+const input = ref(null);
+let resetValue;
+let ownerDocument;
 
 // 本地状态让没有立即回写 modelValue 的 Web Component 仍能完成点击反馈。
 watch(
@@ -34,15 +41,36 @@ function handleChange(event) {
   emit("update:modelValue", localValue.value);
   emit("change", localValue.value);
 }
+
+function handleReset(event) {
+  if (event.target !== input.value.form) return;
+  queueMicrotask(() => {
+    if (event.defaultPrevented || !input.value) return;
+    const changed = localValue.value !== resetValue;
+    localValue.value = resetValue;
+    input.value.checked = resetValue;
+    if (changed) emit("update:modelValue", resetValue);
+  });
+}
+
+onMounted(() => {
+  resetValue = localValue.value;
+  input.value.defaultChecked = resetValue;
+  ownerDocument = input.value.ownerDocument;
+  ownerDocument.addEventListener("reset", handleReset, true);
+});
+onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, true));
 </script>
 
 <template>
   <label
+    ref="root"
     class="feyo-switch"
     :class="{ 'feyo-switch--disabled': disabled }"
   >
     <input
-      v-bind="attrs"
+      ref="input"
+       v-bind="forwardedAttrs"
       class="feyo-switch__input"
       type="checkbox"
       role="switch"
@@ -57,7 +85,7 @@ function handleChange(event) {
     <span class="feyo-switch__track" aria-hidden="true">
       <span class="feyo-switch__thumb" />
     </span>
-    <span v-if="$slots.default" class="feyo-switch__label">
+    <span v-if="$slots.default || hasNativeSlot('default')" class="feyo-switch__label">
       <slot />
     </span>
   </label>
@@ -86,6 +114,7 @@ function handleChange(event) {
   }
 
   &__track {
+    box-sizing: border-box;
     position: relative;
     flex: 0 0 52px;
     width: 52px;
@@ -99,9 +128,10 @@ function handleChange(event) {
   }
 
   &__thumb {
+    box-sizing: border-box;
     position: absolute;
     top: 50%;
-    left: 8px;
+    left: 6px;
     width: 16px;
     height: 16px;
     border-radius: var(--feyo-radius-full);
@@ -125,7 +155,7 @@ function handleChange(event) {
     background: var(--feyo-color-primary);
 
     .feyo-switch__thumb {
-      left: 24px;
+      left: 22px;
       width: 24px;
       height: 24px;
       background: var(--feyo-color-on-primary);
@@ -133,12 +163,13 @@ function handleChange(event) {
   }
 
   &__input:active + .feyo-switch__track .feyo-switch__thumb {
+    left: 0;
     width: 28px;
     height: 28px;
   }
 
   &__input:checked:active + .feyo-switch__track .feyo-switch__thumb {
-    left: 22px;
+    left: 20px;
   }
 
   &__input:focus-visible + .feyo-switch__track {

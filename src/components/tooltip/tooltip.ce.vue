@@ -12,7 +12,10 @@
   </feyo-tooltip>
 -->
 <script setup>
-import { Comment, computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useSlots, watch } from "vue";
+import { Comment, computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, useSlots, watch } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   text: {
@@ -35,23 +38,28 @@ const props = defineProps({
 });
 
 const slots = useSlots();
+const attrs = useAttrs();
 const localOpen = ref(false);
+const root = ref(null);
 const triggerRoot = ref(null);
 const hovered = ref(false);
 const focused = ref(false);
+const dismissed = ref(false);
 const tooltipId = `feyo-tooltip-${useId()}`;
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 let openTimer = null;
 let describedElement = null;
-let previousDescription = null;
+let ownerDocument;
 
 const controlled = computed(() => props.open !== undefined);
 const hasSlotContent = computed(() => slots.content?.().some((vnode) => {
   if (vnode.type === Comment) return false;
   return typeof vnode.children !== "string" || vnode.children.trim().length > 0;
-}) || false);
+}) || hasNativeSlot("content"));
 const hasContent = computed(() => Boolean(props.text.trim()) || hasSlotContent.value);
 const tooltipOpen = computed(() => {
-  if (props.disabled || !hasContent.value) return false;
+  if (props.disabled || dismissed.value || !hasContent.value) return false;
   return controlled.value ? props.open : localOpen.value;
 });
 const tooltipPosition = computed(() => {
@@ -75,28 +83,27 @@ function rememberDescription(element) {
 
   restoreDescription();
   describedElement = element;
-  previousDescription = element.getAttribute("aria-describedby");
-  const existing = (previousDescription || "").split(/\s+/).filter((value) => value && value !== tooltipId);
+  const existing = (element.getAttribute("aria-describedby") || "").split(/\s+/).filter((value) => value && value !== tooltipId);
   const descriptions = [...existing, tooltipId].join(" ");
   element.setAttribute("aria-describedby", descriptions);
 }
 
 function restoreDescription() {
   if (!describedElement) return;
-  const existing = (previousDescription || "").split(/\s+/).filter((value) => value && value !== tooltipId);
+  // Remove only our id, preserving descriptions changed by the consumer while open.
+  const existing = (describedElement.getAttribute("aria-describedby") || "").split(/\s+/).filter((value) => value && value !== tooltipId);
   if (existing.length === 0) describedElement.removeAttribute("aria-describedby");
   else describedElement.setAttribute("aria-describedby", existing.join(" "));
   describedElement = null;
-  previousDescription = null;
 }
 
 function hideTooltip() {
   clearOpenTimer();
   localOpen.value = false;
-  restoreDescription();
 }
 
 function showTooltip(immediate = false) {
+  dismissed.value = false;
   if (controlled.value || props.disabled || !hasContent.value) return;
   clearOpenTimer();
   if (immediate || tooltipDelay.value === 0) {
@@ -131,20 +138,37 @@ function handleFocusout(event) {
   if (!hovered.value) hideTooltip();
 }
 
+function handleEscape(event) {
+  if (event.key !== "Escape" || event.isComposing || (!tooltipOpen.value && openTimer === null)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  dismissed.value = true;
+  hideTooltip();
+}
+
+watch(() => props.open, () => { dismissed.value = false; });
+watch([() => props.disabled, hasContent], () => {
+  if (props.disabled || !hasContent.value) hideTooltip();
+});
+
 watch(tooltipOpen, (open) => {
   if (!open) {
     restoreDescription();
     return;
   }
   nextTick(() => {
+    if (!tooltipOpen.value) return;
     const target = triggerRoot.value?.querySelector("button, a, input, select, textarea, [tabindex]:not([tabindex='-1'])");
     if (target) rememberDescription(target);
   });
 }, { immediate: true });
 
 onMounted(() => {
+  ownerDocument = triggerRoot.value.ownerDocument;
+  ownerDocument.addEventListener("keydown", handleEscape);
   if (tooltipOpen.value) {
     nextTick(() => {
+      if (!tooltipOpen.value) return;
       const target = triggerRoot.value?.querySelector("button, a, input, select, textarea, [tabindex]:not([tabindex='-1'])");
       if (target) rememberDescription(target);
     });
@@ -152,6 +176,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  ownerDocument.removeEventListener("keydown", handleEscape);
   clearOpenTimer();
   restoreDescription();
 });
@@ -159,6 +184,8 @@ onBeforeUnmount(() => {
 
 <template>
   <span
+    ref="root"
+    v-bind="forwardedAttrs"
     class="feyo-tooltip"
     :class="{ 'feyo-tooltip--open': tooltipOpen, 'feyo-tooltip--disabled': disabled }"
     @mouseenter="handleMouseenter"

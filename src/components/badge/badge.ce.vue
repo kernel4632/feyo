@@ -7,7 +7,8 @@
   <feyo-badge variant="primary"><template #leading><MyIcon /></template>同步中</feyo-badge>
 -->
 <script setup>
-import { Comment, computed, useAttrs, useSlots } from "vue";
+import { Comment, computed, ref, useAttrs, useSlots } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -29,10 +30,13 @@ const props = defineProps({
 
 const attrs = useAttrs();
 const slots = useSlots();
+const root = ref(null);
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 const hasDefaultContent = computed(() => slots.default?.().some((vnode) => {
   if (vnode.type === Comment) return false;
   return typeof vnode.children !== "string" || vnode.children.trim().length > 0;
-}) || false);
+}) || hasNativeSlot("default"));
 
 const badgeVariant = computed(() => {
   const variants = ["neutral", "primary", "danger", "success"];
@@ -53,7 +57,8 @@ const accessibleLabel = computed(() => attrs["aria-label"] || displayValue.value
 
 <template>
   <span
-    v-bind="attrs"
+    ref="root"
+    v-bind="forwardedAttrs"
     class="feyo-badge"
     :class="[
       `feyo-badge--${badgeVariant}`,
@@ -62,13 +67,13 @@ const accessibleLabel = computed(() => attrs["aria-label"] || displayValue.value
     role="status"
     :aria-label="accessibleLabel"
   >
-    <span v-if="$slots.leading" class="feyo-badge__slot feyo-badge__slot--leading" aria-hidden="true">
+    <span v-if="$slots.leading || hasNativeSlot('leading')" class="feyo-badge__slot feyo-badge__slot--leading" aria-hidden="true">
       <slot name="leading" />
     </span>
     <span v-if="dot" class="feyo-badge__dot" aria-hidden="true"></span>
     <slot v-else-if="hasDefaultContent" />
     <template v-else>{{ displayValue }}</template>
-    <span v-if="$slots.trailing" class="feyo-badge__slot feyo-badge__slot--trailing" aria-hidden="true">
+    <span v-if="$slots.trailing || hasNativeSlot('trailing')" class="feyo-badge__slot feyo-badge__slot--trailing" aria-hidden="true">
       <slot name="trailing" />
     </span>
   </span>

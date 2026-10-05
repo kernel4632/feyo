@@ -5,7 +5,8 @@
   <feyo-checkbox :model-value="true" label="已完成" indeterminate />
 -->
 <script setup>
-import { onMounted, ref, useAttrs, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -21,8 +22,15 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const attrs = useAttrs();
+const root = ref(null);
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 const input = ref(null);
 const localValue = ref(props.modelValue || attrs.checked === "" || attrs.checked === true);
+const localIndeterminate = ref(props.indeterminate);
+let resetValue;
+let resetIndeterminate;
+let ownerDocument;
 
 // 外部值变化时同步显示；用户点击后先由本地值保证控件立即响应。
 watch(
@@ -33,38 +41,56 @@ watch(
 );
 
 // indeterminate 是 DOM 属性，不是可以可靠绑定的 HTML 属性。
-function syncIndeterminate() {
-  if (input.value) {
-    input.value.indeterminate = props.indeterminate;
-  }
-}
-
-watch(() => props.indeterminate, syncIndeterminate);
-onMounted(syncIndeterminate);
+watch(() => props.indeterminate, (value) => { localIndeterminate.value = value; });
 
 // 原生 change 是复选框提交新状态的边界，两个事件都发送最新布尔值。
 function handleChange(event) {
   localValue.value = event.target.checked;
+  localIndeterminate.value = event.target.indeterminate;
   emit("update:modelValue", localValue.value);
   emit("change", localValue.value);
 }
+
+function handleReset(event) {
+  if (event.target !== input.value.form) return;
+  queueMicrotask(() => {
+    if (event.defaultPrevented || !input.value) return;
+    const changed = localValue.value !== resetValue;
+    localValue.value = resetValue;
+    localIndeterminate.value = resetIndeterminate;
+    input.value.checked = resetValue;
+    input.value.indeterminate = resetIndeterminate;
+    if (changed) emit("update:modelValue", resetValue);
+  });
+}
+
+onMounted(() => {
+  resetValue = localValue.value;
+  resetIndeterminate = localIndeterminate.value;
+  input.value.defaultChecked = resetValue;
+  ownerDocument = input.value.ownerDocument;
+  ownerDocument.addEventListener("reset", handleReset, true);
+});
+onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, true));
 </script>
 
 <template>
   <label
+    ref="root"
     class="feyo-checkbox"
     :class="{
       'feyo-checkbox--checked': localValue,
-      'feyo-checkbox--indeterminate': indeterminate,
+      'feyo-checkbox--indeterminate': localIndeterminate,
       'feyo-checkbox--disabled': disabled,
     }"
   >
     <input
       ref="input"
-      v-bind="attrs"
+       v-bind="forwardedAttrs"
       class="feyo-checkbox__input"
       type="checkbox"
       :checked="localValue"
+      :indeterminate.prop="localIndeterminate"
       :disabled="disabled"
       :required="required"
       :name="name"
@@ -75,7 +101,7 @@ function handleChange(event) {
     <span class="feyo-checkbox__box" aria-hidden="true">
       <span class="feyo-checkbox__mark" />
     </span>
-    <span v-if="label || $slots.default" class="feyo-checkbox__label">
+    <span v-if="label || $slots.default || hasNativeSlot('default')" class="feyo-checkbox__label">
       <slot>{{ label }}</slot>
     </span>
   </label>
@@ -103,6 +129,7 @@ function handleChange(event) {
   }
 
   &__box {
+    box-sizing: border-box;
     position: relative;
     flex: 0 0 20px;
     width: 20px;

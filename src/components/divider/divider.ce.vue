@@ -6,7 +6,10 @@
   <feyo-divider vertical><span aria-hidden="true">+</span></feyo-divider>
 -->
 <script setup>
-import { Comment, computed, useSlots } from "vue";
+import { Comment, computed, ref, useAttrs, useSlots } from "vue";
+import { useNativeSlots } from "../../utils/native-slots.js";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   vertical: Boolean,
@@ -18,15 +21,21 @@ const props = defineProps({
 });
 
 const slots = useSlots();
+const attrs = useAttrs();
+const root = ref(null);
+const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 const hasSlotContent = computed(() => slots.default?.().some((vnode) => {
   if (vnode.type === Comment) return false;
   return typeof vnode.children !== "string" || vnode.children.trim().length > 0;
-}) || false);
+}) || hasNativeSlot("default"));
 const hasContent = computed(() => Boolean(props.label.trim()) || hasSlotContent.value);
 </script>
 
 <template>
   <div
+    ref="root"
+    v-bind="forwardedAttrs"
     class="feyo-divider"
     :class="{
       'feyo-divider--vertical': vertical,

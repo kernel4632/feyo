@@ -1,3 +1,7 @@
+/* Preview app styles only; main.js imports this file for the FEYO demo page.
+ * Library entries import _tokens.scss directly so host pages keep their own layout.
+ * App usage: import "./styles/index.scss".
+ */
 @use "tokens";
 
 *,

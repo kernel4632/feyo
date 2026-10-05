@@ -4,7 +4,7 @@
   <feyo-slider v-model="volume" label="音量" :show-value="true" name="volume" />
 -->
 <script setup>
-import { computed, ref, useAttrs, watch } from "vue";
+import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -22,33 +22,68 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const attrs = useAttrs();
-const localValue = ref(Number(props.modelValue));
+const isCustomElement = Boolean(getCurrentInstance()?.ce);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+const input = ref(null);
+let resetValue;
+let ownerDocument;
+
+const sliderMin = computed(() => Number.isFinite(props.min) ? props.min : 0);
+const sliderMax = computed(() => Number.isFinite(props.max) ? Math.max(sliderMin.value, props.max) : sliderMin.value + 100);
+
+function clampValue(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return sliderMin.value;
+  return Math.max(sliderMin.value, Math.min(sliderMax.value, numericValue));
+}
+
+const localValue = ref(clampValue(props.modelValue));
 
 // 外部值变化时同步；拖动过程中先更新本地值，保证原生控件不等待父组件回写。
 watch(
-  () => props.modelValue,
-  (value) => {
-    localValue.value = Number(value);
-  },
+  [() => props.modelValue, () => props.min, () => props.max],
+  () => { localValue.value = clampValue(props.modelValue); },
 );
 
 const fill = computed(() => {
-  const range = props.max - props.min;
+  const range = sliderMax.value - sliderMin.value;
   if (range <= 0) return "0%";
-  const ratio = (localValue.value - props.min) / range;
+  const ratio = (localValue.value - sliderMin.value) / range;
   return `${Math.max(0, Math.min(1, ratio)) * 100}%`;
 });
 
 // input 事件用于连续同步，原生 change 事件用于提交一次完整改动。
 function handleInput(event) {
-  localValue.value = Number(event.target.value);
+  localValue.value = clampValue(event.target.value);
   emit("update:modelValue", localValue.value);
 }
 
 function handleChange(event) {
-  localValue.value = Number(event.target.value);
+  localValue.value = clampValue(event.target.value);
   emit("change", localValue.value);
 }
+
+function handleReset(event) {
+  if (event.target !== input.value.form) return;
+  queueMicrotask(() => {
+    if (event.defaultPrevented || !input.value) return;
+    const nextValue = clampValue(resetValue);
+    const changed = localValue.value !== nextValue;
+    localValue.value = nextValue;
+    input.value.value = String(nextValue);
+    if (changed) emit("update:modelValue", nextValue);
+  });
+}
+
+onMounted(() => {
+  // The native range applies min/max/step before the mounted default is captured.
+  localValue.value = clampValue(input.value.valueAsNumber);
+  resetValue = localValue.value;
+  input.value.defaultValue = String(resetValue);
+  ownerDocument = input.value.ownerDocument;
+  ownerDocument.addEventListener("reset", handleReset, true);
+});
+onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, true));
 </script>
 
 <template>
@@ -60,13 +95,14 @@ function handleChange(event) {
       <span v-if="label" class="feyo-slider__label">{{ label }}</span>
       <output v-if="showValue" class="feyo-slider__value">{{ localValue }}</output>
     </span>
-    <input
-      v-bind="attrs"
+     <input
+       ref="input"
+       v-bind="forwardedAttrs"
       class="feyo-slider__input"
       type="range"
       :value="localValue"
-      :min="min"
-      :max="max"
+       :min="sliderMin"
+       :max="sliderMax"
       :step="step"
       :disabled="disabled"
       :required="required"

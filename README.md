@@ -27,6 +27,8 @@ pnpm preview
 
 ```bash
 pnpm build:lib
+pnpm test
+pnpm test:ssr
 ```
 
 Vue 组件从 `@kernel4632/feyo` 导入；原生元素从 `@kernel4632/feyo/elements` 导入，样式从 `@kernel4632/feyo/style.css` 导入：
@@ -40,8 +42,9 @@ import "@kernel4632/feyo/style.css";
 <feyo-button variant="filled">保存</feyo-button>
 ```
 
-当前导出的组件包括：按钮、文本框、复选框、开关、滑块、进度条、菜单、对话框、
-标签页、按钮组、布局容器、卡片、分割线、提示、图标按钮和徽章。
+当前导出的组件包括：按钮、文本框、复选框、开关、滑块、进度条、选择器、菜单、
+通知、对话框、标签页、按钮组、布局容器、卡片、分割线、提示、图标按钮、徽章、
+数据表和空状态。
 
 自定义元素使用普通页面 DOM（light DOM）。注册入口会将组件样式安装到页面中的一个
 `<style id="feyo-component-styles">`，重复导入不会重复安装。仍需导入
@@ -88,3 +91,4 @@ src/
 
 协作约定见 [AGENTS.md](./AGENTS.md)。
 上游源码的固定版本与测量记录见 [参考研究笔记](./docs/reference.md)。
+组件自动从 `src/components/*/*.ce.vue` 发现，不需要修改中央注册表。

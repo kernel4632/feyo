@@ -6,7 +6,7 @@
   <feyo-button-group v-model="tab" :items="tabs" role="tablist" />
 -->
 <script setup>
-import { computed, nextTick, ref, useAttrs } from "vue";
+import { computed, getCurrentInstance, nextTick, ref, shallowRef, useAttrs, watch } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -28,15 +28,16 @@ const props = defineProps({
     type: String,
     default: "default",
   },
-  role: {
-    type: String,
-    default: "group",
-  },
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const attrs = useAttrs();
+const isCustomElement = Boolean(getCurrentInstance()?.ce);
+const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 const buttons = ref([]);
+const localValue = shallowRef(props.modelValue);
+const focusedIndex = ref(-1);
+watch(() => props.modelValue, (value) => { localValue.value = value; });
 
 const groupOrientation = computed(() =>
   props.orientation === "vertical" ? "vertical" : "horizontal",
@@ -46,23 +47,24 @@ const groupSize = computed(() => {
   return sizes.includes(props.size) ? props.size : "default";
 });
 const groupRole = computed(() =>
-  props.role === "tablist" ? "tablist" : "group",
+  attrs.role === "tablist" ? "tablist" : "group",
 );
 const selectedValues = computed(() =>
-  props.multiple ? (Array.isArray(props.modelValue) ? props.modelValue : []) : [props.modelValue],
+  props.multiple ? (Array.isArray(localValue.value) ? localValue.value : []) : [localValue.value],
 );
 const firstEnabledIndex = computed(() => props.items.findIndex((item) => !item.disabled));
 const activeIndex = computed(() => {
+  if (focusedIndex.value >= 0 && props.items[focusedIndex.value] && !props.items[focusedIndex.value].disabled) return focusedIndex.value;
   const selectedIndex = props.items.findIndex((item) => isSelected(item) && !item.disabled);
   return selectedIndex >= 0 ? selectedIndex : firstEnabledIndex.value;
 });
 
 function isSelected(item) {
-  return selectedValues.value.some((value) => value === item.value);
+  return selectedValues.value.some((value) => Object.is(value, item.value));
 }
 
 function setButtonRef(element, index) {
-  if (element) buttons.value[index] = element;
+  buttons.value[index] = element;
 }
 
 function select(item) {
@@ -70,14 +72,17 @@ function select(item) {
 
   if (props.multiple) {
     const values = [...selectedValues.value];
-    const index = values.findIndex((value) => value === item.value);
+    const index = values.findIndex((value) => Object.is(value, item.value));
     if (index >= 0) values.splice(index, 1);
     else values.push(item.value);
+    localValue.value = values;
     emit("update:modelValue", values);
     emit("change", values);
     return;
   }
 
+  if (Object.is(item.value, localValue.value)) return;
+  localValue.value = item.value;
   emit("update:modelValue", item.value);
   emit("change", item.value);
 }
@@ -90,6 +95,7 @@ function focusItem(index, selectOnMove = false) {
 }
 
 function moveFocus(index, event) {
+  if (event.isComposing) return;
   const forward = groupOrientation.value === "horizontal"
     ? event.key === "ArrowRight"
     : event.key === "ArrowDown";
@@ -134,7 +140,7 @@ function moveFocus(index, event) {
       `feyo-button-group--${groupOrientation}`,
       `feyo-button-group--${groupSize}`,
     ]"
-    v-bind="attrs"
+     v-bind="forwardedAttrs"
     :role="groupRole"
     :aria-orientation="groupRole === 'tablist' ? groupOrientation : undefined"
   >
@@ -144,12 +150,14 @@ function moveFocus(index, event) {
       :ref="(element) => setButtonRef(element, index)"
       class="feyo-button-group__item"
       :class="{ 'feyo-button-group__item--selected': isSelected(item) }"
-       type="button"
+      type="button"
       :disabled="item.disabled"
       :role="groupRole === 'tablist' ? 'tab' : undefined"
       :aria-selected="groupRole === 'tablist' ? isSelected(item) : undefined"
+      :aria-pressed="groupRole === 'group' ? isSelected(item) : undefined"
       :tabindex="index === activeIndex ? 0 : -1"
       @click="select(item)"
+      @focus="focusedIndex = index"
       @keydown="moveFocus(index, $event)"
     >
       <slot :item="item" :index="index" :selected="isSelected(item)">{{ item.label }}</slot>
@@ -170,6 +178,7 @@ function moveFocus(index, event) {
 }
 
 .feyo-button-group__item {
+  box-sizing: border-box;
   min-width: 64px;
   min-height: 40px;
   padding: 0 var(--feyo-space-4);
