@@ -9,7 +9,9 @@ export { default as FeyoBadge } from "./components/badge/badge.ce.vue";
 export { default as FeyoButton } from "./components/button/button.ce.vue";
 export { default as FeyoButtonGroup } from "./components/button-group/button-group.ce.vue";
 export { default as FeyoCard } from "./components/card/card.ce.vue";
+export { default as FeyoCascader } from "./components/cascader/cascader.ce.vue";
 export { default as FeyoCheckbox } from "./components/checkbox/checkbox.ce.vue";
+export { default as FeyoCombobox } from "./components/combobox/combobox.ce.vue";
 export { default as FeyoDatePicker } from "./components/date-picker/date-picker.ce.vue";
 export { default as FeyoDialog } from "./components/dialog/dialog.ce.vue";
 export { default as FeyoDivider } from "./components/divider/divider.ce.vue";
@@ -26,15 +28,19 @@ export { default as FeyoSwitch } from "./components/switch/switch.ce.vue";
 export { default as FeyoTable } from "./components/table/table.ce.vue";
 export { default as FeyoTabs } from "./components/tabs/tabs.ce.vue";
 export { default as FeyoTextField } from "./components/text-field/text-field.ce.vue";
+export { default as FeyoTimePicker } from "./components/time-picker/time-picker.ce.vue";
 export { default as FeyoTooltip } from "./components/tooltip/tooltip.ce.vue";
 export { default as FeyoTree } from "./components/tree/tree.ce.vue";
+export { default as FeyoVirtualScroll } from "./components/virtual-scroll/virtual-scroll.ce.vue";
 
 export const componentNames = [
   "FeyoBadge",
   "FeyoButton",
   "FeyoButtonGroup",
   "FeyoCard",
+  "FeyoCascader",
   "FeyoCheckbox",
+  "FeyoCombobox",
   "FeyoDatePicker",
   "FeyoDialog",
   "FeyoDivider",
@@ -51,6 +57,8 @@ export const componentNames = [
   "FeyoTable",
   "FeyoTabs",
   "FeyoTextField",
+  "FeyoTimePicker",
   "FeyoTooltip",
-  "FeyoTree"
+  "FeyoTree",
+  "FeyoVirtualScroll"
 ];

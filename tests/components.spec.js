@@ -708,3 +708,195 @@ test("IDs stay unique across elements, updates and disconnect/reconnect", async 
   expect([...after].sort()).toEqual([...before].sort());
   expect(await page.locator("#one .feyo-select__trigger").getAttribute("aria-labelledby")).toBe(await page.locator("#one .feyo-select__label").getAttribute("id"));
 });
+
+test("virtual scroll renders a window, scrolls rows and selects with Home End Enter", async ({ page }) => {
+  const items = Array.from({ length: 10 }, (_, index) => ({ value: `row-${index}`, label: `Row ${index + 1}` }));
+  await mount(page, '<feyo-virtual-scroll id="virtual" item-height="40" height="120" overscan="1"></feyo-virtual-scroll>', { virtual: { items } });
+  const scroll = page.locator("#virtual .feyo-virtual-scroll");
+
+  await expect(scroll.locator(".feyo-virtual-scroll__item")).toHaveCount(4);
+  await expect(scroll.locator(".feyo-virtual-scroll__item").first()).toHaveText("Row 1");
+  await expect(scroll.locator(".feyo-virtual-scroll__spacer")).toHaveCount(2);
+  expect(await scroll.locator(".feyo-virtual-scroll__content").evaluate((element) => element.style.height)).toBe("400px");
+  expect(await scroll.locator(".feyo-virtual-scroll__spacer").last().evaluate((element) => element.style.height)).toBe("240px");
+
+  await scroll.evaluate((element) => {
+    element.scrollTop = 240;
+    element.dispatchEvent(new Event("scroll"));
+  });
+  await expect(scroll.locator(".feyo-virtual-scroll__item").first()).toHaveAttribute("aria-posinset", "6");
+  await expect(scroll.locator(".feyo-virtual-scroll__item").first()).toHaveText("Row 6");
+  expect(await scroll.locator(".feyo-virtual-scroll__spacer").first().evaluate((element) => element.style.height)).toBe("200px");
+  expect(await scroll.locator(".feyo-virtual-scroll__spacer").last().evaluate((element) => element.style.height)).toBe("0px");
+
+  await scroll.focus();
+  await scroll.press("End");
+  await expect(scroll).toHaveAttribute("aria-activedescendant", /item-9$/);
+  await scroll.press("Enter");
+  await scroll.press("Home");
+  await expect(scroll).toHaveAttribute("aria-activedescendant", /item-0$/);
+  await scroll.press("Enter");
+  expect((await events(page, "virtual", "update:modelValue")).map((event) => event.detail)).toEqual([["row-9"], ["row-0"]]);
+  await expect(page.locator('[id="virtual"]')).toHaveCount(1);
+});
+
+test("time picker selects HH:mm within step bounds, handles Escape and resets its required form value", async ({ page }) => {
+  await mount(page, '<form id="form"><feyo-time-picker id="time" name="start" label="Start" mode="24" min="09:00" max="10:30" step="30" required></feyo-time-picker><button type="reset">Reset</button></form>', { time: { modelValue: null } });
+  const picker = page.locator("#time");
+  const trigger = picker.getByRole("combobox");
+  const native = picker.locator(".feyo-time-picker__native");
+
+  expect(await native.evaluate((element) => element.validity.valueMissing)).toBe(true);
+  expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("start"))).toBe("");
+  await trigger.click();
+  await expect(picker.getByRole("option", { name: "08", exact: true })).toBeDisabled();
+  await expect(picker.getByRole("option", { name: "09", exact: true })).toBeEnabled();
+  await expect(picker.getByRole("option", { name: "10", exact: true })).toBeEnabled();
+  await expect(picker.getByRole("option", { name: "11", exact: true })).toBeDisabled();
+  await expect(picker.getByRole("listbox", { name: "Minute" }).getByRole("option", { name: "00", exact: true })).toBeEnabled();
+  await expect(picker.getByRole("listbox", { name: "Minute" }).getByRole("option", { name: "30", exact: true })).toBeEnabled();
+
+  await picker.getByRole("option", { name: "09", exact: true }).press("End");
+  await expect(picker.getByRole("option", { name: "10", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("End");
+  await expect(picker.getByRole("option", { name: "30", exact: true })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(native).toHaveValue("10:30");
+  expect((await events(page, "time", "change")).map((event) => event.detail[0])).toEqual(["10:30"]);
+  expect(await page.evaluate(() => document.getElementById("form").checkValidity())).toBe(true);
+  expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("start"))).toBe("10:30");
+
+  await trigger.press("ArrowDown");
+  await expect(picker.locator(".feyo-time-picker__popup")).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await expect(picker.locator(".feyo-time-picker__popup")).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  expect(await events(page, "time", "change")).toHaveLength(1);
+
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await expect(native).toHaveValue("");
+  await expect(trigger).toContainText("Select time");
+  expect(await native.evaluate((element) => element.validity.valueMissing)).toBe(true);
+  expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("start"))).toBe("");
+  expect((await events(page, "time", "change")).map((event) => event.detail[0])).toEqual(["10:30", null]);
+  expect(await events(page, "time", "change")).toHaveLength(2);
+});
+
+test("cascader selects a path across columns, clears and resets its last form value", async ({ page }) => {
+  const options = [{
+    value: "electronics",
+    label: "Electronics",
+    children: [{
+      value: "phones",
+      label: "Phones",
+      children: [{ value: "android", label: "Android" }, { value: "ios", label: "iOS" }],
+    }],
+  }, { value: "books", label: "Books" }];
+  await mount(page, '<form id="form"><feyo-cascader id="cascader" name="category" label="Category" required clearable></feyo-cascader><button id="outside" type="button">Outside</button><button type="reset">Reset</button></form>', { cascader: { options, modelValue: ["electronics", "phones", "ios"] } });
+  const cascader = page.locator("#cascader");
+  const trigger = cascader.getByRole("combobox");
+  const native = cascader.locator(".feyo-cascader__native");
+  const idsAreUnique = () => page.locator("[id]").evaluateAll((nodes) => {
+    const ids = nodes.map((node) => node.id);
+    return new Set(ids).size === ids.length;
+  });
+
+  expect(await idsAreUnique()).toBe(true);
+  expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("category"))).toBe("ios");
+  await trigger.click();
+  await expect(cascader.locator('[role="listbox"]')).toHaveCount(3);
+  await cascader.getByRole("option", { name: "Electronics", exact: true }).click();
+  await cascader.getByRole("option", { name: "Phones", exact: true }).click();
+  await cascader.getByRole("option", { name: "Android", exact: true }).click();
+  await expect(trigger).toContainText("Electronics / Phones / Android");
+  await expect(native).toHaveValue("android");
+  expect((await events(page, "cascader", "change")).map((event) => event.detail[0])).toEqual([
+    ["electronics"],
+    ["electronics", "phones"],
+    ["electronics", "phones", "android"],
+  ]);
+  expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("category"))).toBe("android");
+  expect(await idsAreUnique()).toBe(true);
+
+  await cascader.getByRole("button", { name: "清除选择", exact: true }).click();
+  await expect(native).toHaveValue("");
+  await expect(trigger).toContainText("请选择");
+  expect(await native.evaluate((element) => element.validity.valueMissing)).toBe(true);
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await expect(native).toHaveValue("ios");
+  await expect(trigger).toContainText("Electronics / Phones / iOS");
+  expect(await native.evaluate((element) => element.validity.valid)).toBe(true);
+  expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("category"))).toBe("ios");
+  expect(await events(page, "cascader", "change")).toHaveLength(4);
+
+  await trigger.press("ArrowDown");
+  await expect(cascader.locator('[role="listbox"]')).toHaveCount(3);
+  await expect(trigger).toHaveAttribute("aria-activedescendant", /option-/);
+  await trigger.press("Escape");
+  await expect(cascader.locator('[role="listbox"]')).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await page.locator("#outside").dispatchEvent("pointerdown");
+  await expect(cascader.locator('[role="listbox"]')).toHaveCount(0);
+  expect(await idsAreUnique()).toBe(true);
+});
+
+test("combobox filters, selects once, supports freeSolo and resets keyboard form state", async ({ page }) => {
+  await mount(page, '<form id="form"><feyo-combobox id="combo" name="country" label="Country" required clearable searchable></feyo-combobox><feyo-combobox id="free" name="tag" label="Tag" free-solo searchable></feyo-combobox><button type="reset">Reset</button></form>', {
+    combo: { items: [{ value: "a", label: "Alpha" }, { value: "b", label: "Beta" }, { value: "g", label: "Gamma" }] },
+    free: { items: [] },
+  });
+  const combo = page.locator("#combo");
+  const input = combo.locator(".feyo-combobox__input");
+  const native = combo.locator(".feyo-combobox__native");
+  const free = page.locator("#free");
+  const freeInput = free.locator(".feyo-combobox__input");
+  const idsAreUnique = () => page.locator("[id]").evaluateAll((nodes) => {
+    const ids = nodes.map((node) => node.id);
+    return new Set(ids).size === ids.length;
+  });
+
+  expect(await native.evaluate((element) => element.validity.valueMissing)).toBe(true);
+  await input.fill("be");
+  await expect(combo.getByRole("option")).toHaveCount(1);
+  await expect(combo.getByRole("option", { name: "Beta", exact: true })).toBeVisible();
+  expect(await idsAreUnique()).toBe(true);
+  await combo.getByRole("option", { name: "Beta", exact: true }).click();
+  await expect(input).toHaveValue("Beta");
+  await expect(native).toHaveValue("b");
+  expect((await events(page, "combo", "change")).map((event) => event.detail[0])).toEqual(["b"]);
+  await input.click();
+  await combo.getByRole("option", { name: "Beta", exact: true }).click();
+  expect(await events(page, "combo", "change")).toHaveLength(1);
+
+  await input.fill("ga");
+  await expect(combo.getByRole("option", { name: "Gamma", exact: true })).toBeVisible();
+  await input.press("Escape");
+  await expect(input).toHaveValue("Beta");
+  await expect(combo.locator(".feyo-combobox__popup")).toHaveCount(0);
+  await expect(input).toBeFocused();
+  expect(await events(page, "combo", "change")).toHaveLength(1);
+  expect(await page.evaluate(() => document.getElementById("form").checkValidity())).toBe(true);
+  expect(await page.evaluate(() => Object.fromEntries(new FormData(document.getElementById("form"))))).toEqual({ country: "b", tag: "" });
+
+  await freeInput.fill("Custom");
+  await expect(free.locator('[role="status"]')).toHaveCount(1);
+  await freeInput.press("Enter");
+  await expect(freeInput).toHaveValue("Custom");
+  await expect(free.locator(".feyo-combobox__native")).toHaveValue("Custom");
+  expect((await events(page, "free", "change")).map((event) => event.detail[0])).toEqual(["Custom"]);
+  expect(await events(page, "free", "change")).toHaveLength(1);
+  expect(await page.evaluate(() => Object.fromEntries(new FormData(document.getElementById("form"))))).toEqual({ country: "b", tag: "Custom" });
+  expect(await idsAreUnique()).toBe(true);
+
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await expect(input).toHaveValue("");
+  await expect(freeInput).toHaveValue("");
+  await expect(native).toHaveValue("");
+  await expect(free.locator(".feyo-combobox__native")).toHaveValue("");
+  expect(await native.evaluate((element) => element.validity.valueMissing)).toBe(true);
+  expect(await events(page, "combo", "change")).toHaveLength(1);
+  expect(await events(page, "free", "change")).toHaveLength(1);
+  expect(await idsAreUnique()).toBe(true);
+});
