@@ -11,6 +11,11 @@ export { default as FeyoTabs } from "./components/tabs/tabs.ce.vue";
 export { default as FeyoDialog } from "./components/dialog/dialog.ce.vue";
 export { default as FeyoLayout } from "./components/layout/layout.ce.vue";
 export { default as FeyoButtonGroup } from "./components/button-group/button-group.ce.vue";
+export { default as FeyoCard } from "./components/card/card.ce.vue";
+export { default as FeyoDivider } from "./components/divider/divider.ce.vue";
+export { default as FeyoTooltip } from "./components/tooltip/tooltip.ce.vue";
+export { default as FeyoIconButton } from "./components/icon-button/icon-button.ce.vue";
+export { default as FeyoBadge } from "./components/badge/badge.ce.vue";
 
 export const componentNames = [
   "FeyoButton",
@@ -24,4 +29,9 @@ export const componentNames = [
   "FeyoDialog",
   "FeyoLayout",
   "FeyoButtonGroup",
+  "FeyoCard",
+  "FeyoDivider",
+  "FeyoTooltip",
+  "FeyoIconButton",
+  "FeyoBadge",
 ];

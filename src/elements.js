@@ -14,6 +14,11 @@ import FeyoTabs from "./components/tabs/tabs.ce.vue";
 import FeyoDialog from "./components/dialog/dialog.ce.vue";
 import FeyoLayout from "./components/layout/layout.ce.vue";
 import FeyoButtonGroup from "./components/button-group/button-group.ce.vue";
+import FeyoCard from "./components/card/card.ce.vue";
+import FeyoDivider from "./components/divider/divider.ce.vue";
+import FeyoTooltip from "./components/tooltip/tooltip.ce.vue";
+import FeyoIconButton from "./components/icon-button/icon-button.ce.vue";
+import FeyoBadge from "./components/badge/badge.ce.vue";
 
 const elements = {
   "feyo-button": FeyoButton,
@@ -27,6 +32,11 @@ const elements = {
   "feyo-dialog": FeyoDialog,
   "feyo-layout": FeyoLayout,
   "feyo-button-group": FeyoButtonGroup,
+  "feyo-card": FeyoCard,
+  "feyo-divider": FeyoDivider,
+  "feyo-tooltip": FeyoTooltip,
+  "feyo-icon-button": FeyoIconButton,
+  "feyo-badge": FeyoBadge,
 };
 
 if (typeof document !== "undefined") {
