@@ -1,0 +1,64 @@
+/* FEYO design tokens
+ * All theming is driven by CSS custom properties with the `--feyo-` prefix.
+ * Never hard-code colors in components; always reference a token.
+ */
+
+:root {
+  /* ---- Typography ---- */
+  --feyo-font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --feyo-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --feyo-font-size-xs: 0.75rem;
+  --feyo-font-size-sm: 0.8125rem;
+  --feyo-font-size-md: 0.875rem;
+  --feyo-font-size-lg: 1rem;
+  --feyo-font-size-xl: 1.25rem;
+  --feyo-font-weight-regular: 400;
+  --feyo-font-weight-medium: 500;
+  --feyo-font-weight-bold: 700;
+
+  /* ---- Spacing ---- */
+  --feyo-space-1: 4px;
+  --feyo-space-2: 8px;
+  --feyo-space-3: 12px;
+  --feyo-space-4: 16px;
+  --feyo-space-5: 24px;
+  --feyo-space-6: 32px;
+
+  /* ---- Shape ---- */
+  --feyo-radius-sm: 6px;
+  --feyo-radius-md: 10px;
+  --feyo-radius-lg: 16px;
+  --feyo-radius-full: 999px;
+
+  /* ---- Motion ---- */
+  --feyo-duration-fast: 120ms;
+  --feyo-duration-normal: 200ms;
+  --feyo-duration-slow: 320ms;
+  --feyo-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --feyo-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ---- Color: dark (default) ---- */
+  --feyo-color-surface: #14121b;
+  --feyo-color-surface-container: #1d1a28;
+  --feyo-color-surface-container-high: #272334;
+  --feyo-color-on-surface: #f4f2fb;
+  --feyo-color-on-surface-variant: #b6b1c7;
+  --feyo-color-outline: #46415a;
+  --feyo-color-primary: #a487ff;
+  --feyo-color-on-primary: #1b1230;
+  --feyo-color-danger: #ff6b81;
+  --feyo-color-on-danger: #2a0d13;
+}
+
+:root[data-feyo-theme="light"] {
+  --feyo-color-surface: #f7f5fb;
+  --feyo-color-surface-container: #ffffff;
+  --feyo-color-surface-container-high: #efecf6;
+  --feyo-color-on-surface: #1b1826;
+  --feyo-color-on-surface-variant: #5b5570;
+  --feyo-color-outline: #cfc9e0;
+  --feyo-color-primary: #6f4fd6;
+  --feyo-color-on-primary: #ffffff;
+  --feyo-color-danger: #d83a54;
+  --feyo-color-on-danger: #ffffff;
+}

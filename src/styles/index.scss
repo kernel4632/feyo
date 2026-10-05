@@ -1,0 +1,22 @@
+@use "tokens";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--feyo-color-surface);
+  color: var(--feyo-color-on-surface);
+  font-family: var(--feyo-font-family);
+  font-size: var(--feyo-font-size-md);
+  -webkit-font-smoothing: antialiased;
+}
