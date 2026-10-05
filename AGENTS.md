@@ -99,11 +99,13 @@ pnpm preview     # 预览构建产物
 - 组件用 SCSS，`<style scoped lang="scss">`，颜色一律走 token。
 - 不凭空增加框架或抽象层。
 - 完成一个可用改动后运行 `pnpm build`，确认能通过。
+- 组件库改动还要运行 `pnpm build:lib`，确认 `dist/feyo.js`、`dist/feyo-elements.js` 和 `dist/style.css` 都能生成。
 - 未经明确要求，不提交（commit）代码。
 
 ## 当前状态
 
 - 已完成：Vite + Vue 3 + SCSS + pnpm 项目骨架，Hugeicons 接入，token 雏形，
-  开发预览页，`pnpm build` 可跑通。
-- 下一步：读 DMS 源码，抽取形状 / 间距 / 圆角 / 动画 token，
-  然后按结构实现第一批组件。
+  开发预览页，六个基础组件，Vue 导出入口，Web Components 注册入口，
+  `pnpm build` 与 `pnpm build:lib` 可跑通。
+- 已完成：读取固定版本的参考源码，研究记录见 `docs/reference.md`。
+- 下一步：实现菜单、弹出层、标签页、按钮组和布局容器，并继续补充组件库测试。

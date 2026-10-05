@@ -1,18 +1,31 @@
 {
   "name": "@kernel4632/feyo",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "FEYO (Flow, Ease, Yield, Orientation) - a high-focus Web UI design system and component library.",
   "type": "module",
   "license": "MIT",
   "files": [
     "dist"
   ],
+  "main": "./dist/feyo.js",
+  "module": "./dist/feyo.js",
+  "style": "./dist/style.css",
+  "exports": {
+    ".": {
+      "import": "./dist/feyo.js"
+    },
+    "./elements": {
+      "import": "./dist/feyo-elements.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:lib": "vite build --mode lib",
     "preview": "vite preview"
   },
   "dependencies": {

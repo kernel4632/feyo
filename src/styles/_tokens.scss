@@ -46,8 +46,12 @@
   --feyo-color-outline: #46415a;
   --feyo-color-primary: #a487ff;
   --feyo-color-on-primary: #1b1230;
+  --feyo-color-primary-container: #352b59;
+  --feyo-color-on-primary-container: #e8ddff;
+  --feyo-color-transparent: transparent;
   --feyo-color-danger: #ff6b81;
   --feyo-color-on-danger: #2a0d13;
+  --feyo-opacity-disabled: 0.55;
 }
 
 :root[data-feyo-theme="light"] {
@@ -59,6 +63,10 @@
   --feyo-color-outline: #cfc9e0;
   --feyo-color-primary: #6f4fd6;
   --feyo-color-on-primary: #ffffff;
+  --feyo-color-primary-container: #eaddff;
+  --feyo-color-on-primary-container: #25134b;
+  --feyo-color-transparent: transparent;
   --feyo-color-danger: #d83a54;
   --feyo-color-on-danger: #ffffff;
+  --feyo-opacity-disabled: 0.55;
 }
