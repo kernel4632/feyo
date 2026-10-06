@@ -1,5 +1,5 @@
 <!--
-按钮：KIMA 的主操作控件。默认药丸形，按下圆角收成 8，带状态层和焦点环。
+按钮：KIMA 的主操作控件。默认药丸形，点击有涟漪和按下回弹。
 调用示例：
   <kima-button variant="filled" type="submit">保存</kima-button>
   <kima-button variant="tonal" :loading="saving">继续</kima-button>
@@ -8,6 +8,7 @@
 <script setup>
 import { computed, ref, useAttrs } from "vue";
 import { useNativeSlots } from "../utils/native-slots.js";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -35,6 +36,9 @@ const attrs = useAttrs();
 const root = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+
+// 点击时从指针位置长出涟漪。
+useRipple(root);
 
 const buttonVariant = computed(() => {
   const variants = ["filled", "tonal", "outlined", "text"];
@@ -86,28 +90,21 @@ const isRound = computed(() => props.round || props.shape !== "square");
   border-radius: var(--kima-radius-m);
   box-sizing: border-box;
   font-family: var(--kima-font-family);
-  font-size: var(--kima-font-size-medium);
-  font-weight: var(--kima-font-weight-medium);
+  font-size: var(--kima-font-size-label-large);
+  font-weight: var(--kima-font-weight-semi-bold);
   line-height: 1;
   color: var(--kima-color-on-primary);
   background: var(--kima-color-primary);
   cursor: pointer;
   user-select: none;
-  transition:
-    background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
   @include kima-state-layer;
   @include kima-focus-ring;
+  @include kima-ripple-host;
+  @include kima-press;
 
   &--round {
     border-radius: var(--kima-radius-full);
-  }
-
-  /* DMS：按下时圆角收成 S 8。 */
-  &:active:not(:disabled) {
-    border-radius: var(--kima-radius-s);
   }
 
   /* DMS 禁用：填充分支用 onSurface_12 底 + onSurface_38 字。 */

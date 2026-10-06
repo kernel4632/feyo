@@ -3,15 +3,18 @@
  *
  * - kima-state-layer：内容色按透明度叠一层，悬停 8%、聚焦 10%、按下 10%。
  * - kima-focus-ring：键盘聚焦时的 2px 主色描边，偏移 3px，鼠标点击不出现。
- * - kima-surface：容器表面，底色取容器色，圆角取 L（16）。
- *
- * 注意：KIMA 明确不用涟漪，按下反馈只靠状态层。
+ * - kima-ripple-host：配合 utils/ripple.js，从按下位置扩散一个圆。
+ * - kima-press：按下缩小、松开弹回，让点击有"按下去"的手感。
+ * - kima-layer：页面内组件的表面，用半透明叠出层次（不用边框）。
+ * - kima-popup：弹层表面，用实色（浮在内容之上，必须挡住背后）。
+ * - kima-disabled：统一的禁用表现。
  */
 
+/* ---- 状态层：悬停 / 聚焦 / 按下 ----
+ * 用 ::after 铺满，颜色取 currentColor，所以任何底色的控件都能直接套。 */
 @mixin kima-state-layer {
   position: relative;
 
-  /* 状态层用 ::after 铺满，颜色取 currentColor，所以任何底色的控件都能直接套。 */
   &::after {
     content: "";
     position: absolute;
@@ -50,17 +53,63 @@
   }
 }
 
-/* 页面内组件的表面：KIMA 不用边框，靠一层半透明叠出层次。
- * 因为用的是透明度，组件默认不给自己上实色底，铺在任何背景（包括模糊背景）上
- * 都透得出后面的内容。
- * 用法：@include kima-layer(1) —— 1 轻托、2 浮起、3 明显浮起。 */
+/* ---- 涟漪宿主 ----
+ * 配合 utils/ripple.js 用：裁剪容器让圆不溢出圆角，圆压在内容之下。
+ * 用法：@include kima-ripple-host;  然后在 JS 里 useRipple(root)。 */
+@mixin kima-ripple-host {
+  position: relative;
+  overflow: hidden;
+
+  /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有那个标记。 */
+  :deep(.kima-ripple) {
+    position: absolute;
+    z-index: 0;
+    width: var(--kima-ripple-size);
+    height: var(--kima-ripple-size);
+    left: var(--kima-ripple-x);
+    top: var(--kima-ripple-y);
+    border-radius: var(--kima-radius-full);
+    background: currentColor;
+    opacity: 0.16;
+    pointer-events: none;
+    transform: scale(0);
+    animation: kima-ripple-spread var(--kima-duration-slower) var(--kima-curve-decelerate) forwards;
+  }
+}
+
+@keyframes kima-ripple-spread {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ---- 按下回弹 ----
+ * 弹簧写在 transition 而不是 animation：松手时能接着按下的进度往回弹，不会跳一下。
+ * 按下去用快曲线（跟手），弹回来用弹簧曲线（带一点过冲，有弹性）。 */
+@mixin kima-press {
+  transition:
+    transform var(--kima-duration-fast) var(--kima-curve-standard),
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
+
+  &:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: scale(var(--kima-press-scale));
+    transition:
+      transform var(--kima-duration-slow) var(--kima-spring-snappy),
+      background-color var(--kima-duration-effects) var(--kima-curve-standard),
+      color var(--kima-duration-effects) var(--kima-curve-standard);
+  }
+}
+
+/* ---- 表面 ----
+ * 页面内组件：不用边框，叠一层半透明，铺在任何背景上都透得出后面的内容。 */
 @mixin kima-layer($level: 1) {
   border: 0;
   background: var(--kima-color-layer-#{$level});
 }
 
-/* 浮层（弹层专用）：弹层浮在内容之上，必须挡住背后的东西，所以用实色 + 阴影，
- * 不能用 kima-layer——那会让下面的文字透上来，看不清。
+/* 弹层：浮在内容之上，必须挡住背后的东西，所以用实色 + 阴影。
  * 用法：@include kima-popup()  普通弹层（菜单、下拉）
  *       @include kima-popup(large)  大面板（对话框、抽屉） */
 @mixin kima-popup($size: "default") {
@@ -82,7 +131,7 @@
   @include kima-layer(1);
 }
 
-/* 禁用的统一表现：降低不透明度，并让指针变成不可用。 */
+/* 禁用的统一表现：降低不透明度，指针变不可用。 */
 @mixin kima-disabled {
   &:disabled,
   &[aria-disabled="true"] {

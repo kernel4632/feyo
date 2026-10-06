@@ -11,6 +11,7 @@
 import { computed, getCurrentInstance, ref, useAttrs } from "vue";
 import KimaIcon from "./icon.ce.vue";
 import { Settings01Icon } from "@hugeicons/core-free-icons";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -43,6 +44,9 @@ const attrs = useAttrs();
 const root = ref(null);
 const isCustomElement = Boolean(getCurrentInstance()?.ce);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+
+// 点击时从指针位置长出涟漪。
+useRipple(root);
 
 // standard 是 DMS 的默认外观，text 作为等价别名保留。
 const buttonVariant = computed(() => {
@@ -108,18 +112,11 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
   background: var(--kima-color-transparent);
   cursor: pointer;
   user-select: none;
-  transition:
-    background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
   @include kima-state-layer;
   @include kima-focus-ring;
-
-  /* DMS：按下时圆角收成 S 8。 */
-  &:active:not(:disabled) {
-    border-radius: var(--kima-radius-s);
-  }
+  @include kima-ripple-host;
+  @include kima-press;
 
   /* DMS 禁用：图标降到 onSurface_38。 */
   &:disabled {

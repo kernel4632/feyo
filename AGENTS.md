@@ -54,7 +54,8 @@ KIMA 是一个面向高专注、高体验 Web 应用的 UI 设计系统与组件
 - **弹层**：bottom sheet / 侧抽屉（Vaul 式）——背景 dim + 模糊 + 抽屉滑入，**只聚焦当前内容**，
   不展示背后内容。拖拽关闭、吸附点。
 - **动效**：承担**引导注意力**的职责，不只是装饰。用 M3 的时长/缓动 + 弹簧。
-- **交互**：状态层（轻）+ 焦点环 + 键盘可达。**不用涟漪**。
+- **交互**：状态层（轻）+ 焦点环 + 键盘可达 + **涟漪**（`utils/ripple.js` 配
+  `kima-ripple-host`）+ **按下回弹**（`kima-press`）。可点击的控件都要有这三样反馈。
 - **分层**：**不用边框**分割层次，改用半透明叠加（`--kima-color-layer-1/2/3` 与 `_mixins.scss`
   的 `kima-layer`）。**唯一保留线的是分割线**（divider）。分两种情况：
   - **页面内的组件**（卡片、输入框、表格、标签页）：**不给自己上实色底**，用 `kima-layer`
@@ -129,8 +130,10 @@ pnpm test:ssr    # SSR 测试
 1. ✅ **改名**：FEYO → KIMA（包名、CSS 变量、标签、class、导出、样式注入 id、脚本、测试、
    README、docs、构建产物名）。
 2. ✅ **重做基础层**：M3 token（色/字/形状/层级/状态层/动效）+ 放大尺寸 + mixins + 字体接入。
-   色板由 `scripts/palette.js` 从种子 `#61afef` 生成到 `src/styles/_palette.scss`，改种子只动一处。
-   按 M3 曲目不用涟漪，按下反馈只靠状态层。
+   色板由 `src/utils/theme.js` 定义（唯一来源），`scripts/palette.js` 用它生成
+   `src/styles/_palette.scss` 作为首屏默认色；运行时换色用 `applyPalette()`，不用重新构建。
+   交互反馈：状态层 + 焦点环 + 涟漪 + 按下回弹，都在 `_mixins.scss` 里共用。
+   图标统一走 `src/components/icon.ce.vue`（线宽 `iconStrokeWidth`，配 `absolute-stroke-width`）。
 3. **逐组件重做**：现有 27 个组件是占位实现，要按新方向逐个重写（交互优先）。
 4. **弹层**：bottom sheet / 侧抽屉 + dialog。
 5. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
