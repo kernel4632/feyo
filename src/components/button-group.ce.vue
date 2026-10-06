@@ -146,6 +146,8 @@ function moveFocus(index, event) {
     :role="groupRole"
     :aria-orientation="groupRole === 'tablist' ? groupOrientation : undefined"
   >
+    <!-- 对勾只在多选时显示：多选看不出当前哪几项被选中，勾能补上这个信息；
+         单选靠选中项变色就够了，再加勾是多余的装饰，还会把标签挤偏。 -->
     <button
       v-for="(item, index) in items"
       :key="item.value"
@@ -162,7 +164,7 @@ function moveFocus(index, event) {
       @focus="focusedIndex = index"
       @keydown="moveFocus(index, $event)"
     >
-      <span v-if="isSelected(item)" class="kima-button-group__check" aria-hidden="true">
+      <span v-if="multiple && isSelected(item)" class="kima-button-group__check" aria-hidden="true">
         <KimaIcon :icon="Tick02Icon" :size="16" />
       </span>
       <slot :item="item" :index="index" :selected="isSelected(item)">{{ item.label }}</slot>
@@ -180,15 +182,19 @@ function moveFocus(index, event) {
   gap: 0;
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
-  /* 整条外轮廓用满圆，内部各段自己不带圆角，靠下面的首末段规则给外侧圆角。 */
-  border-radius: var(--kima-radius-full);
   overflow: hidden;
 
+  /* 横向：整条是一条药丸。段高 48，满圆半径 24 正好是半圆，看起来就是"一条胶囊"。 */
+  border-radius: var(--kima-radius-full);
+
+  /* 纵向：不能用满圆。三段叠起来总高约 150，满圆半径会是 75，
+   * 两端各被啃掉一半高度，整条就成了一个竖着的胶囊，跟横向不是一个东西了。
+   * 改用 L（16），跟 M3 分段按钮的圆角档一致。 */
   &--vertical {
     flex-direction: column;
+    border-radius: var(--kima-radius-l);
   }
 }
-
 .kima-button-group__item {
   box-sizing: border-box;
   /* DMS 中等档：高 40、最小宽 64、内边距 16、圆角 S 8。 */
