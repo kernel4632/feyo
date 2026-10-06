@@ -133,7 +133,9 @@ function handleKeyup(event) {
   @include kima-state-layer;
   @include kima-focus-ring;
   @include kima-ripple-host;
-  @include kima-press;
+  /* 卡片比按钮大得多，用按钮那档幅度边缘会移动十几像素，看起来太猛。
+   * 缩 2% 在卡片上已经够表达"按下去了"。 */
+  @include kima-press(0.98);
 }
 
 /* 不可点击的卡片只是降低了存在感，不缩放（那会让人以为能点）。 */
