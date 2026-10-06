@@ -86,17 +86,21 @@
 
 /* ---- 按下回弹 ----
  * 弹簧写在 transition 而不是 animation：松手时能接着按下的进度往回弹，不会跳一下。
- * 按下去用快曲线（跟手），弹回来用弹簧曲线（带一点过冲，有弹性）。 */
+ *
+ * 两段速度刻意不一样：
+ *   按下去 —— 60ms，几乎瞬时，手感和手指同步（长了会觉得"软"）。
+ *   弹回来 —— 320ms + spring-snappy，过冲看得见，才有"弹"的感觉。
+ * 回弹时长不能短：过冲需要时间展开，太快就被压平成一个普通的恢复动画了。 */
 @mixin kima-press {
   transition:
-    transform var(--kima-duration-fast) var(--kima-curve-standard),
+    transform 320ms var(--kima-spring-snappy),
     background-color var(--kima-duration-effects) var(--kima-curve-standard),
     color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:active:not(:disabled):not([aria-disabled="true"]) {
     transform: scale(var(--kima-press-scale));
     transition:
-      transform var(--kima-duration-slow) var(--kima-spring-snappy),
+      transform 60ms var(--kima-curve-accelerate),
       background-color var(--kima-duration-effects) var(--kima-curve-standard),
       color var(--kima-duration-effects) var(--kima-curve-standard);
   }

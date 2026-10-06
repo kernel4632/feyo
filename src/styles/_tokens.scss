@@ -127,10 +127,13 @@
   --kima-curve-decelerate: cubic-bezier(0, 0, 0, 1);
   --kima-curve-accelerate: cubic-bezier(0.3, 0, 1, 1);
   --kima-curve-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
-  /* 弹簧：按下回弹和抽屉吸附用，写成缓动是为了能在 CSS 里直接用。 */
-  --kima-spring-snappy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* 弹簧：按下回弹和抽屉吸附用，写成缓动是为了能在 CSS 里直接用。
+   * 第二个控制点是过冲幅度，越大弹得越猛。1.8 只有 1% 过冲，基本看不出来；
+   * 3.2 约 5%，配 320ms 时长才有"弹一下"的手感。 */
+  --kima-spring-snappy: cubic-bezier(0.34, 3.2, 0.64, 1);
   --kima-spring-gentle: cubic-bezier(0.22, 1.2, 0.36, 1);
-  --kima-press-scale: 0.97;
+  /* 按下缩小的幅度。0.94 是缩 6%，看得见但不夸张。 */
+  --kima-press-scale: 0.94;
 
   /* ---- 控件尺寸 ----
    * 比 M3 官方默认大一号：按钮最小档 48，图标按钮 48，输入框 64。
