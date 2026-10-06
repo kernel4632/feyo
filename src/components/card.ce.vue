@@ -108,8 +108,10 @@ function handleKeyup(event) {
     transform var(--kima-duration-effects) var(--kima-ease-effects);
 }
 
+/* 描边卡片：透明底 + 一圈描边。线是这个变体的造型，不是用来分层次的。 */
 .kima-card--outlined {
   background: var(--kima-color-transparent);
+  border: var(--kima-outline-width) solid var(--kima-color-outline-variant);
 }
 
 .kima-card--elevated {

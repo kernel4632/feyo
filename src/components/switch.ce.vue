@@ -126,17 +126,20 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     line-height: 1.35;
   }
 
-  /* 轨道：未选中用一档淡底，选中由下面的规则切成主色。 */
+  /* 轨道：未选中是一圈描边（开关的范围靠它表达，是造型不是装饰），
+   * 选中时整块切成主色。 */
   &__track {
     box-sizing: border-box;
     position: relative;
     flex: 0 0 var(--kima-switch-track-width);
     width: var(--kima-switch-track-width);
     height: var(--kima-switch-track-height);
-    border: 0;
+    border: var(--kima-switch-outline-width) solid var(--kima-color-outline);
     border-radius: var(--kima-radius-full);
-    background: var(--kima-color-track);
-    transition: background-color var(--kima-duration-effects) var(--kima-curve-standard);
+    background: var(--kima-color-transparent);
+    transition:
+      background-color var(--kima-duration-effects) var(--kima-curve-standard),
+      border-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
   /* 滑块：未选中 16，选中 24，按下 28；位置用 DMS 的 4px 内边距推算。 */
@@ -167,8 +170,9 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   }
 
   &__input:checked ~ .kima-switch__track {
-    /* 选中：轨道 primary 无描边，滑块 onPrimary 带对勾。 */
+    /* 选中：轨道 primary 实色、描边同色（视觉上等于无描边），滑块 onPrimary 带对勾。 */
     background: var(--kima-color-primary);
+    border-color: var(--kima-color-primary);
 
     .kima-switch__thumb {
       left: 24px;

@@ -128,16 +128,17 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     cursor: inherit;
   }
 
-  /* 方框：未选中用一档淡底，选中由下面的规则切成主色。 */
+  /* 方框：未选中是一圈描边（框的范围要靠它表达，是造型不是装饰），
+   * 选中时整块切成主色。 */
   &__box {
     box-sizing: border-box;
     position: relative;
     flex: 0 0 20px;
     width: 20px;
     height: 20px;
-    border: 0;
+    border: 2px solid var(--kima-color-outline);
     border-radius: var(--kima-radius-sm);
-    background: var(--kima-color-track);
+    background: var(--kima-color-transparent);
     transition:
       background var(--kima-duration-fast) var(--kima-ease-standard),
       border-color var(--kima-duration-fast) var(--kima-ease-standard);

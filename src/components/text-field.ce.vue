@@ -264,30 +264,53 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
 
+  /* M3 的两种输入框，靠"描边"和"底色"区分，各是一种造型，不是两档层次：
+   *   outlined（默认）—— 透明底 + 一圈描边，圈出输入区域
+   *   filled          —— 浅色底 + 只有下边线
+   * 这里的线是造型本身，别当成"多余的边框"一起去掉。 */
   &__control {
     position: relative;
-    /* 输入区域用一层浅色底圈出来，不用描边。 */
     height: var(--kima-field-height);
     box-sizing: border-box;
-    border: 0;
+    border: var(--kima-outline-width) solid var(--kima-color-outline);
     border-radius: var(--kima-radius-m);
-    background: var(--kima-color-layer-2);
-    transition: background-color var(--kima-duration-effects) var(--kima-curve-standard);
+    background: var(--kima-color-transparent);
+    transition:
+      background-color var(--kima-duration-effects) var(--kima-curve-standard),
+      border-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
   &--large &__control {
     height: var(--kima-button-height-l);
   }
 
-  /* 聚焦时底色加深一档，配合光标的出现，注意力就落到这个框上。 */
+  /* 聚焦时描边换成主色，注意力就落到这个框上。 */
   &__control:focus-within {
+    border-color: var(--kima-color-primary);
+  }
+
+  /* 出错时描边换成危险色。 */
+  &--error &__control,
+  &--error &__control:focus-within {
+    border-color: var(--kima-color-error);
+  }
+
+  /* filled 变体：去掉四面描边，改成一整块浅底 + 只留一条下边线。 */
+  &--filled &__control {
+    border: 0;
+    border-bottom: var(--kima-outline-width) solid var(--kima-color-outline);
+    border-radius: var(--kima-radius-s) var(--kima-radius-s) 0 0;
+    background: var(--kima-color-layer-2);
+  }
+
+  &--filled &__control:focus-within {
+    border-bottom-color: var(--kima-color-primary);
     background: var(--kima-color-layer-3);
   }
 
-  /* 出错时叠一层危险色的浅底：用透明度叠在原来的底上，所以不会比别的框亮出一截。 */
-  &--error &__control,
-  &--error &__control:focus-within {
-    background: var(--kima-color-danger-soft);
+  /* filled 出错时下边线也换危险色。 */
+  &--filled.kima-text-field--error &__control {
+    border-bottom-color: var(--kima-color-error);
   }
 
   &--disabled {

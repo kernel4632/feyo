@@ -124,10 +124,13 @@ const isRound = computed(() => props.round || props.shape !== "square");
     background: var(--kima-color-primary-soft);
   }
 
-  /* 描边按钮改成浅底一档：KIMA 不用边框，靠底色深浅分层。 */
+  /* 描边按钮：透明底 + 一圈可见的描边。
+   * 这里的线是它这个变体的造型本身，不是用来分层次的——
+   * 「不用边框分层次」说的是不拿线去切割版面，别把造型线也一起去掉。 */
   &--outlined {
     color: var(--kima-color-primary);
-    background: var(--kima-color-layer-2);
+    background: var(--kima-color-transparent);
+    border: var(--kima-outline-width) solid var(--kima-color-outline);
   }
 
   /* 文字按钮：完全不上底，只靠文字色，最弱的一档。 */

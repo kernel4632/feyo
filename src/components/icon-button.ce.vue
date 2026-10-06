@@ -156,10 +156,12 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     background: var(--kima-color-on-surface-12);
   }
 
-  /* 描边档改成浅底一档，跟纯文字档拉开层次。 */
+  /* 描边档：透明底 + 一圈可见的描边。
+   * 线是这个变体的造型，不是用来分层次的，不要当成"多余的边框"删掉。 */
   &--outlined {
     color: var(--kima-color-on-surface);
-    background: var(--kima-color-layer-2);
+    background: var(--kima-color-transparent);
+    border: var(--kima-outline-width) solid var(--kima-color-outline);
   }
 
   &__icon,
