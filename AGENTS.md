@@ -144,7 +144,10 @@ pnpm test:ssr    # SSR 测试
    `src/styles/_palette.scss` 作为首屏默认色；运行时换色用 `applyPalette()`，不用重新构建。
    交互反馈：状态层 + 焦点环 + 涟漪 + 按下回弹，都在 `_mixins.scss` 里共用。
    图标统一走 `src/components/icon.ce.vue`（线宽 `iconStrokeWidth`，配 `absolute-stroke-width`）。
-3. **逐组件重做**：现有 27 个组件是占位实现，要按新方向逐个重写（交互优先）。
+3. **逐组件重做**：现有 28 个组件是占位实现，要按新方向逐个重写（交互优先）。
+   已接上完整交互反馈（状态层 + 涟漪 + 回弹）的只有 4 个：`button`、`icon-button`、
+   `button-group`（无回弹：多段一起缩放会破坏整条的连续性）、`card`。
+   **其余 24 个重做时都要补上这三种反馈**，别只做外观。
 4. **弹层**：bottom sheet / 侧抽屉 + dialog。
 5. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
 

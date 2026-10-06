@@ -1,5 +1,6 @@
 <!--
 卡片：提供表面、描边和抬升三种容器样式，也支持可点击和分区插槽。
+可点击的卡片和按钮一样有状态层、焦点环、涟漪和按下回弹。
 调用示例：
   <kima-card variant="outlined" clickable aria-label="打开账户设置" @click="openSettings">
     <template #header><h2>账户设置</h2></template>
@@ -10,6 +11,7 @@
 <script setup>
 import { computed, ref, useAttrs } from "vue";
 import { useNativeSlots } from "../utils/native-slots.js";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -26,6 +28,9 @@ const attrs = useAttrs();
 const root = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+
+// 可点击时从指针位置长出涟漪（不可点击的卡片不绑，省一个监听）。
+useRipple(root);
 
 const cardVariant = computed(() => {
   const variants = ["surface", "outlined", "elevated"];
@@ -87,13 +92,14 @@ function handleKeyup(event) {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .kima-card {
   box-sizing: border-box;
   display: flex;
   min-width: 0;
   flex-direction: column;
-  /* DMS DankCard：内边距 spacingM 12，圆角 cornerRadiusM 12，默认无边框。 */
-  gap: var(--kima-space-s);
+  gap: var(--kima-space-m);
   padding: var(--kima-space-m);
   border: 0;
   border-radius: var(--kima-radius-m);
@@ -101,11 +107,11 @@ function handleKeyup(event) {
   background: var(--kima-color-layer-2);
   font-family: var(--kima-font-family);
   transition:
-    background-color var(--kima-duration-effects) var(--kima-ease-effects),
-    border-color var(--kima-duration-effects) var(--kima-ease-effects),
-    box-shadow var(--kima-duration-effects) var(--kima-ease-effects),
-    opacity var(--kima-duration-effects) var(--kima-ease-effects),
-    transform var(--kima-duration-effects) var(--kima-ease-effects);
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    border-color var(--kima-duration-effects) var(--kima-curve-standard),
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard),
+    opacity var(--kima-duration-effects) var(--kima-curve-standard),
+    transform 320ms var(--kima-spring-snappy);
 }
 
 /* 描边卡片：透明底 + 一圈描边。线是这个变体的造型，不是用来分层次的。 */
@@ -119,29 +125,21 @@ function handleKeyup(event) {
   box-shadow: var(--kima-shadow-2);
 }
 
+/* 可点击的卡片和按钮用同一套反馈：状态层、焦点环、涟漪、按下回弹。
+ * 这样"点得动的东西"在全库表现一致，不用各自记一套。 */
 .kima-card--clickable {
   cursor: pointer;
+
+  @include kima-state-layer;
+  @include kima-focus-ring;
+  @include kima-ripple-host;
+  @include kima-press;
 }
 
-/* DMS 状态层：悬停叠加 accent（primary）8%。 */
-.kima-card--clickable:not(.kima-card--disabled):hover {
-  background: color-mix(in srgb, var(--kima-color-primary) 8%, var(--kima-color-transparent));
-}
-
-.kima-card--clickable:not(.kima-card--disabled):active {
-  background: color-mix(in srgb, var(--kima-color-primary) 12%, var(--kima-color-transparent));
-}
-
-.kima-card--clickable:not(.kima-card--disabled):focus-visible {
-  outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
-  outline-offset: var(--kima-focus-ring-offset);
-}
-
-/* DMS 非交互态：透明度 0.45，缩放到 0.92。 */
+/* 不可点击的卡片只是降低了存在感，不缩放（那会让人以为能点）。 */
 .kima-card--disabled {
   cursor: not-allowed;
-  opacity: 0.45;
-  transform: scale(0.92);
+  opacity: var(--kima-opacity-disabled);
 }
 
 .kima-card__header,
