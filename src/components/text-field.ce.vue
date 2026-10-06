@@ -1,9 +1,11 @@
 <!--
-文本框：管理原生输入、浮动标签、说明文字和密码操作，同时允许 Web Component
+文本框：管理原生输入、标签、说明文字和密码操作，同时允许 Web Component
 消费者只监听 update:modelValue/change，而不用每次输入都把 modelValue 写回组件。
+标签固定在输入框上方，不做浮动标签——那套做法要拿同色底遮边框，在透明背景上会露馅。
 调用示例：
   <kima-text-field label="邮箱" name="email" required></kima-text-field>
   <kima-text-field v-model="password" type="password" clearable></kima-text-field>
+  <kima-text-field label="备注" :outlined="false"></kima-text-field>
 -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
@@ -50,10 +52,6 @@ const props = defineProps({
     type: String,
     default: "default",
   },
-  floatLabel: {
-    type: Boolean,
-    default: true,
-  },
   outlined: {
     type: Boolean,
     default: true,
@@ -79,9 +77,6 @@ const hasError = computed(() => props.error.length > 0);
 const isLarge = computed(() => props.size === "large");
 const canClear = computed(
   () => props.clearable && localValue.value.length > 0 && !props.readonly,
-);
-const shouldFloatLabel = computed(() =>
-  props.floatLabel && (focused.value || localValue.value.length > 0),
 );
 const actualType = computed(() =>
   props.type === "password" && passwordVisible.value ? "text" : props.type,
@@ -170,9 +165,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
         'kima-text-field--error': hasError,
         'kima-text-field--disabled': disabled,
         'kima-text-field--readonly': readonly,
-        'kima-text-field--flat-label': !floatLabel,
         'kima-text-field--filled': !outlined,
-        'kima-text-field--label-inside': label && floatLabel && !shouldFloatLabel,
         'kima-text-field--password': type === 'password',
         'kima-text-field--has-clear': canClear,
       },
@@ -183,7 +176,6 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     <label
       v-if="label"
       class="kima-text-field__label"
-      :class="{ 'kima-text-field__label--floating': shouldFloatLabel }"
       :for="inputId"
     >
       {{ label }}<span v-if="required" aria-hidden="true"> *</span>
@@ -317,103 +309,51 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     opacity: var(--kima-opacity-disabled);
   }
 
+  /* 标签永远待在输入框上方，位置不动。
+   * 不做 M3 那种"平时冒充占位符、聚焦时飞到边框上"的浮动标签：
+   * 那种做法要靠一层和控件同色的底把边框线遮住，在透明背景上会露馅，
+   * 阅读时也多了个要追踪的动效。现在的做法是标签本来就该在的地方——上面。 */
   &__label {
-    position: absolute;
-    z-index: 1;
-    /* DMS 描边态左侧内容内边距 spacingL 16。 */
-    top: 21px;
-    left: 16px;
-    max-width: calc(100% - 32px);
-    padding: 0 4px;
+    display: block;
+    /* 缩进跟输入框内边距用同一个数，标签文字和输入文字落在同一条竖线上。 */
+    padding-inline: var(--kima-field-padding);
+    margin: 0 0 var(--kima-space-1);
     overflow: hidden;
     color: var(--kima-color-on-surface-variant);
-    background: var(--kima-color-transparent);
-    font-size: var(--kima-font-size-medium);
-    line-height: 1.2;
+    font-size: var(--kima-font-size-label-medium);
+    line-height: 1.4;
     text-overflow: ellipsis;
     white-space: nowrap;
-    transform: translateY(-50%);
-    pointer-events: none;
-    transition:
-      top var(--kima-duration-effects) var(--kima-ease-effects),
-      color var(--kima-duration-effects) var(--kima-ease-effects),
-      font-size var(--kima-duration-effects) var(--kima-ease-effects);
+    transition: color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
-  /* DMS 浮动标签：字号 Small 12；未聚焦时用 onSurfaceVariant，聚焦才变 primary。 */
-  &__label--floating {
-    top: 0;
-    font-size: var(--kima-font-size-small);
-  }
-
-  &:focus-within &__label--floating {
+  /* 聚焦时标签跟着变主色，和边框一起提示"当前在这个框里"。 */
+  &:focus-within &__label {
     color: var(--kima-color-primary);
   }
 
-  /* 填充态：标签底色跟控件底色一致，左侧内边距 spacingM 12。 */
-  &--filled &__label {
-    left: 12px;
-    max-width: calc(100% - 24px);
-    background: var(--kima-color-layer-3);
-  }
-
   &--error &__label,
-  &--error:focus-within &__label--floating {
-    color: var(--kima-color-danger);
-  }
-
-  &--flat-label &__label {
-    position: static;
-    display: block;
-    max-width: none;
-    padding: 0;
-    margin: 0 0 var(--kima-space-1);
-    overflow: visible;
-    background: var(--kima-color-transparent);
-    transform: none;
-  }
-
-  &--flat-label &__control {
-    height: 42px;
-  }
-
-  &--large.kima-text-field--flat-label &__control {
-    height: 48px;
-  }
-
-  &__label--floating + &__control input::placeholder {
-    color: var(--kima-color-on-surface-variant);
+  &--error:focus-within &__label {
+    color: var(--kima-color-error);
   }
 
   &__control input {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    /* DMS 描边态输入内边距 spacingL 16。 */
-    padding: 0 16px;
+    /* 左右内边距跟标签左右对齐，文字和标签在同一条竖线上。 */
+    padding: 0 var(--kima-field-padding);
     border: 0;
     outline: 0;
     color: var(--kima-color-on-surface);
     background: var(--kima-color-transparent);
     font: inherit;
-    font-size: var(--kima-font-size-medium);
-  }
-
-  &--filled &__control input {
-    padding-inline: 12px;
+    font-size: var(--kima-font-size-body-large);
   }
 
   &__control input::placeholder {
     color: var(--kima-color-on-surface-variant);
     opacity: 1;
-  }
-
-  &--label-inside &__control input::placeholder {
-    color: var(--kima-color-transparent);
-  }
-
-  &__control:focus-within input::placeholder {
-    color: var(--kima-color-on-surface-variant);
   }
 
   &__actions {
@@ -465,8 +405,8 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
   &__message {
     min-height: 1.2em;
-    /* DMS 说明文字：上间距 spacingXS 4，左右与内容内边距对齐 16。 */
-    margin: var(--kima-space-xs) 16px 0;
+    /* 上边挨着输入框一段小间距，左右缩进跟标签、输入文字对齐。 */
+    margin: var(--kima-space-1) var(--kima-field-padding) 0;
     color: var(--kima-color-on-surface-variant);
     font-size: var(--kima-font-size-small);
     line-height: 1.2;

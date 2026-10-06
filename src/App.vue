@@ -468,7 +468,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
           <h2>表单输入</h2>
 
           <article v-show="visible('text-field', '文本框')" class="kima-gallery__demo">
-            <header><h3>TextField 文本框</h3><p>浮动标签、说明、错误和密码显示。当前值：{{ textValue || "空" }}</p></header>
+            <header><h3>TextField 文本框</h3><p>标签在输入框上方、说明、错误和密码显示。当前值：{{ textValue || "空" }}</p></header>
             <div class="kima-gallery__grid">
               <kima-text-field v-model="textValue" label="昵称" placeholder="请输入昵称" clearable />
               <kima-text-field v-model="email" type="email" label="邮箱" hint="用于接收通知" />
