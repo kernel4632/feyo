@@ -670,8 +670,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     justify-content: space-between;
     gap: var(--kima-space-3);
     padding: var(--kima-space-3) var(--kima-space-5);
-    border-bottom: 1px solid var(--kima-color-outline);
-    background: var(--kima-color-surface-container);
+    background: var(--kima-color-layer-2);
   }
 
   &__brand {
@@ -705,7 +704,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     gap: var(--kima-space-2);
     min-height: 40px;
     padding: 0 var(--kima-space-3);
-    border: 1px solid var(--kima-color-outline);
+    border: 0;
     border-radius: var(--kima-radius-sm);
     color: var(--kima-color-on-surface-variant);
     background: var(--kima-color-surface);
@@ -745,7 +744,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
 
       &:hover {
         color: var(--kima-color-on-surface);
-        background: var(--kima-color-surface-container-high);
+        background: var(--kima-color-layer-3);
       }
     }
   }
@@ -776,9 +775,8 @@ const isFiltering = computed(() => query.value.trim().length > 0);
 
     > h2 {
       margin: 0;
-      padding-bottom: var(--kima-space-2);
-      border-bottom: 2px solid var(--kima-color-primary);
-      font-size: var(--kima-font-size-xl);
+      color: var(--kima-color-primary);
+      font-size: var(--kima-font-size-title-large);
     }
   }
 
@@ -808,7 +806,6 @@ const isFiltering = computed(() => query.value.trim().length > 0);
   &__swatch-chip {
     display: block;
     height: 56px;
-    border: 1px solid var(--kima-color-outline-variant);
     border-radius: var(--kima-radius-m);
   }
 
@@ -823,7 +820,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     place-items: center;
     width: 72px;
     height: 72px;
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
     color: var(--kima-color-on-surface-variant);
     font-size: var(--kima-font-size-label-small);
   }
@@ -833,9 +830,9 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     flex-direction: column;
     gap: var(--kima-space-4);
     padding: var(--kima-space-4);
-    border: 1px solid var(--kima-color-outline);
-    border-radius: var(--kima-radius-md);
-    background: var(--kima-color-surface-container);
+    border: 0;
+    border-radius: var(--kima-radius-m);
+    background: var(--kima-color-layer-1);
 
     > header {
       h3 {

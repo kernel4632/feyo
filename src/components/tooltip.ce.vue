@@ -248,8 +248,9 @@ onBeforeUnmount(() => {
   padding: var(--kima-space-2) var(--kima-space-3);
   border-radius: 4px;
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-layer-3);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
+  /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
+  background: var(--kima-color-popup);
+  box-shadow: var(--kima-elevation-3);
   font-size: var(--kima-font-size-sm);
   line-height: 1.4;
   white-space: normal;

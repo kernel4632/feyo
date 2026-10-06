@@ -178,8 +178,9 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   padding: 24px;
   border: 0;
   border-radius: 28px;
-  background: var(--kima-color-layer-2);
-  box-shadow: 0 16px 40px color-mix(in srgb, var(--kima-color-surface) 60%, var(--kima-color-transparent));
+  /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
+  background: var(--kima-color-popup-large);
+  box-shadow: var(--kima-elevation-4);
   outline: none;
   pointer-events: auto;
   animation: kima-dialog-enter var(--kima-duration-normal) var(--kima-ease-emphasized);

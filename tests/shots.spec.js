@@ -33,11 +33,32 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
   await page.screenshot({ path: "shots/base-light.png" });
   await buttonGroup.screenshot({ path: "shots/button-group-light.png" });
 
-  // 纵向那一条单独放大拍，用来确认首末段的圆角和内部分隔线。
-  const verticalGroup = page.locator(".kima-button-group--vertical").first();
+  // 打开下拉，放大拍一张，确认弹层是实色、背后文字不会透上来。
   await page.evaluate(() => {
     document.documentElement.dataset.kimaTheme = "dark";
   });
+  const selectTrigger = page.locator(".kima-select__trigger").first();
+  if (await selectTrigger.count()) {
+    await selectTrigger.scrollIntoViewIfNeeded();
+    await selectTrigger.click();
+    await page.waitForTimeout(400);
+    // 只拍触发器加下拉这一块，放大看清字有没有跟背后的内容叠在一起。
+    const triggerBox = await selectTrigger.boundingBox();
+    await page.screenshot({
+      path: "shots/popup-dark.png",
+      clip: {
+        x: Math.max(0, triggerBox.x - 16),
+        y: Math.max(0, triggerBox.y - 16),
+        width: 420,
+        height: 380,
+      },
+    });
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+  }
+
+  // 纵向那一条单独放大拍，用来确认首末段的圆角和内部分隔线。
+  const verticalGroup = page.locator(".kima-button-group--vertical").first();
   await page.waitForTimeout(300);
   await verticalGroup.screenshot({ path: "shots/button-group-vertical.png", scale: "css" });
   const box = await verticalGroup.boundingBox();

@@ -83,13 +83,20 @@
   --kima-opacity-disabled: 0.38;
 
   /* ---- 层次（用透明度，不用边框）----
-   * KIMA 不用边框分割层次，而是在当前底色上叠一层半透明的文字色：
-   * 铺在什么底色上就跟着什么底色走，后面加背景模糊时下面的内容也能透出来。
-   * 数字越大越"浮起来"，1 是轻轻托一下，3 是明显浮起（弹层）。
+   * 页面内的组件（卡片、输入框、表格）不用边框，而是在当前底色上叠一层半透明的文字色：
+   * 铺在什么底色上就跟着什么底色走，铺在后续的模糊背景上也透得出后面的内容。
+   * 数字越大越"浮起来"：1 轻轻托一下，2 浮起，3 明显浮起。
    * 具体用法见 _mixins.scss 的 kima-layer。 */
   --kima-color-layer-1: color-mix(in srgb, var(--kima-color-on-surface) 5%, transparent);
   --kima-color-layer-2: color-mix(in srgb, var(--kima-color-on-surface) 10%, transparent);
   --kima-color-layer-3: color-mix(in srgb, var(--kima-color-on-surface) 15%, transparent);
+
+  /* ---- 浮层表面（弹层专用，实色）----
+   * 弹层（菜单、下拉、对话框、抽屉）浮在内容之上，必须挡住背后的东西，
+   * 所以用实色，不能像页面内的组件那样用透明度——那会让下面的文字透上来，看不清。
+   * 直接取色板里已有的容器色，不另写颜色值。 */
+  --kima-color-popup: var(--kima-color-surface-container-high);
+  --kima-color-popup-large: var(--kima-color-surface-container-highest);
   /* 主色系的浅底：柔和按钮用它，一眼看出"属于主色系但不用那么强"。
    * 同样用透明度写成，铺在模糊背景上也不会糊。 */
   --kima-color-primary-soft: color-mix(in srgb, var(--kima-color-primary) 20%, transparent);
