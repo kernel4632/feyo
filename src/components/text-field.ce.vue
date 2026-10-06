@@ -266,23 +266,26 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
   &__control {
     position: relative;
+    /* DMS：高度 fieldHeight 42，圆角 cornerRadiusXS 4，描边 1。 */
     height: 42px;
     box-sizing: border-box;
     border: 1px solid var(--feyo-color-outline);
-    border-radius: 4px;
+    border-radius: var(--feyo-radius-xs);
     background: var(--feyo-color-transparent);
     transition:
-      border-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-      border-width var(--feyo-duration-fast) var(--feyo-ease-standard),
-      background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+      border-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+      border-width var(--feyo-duration-effects) var(--feyo-ease-effects),
+      background-color var(--feyo-duration-effects) var(--feyo-ease-effects);
   }
 
   &--large &__control {
     height: 48px;
   }
 
+  /* DMS 填充态：底色 chipSurface（surfaceContainerHigh），未聚焦描边用 outlineVariant。 */
   &--filled &__control {
-    background: var(--feyo-color-surface-container);
+    background: var(--feyo-color-surface-container-high);
+    border-color: var(--feyo-color-outline-variant);
   }
 
   &__control:focus-within {
@@ -302,32 +305,45 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   &__label {
     position: absolute;
     z-index: 1;
+    /* DMS 描边态左侧内容内边距 spacingL 16。 */
     top: 21px;
-    left: 12px;
-    max-width: calc(100% - 24px);
+    left: 16px;
+    max-width: calc(100% - 32px);
     padding: 0 4px;
     overflow: hidden;
     color: var(--feyo-color-on-surface-variant);
     background: var(--feyo-color-surface);
-    font-size: var(--feyo-font-size-md);
+    font-size: var(--feyo-font-size-medium);
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
     transform: translateY(-50%);
     pointer-events: none;
     transition:
-      top var(--feyo-duration-normal) var(--feyo-ease-standard),
-      color var(--feyo-duration-fast) var(--feyo-ease-standard),
-      font-size var(--feyo-duration-normal) var(--feyo-ease-standard);
+      top var(--feyo-duration-effects) var(--feyo-ease-effects),
+      color var(--feyo-duration-effects) var(--feyo-ease-effects),
+      font-size var(--feyo-duration-effects) var(--feyo-ease-effects);
   }
 
+  /* DMS 浮动标签：字号 Small 12；未聚焦时用 onSurfaceVariant，聚焦才变 primary。 */
   &__label--floating {
     top: 0;
-    color: var(--feyo-color-primary);
-    font-size: var(--feyo-font-size-sm);
+    font-size: var(--feyo-font-size-small);
   }
 
-  &--error &__label {
+  &:focus-within &__label--floating {
+    color: var(--feyo-color-primary);
+  }
+
+  /* 填充态：标签底色跟控件底色一致，左侧内边距 spacingM 12。 */
+  &--filled &__label {
+    left: 12px;
+    max-width: calc(100% - 24px);
+    background: var(--feyo-color-surface-container-high);
+  }
+
+  &--error &__label,
+  &--error:focus-within &__label--floating {
     color: var(--feyo-color-danger);
   }
 
@@ -358,13 +374,18 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    padding: 0 12px;
+    /* DMS 描边态输入内边距 spacingL 16。 */
+    padding: 0 16px;
     border: 0;
     outline: 0;
     color: var(--feyo-color-on-surface);
     background: var(--feyo-color-transparent);
     font: inherit;
-    font-size: var(--feyo-font-size-md);
+    font-size: var(--feyo-font-size-medium);
+  }
+
+  &--filled &__control input {
+    padding-inline: 12px;
   }
 
   &__control input::placeholder {
@@ -429,9 +450,10 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
   &__message {
     min-height: 1.2em;
-    margin: var(--feyo-space-1) var(--feyo-space-2) 0;
+    /* DMS 说明文字：上间距 spacingXS 4，左右与内容内边距对齐 16。 */
+    margin: var(--feyo-space-xs) 16px 0;
     color: var(--feyo-color-on-surface-variant);
-    font-size: var(--feyo-font-size-sm);
+    font-size: var(--feyo-font-size-small);
     line-height: 1.2;
   }
 
