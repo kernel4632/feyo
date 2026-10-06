@@ -67,12 +67,6 @@ export function cssName(role) {
   return role.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
-/** 纯色系时把错误色也去色：它的色相是 M3 写死的，留着会成为整套里唯一的彩色。 */
-function withoutColor(argb) {
-  const tone = Hct.fromInt(argb).tone;   // tone 就是感知亮度
-  return Hct.from(0, 0, tone).toInt();   // 彩度归零，明度不变
-}
-
 /**
  * 用种子色生成一整套颜色。
  * @param {string} seed 种子色，例如 "#61afef"
@@ -83,14 +77,15 @@ function withoutColor(argb) {
  */
 export function generatePalette(seed, { isDark = true, variant = defaultVariant } = {}) {
   const Scheme = generators[variant] || SchemeTonalSpot;
-  const colorless = variant === "monochrome" || variant === "neutral";
   const scheme = new Scheme(Hct.fromInt(argbFromHex(seed)), isDark, 0);
 
+  // 注意：error 系列不去色。语义色（危险/成功/警告）是功能性的，像交通灯，
+  // 不该因为主题是黑白的就变成灰——那样徽章的"危险"和"中性"会长得一样，
+  // 用户没法一眼区分"3 条未读"和"3 条错误"。
+  // 品牌色（primary / secondary / 容器色）才跟着种子和风格走。
   const palette = {};
   for (const [role] of paletteRoles) {
-    let argb = MaterialDynamicColors[role].getArgb(scheme);
-    if (colorless && role.toLowerCase().includes("error")) argb = withoutColor(argb);
-    palette[cssName(role)] = hexFromArgb(argb);
+    palette[cssName(role)] = hexFromArgb(MaterialDynamicColors[role].getArgb(scheme));
   }
   return palette;
 }

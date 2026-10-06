@@ -37,8 +37,20 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
   await page.waitForTimeout(400);
   await form.screenshot({ path: "shots/form-dark.png" });
 
-  // 图标线宽：把图标按钮那一排按 3 倍像素密度拍下来，
-  // 放大看才能判断 2px 的线到底够不够粗。
+  // 徽章：语义色（危险/成功）是否还算语义色。
+  // 主题切成纯灰度后最容易出问题——如果语义色跟着去色，"危险"和"中性"就长得一样了。
+  const badgeRow = page.locator(".kima-badge").first();
+  if (await badgeRow.count()) {
+    await badgeRow.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    const box = await badgeRow.boundingBox();
+    await page.screenshot({
+      path: "shots/badges-zoom.png",
+      clip: { x: box.x - 12, y: box.y - 12, width: 420, height: box.height + 24 },
+    });
+  }
+
+  // 图标线宽：放大拍一排图标，用来判断 2px 的线够不够粗。
   const iconButtons = page.locator(".kima-icon-button");
   if (await iconButtons.count()) {
     const first = iconButtons.first();
@@ -48,7 +60,6 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
     const count = Math.min(await iconButtons.count(), 6);
     await page.screenshot({
       path: "shots/icons-zoom.png",
-      // 截取从第一个图标按钮往右的一段，高度留出上下边距。
       clip: { x: box.x - 10, y: box.y - 14, width: (box.width + 20) * count, height: box.height + 28 },
     });
   }

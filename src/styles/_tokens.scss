@@ -167,13 +167,21 @@
   --kima-drawer-max-width: 420px;
   --kima-tooltip-max-width: 480px;
 
+  /* ---- 语义色（成功 / 警告）----
+   * 和品牌色不是一回事：品牌色跟着种子和配色风格走，语义色不跟。
+   * 它们像交通灯，含义固定，换主题不该换掉"绿灯是绿的"这件事——
+   * 否则纯灰度主题下"成功"会和"中性"长得一样，用户分不出状态来。
+   * 危险色用的是色板里的 error 系列（M3 的 error 本来就不随种子变），在 _palette.scss 里。 */
+  --kima-color-success: #6dd58c;
+  --kima-color-on-success: #00391c;
+  --kima-color-warning: #ffb95c;
+  --kima-color-on-warning: #3d2600;
+
   /* ---- 兼容别名：旧的占位组件还在用这些名字 ----
    * 值都指向上面某一档，逐个组件重做后这些名字会消失，新组件不要再引。 */
   --kima-color-transparent: transparent;
   --kima-color-danger: var(--kima-color-error);
   --kima-color-on-danger: var(--kima-color-on-error);
-  --kima-color-success: var(--kima-color-tertiary-container);
-  --kima-color-on-success: var(--kima-color-on-tertiary-container);
   /* M3 用这个透明度做禁用态的文字，所以按主文字色派生，跟随主题变化。 */
   --kima-color-on-surface-12: color-mix(in srgb, var(--kima-color-on-surface) 12%, transparent);
   --kima-color-on-surface-38: color-mix(in srgb, var(--kima-color-on-surface) 38%, transparent);
@@ -209,4 +217,13 @@
   --kima-spinner-duration: 1568ms;
   --kima-switch-outline-width: 2px;
   --kima-switch-thumb-pressed: 32px;
+}
+
+/* 浅色主题下语义色要压深：上面那两档是给深底的亮色，压在浅底上会看不清。
+ * 色相不变（绿还是绿、橙还是橙），只改明度，含义照样一眼认得出。 */
+:root[data-kima-theme="light"] {
+  --kima-color-success: #1b6b3a;
+  --kima-color-on-success: #ffffff;
+  --kima-color-warning: #8a5200;
+  --kima-color-on-warning: #ffffff;
 }
