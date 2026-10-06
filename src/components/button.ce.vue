@@ -1,13 +1,14 @@
 <!--
-按钮：提供 FEYO 的四种按钮外观，几何和状态照 DMS 的 DankButton 对齐，并保留原生 button 的表单行为。
+按钮：照 DMS 的 DankButton 整套搬过来。默认药丸形，按下圆角收成 8，带状态层和涟漪。
 调用示例：
   <feyo-button variant="filled" type="submit">保存</feyo-button>
-  <feyo-button variant="outlined" :loading="saving">继续</feyo-button>
+  <feyo-button variant="tonal" :loading="saving">继续</feyo-button>
   <feyo-button shape="square"><template #leading>...</template>添加</feyo-button>
 -->
 <script setup>
 import { computed, ref, useAttrs } from "vue";
 import { useNativeSlots } from "../utils/native-slots.js";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -16,12 +17,12 @@ const props = defineProps({
     type: String,
     default: "filled",
   },
-  // DMS DankButton 默认形状是 round（药丸），square 是方形。
+  // DMS DankButton 默认形状 round（药丸），square 为方形。
   shape: {
     type: String,
     default: "round",
   },
-  // 旧属性，等价于 shape="round"，保留以免老调用报错。
+  // 旧属性，等价于 shape="round"。
   round: Boolean,
   disabled: Boolean,
   loading: Boolean,
@@ -35,6 +36,8 @@ const attrs = useAttrs();
 const root = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+
+useRipple(root);
 
 const buttonVariant = computed(() => {
   const variants = ["filled", "tonal", "outlined", "text"];
@@ -70,18 +73,19 @@ const isRound = computed(() => props.round || props.shape !== "square");
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .feyo-button {
-  /* DMS DankButton：最小宽度 58，高度取 buttonHeightS 40，内边距 spacingL 16，内容间距 spacingS 8。 */
+  /* DMS DankButton：最小宽 58、高 40、内边距 16、内容间距 8、字号 14 中等。 */
   min-width: var(--feyo-button-min-width);
   min-height: var(--feyo-button-height-s);
   display: inline-flex;
-  position: relative;
   align-items: center;
   justify-content: center;
   gap: var(--feyo-space-s);
   padding: 0 var(--feyo-space-l);
   border: 1px solid var(--feyo-color-transparent);
-  /* square 用 M 圆角 12；round 用整高药丸。 */
+  /* square 用 M 12；round 用整高药丸。 */
   border-radius: var(--feyo-radius-m);
   box-sizing: border-box;
   font-family: var(--feyo-font-family);
@@ -92,52 +96,39 @@ const isRound = computed(() => props.round || props.shape !== "square");
   background: var(--feyo-color-primary);
   cursor: pointer;
   user-select: none;
-  /* 状态层用文字色的透明度叠加，时长为 expressiveEffects，圆角用 standard 曲线。 */
   transition:
-    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    border-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    border-radius var(--feyo-duration-effects) var(--feyo-ease-standard-curve),
-    color var(--feyo-duration-effects) var(--feyo-ease-effects);
+    background-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    border-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    border-radius var(--feyo-duration-expressive-effects) var(--feyo-curve-standard);
+
+  @include feyo-ripple-host;
+  @include feyo-state-layer;
+  @include feyo-focus-ring;
 
   &--round {
     border-radius: var(--feyo-radius-full);
   }
 
-  /* DMS 状态层：悬停 8%，按下 12%，叠加在填充色上。 */
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 92%, var(--feyo-color-on-primary));
-  }
-
+  /* DMS：按下时圆角收成 S 8。 */
   &:active:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
-    /* DMS 按下时圆角收成 S（8），药丸和方形一样。 */
     border-radius: var(--feyo-radius-s);
   }
 
-  /* DMS FocusRing：宽度 1.5，偏移 3，颜色 primary。 */
-  &:focus-visible {
-    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
-    outline-offset: var(--feyo-focus-ring-offset);
+  /* DMS 禁用：填充分支用 onSurface_12 底 + onSurface_38 字。 */
+  &:disabled {
+    cursor: not-allowed;
   }
 
-  /* DMS 禁用：底色 onSurface_12，文字 onSurface_38。 */
-  &:disabled {
+  &--filled:disabled,
+  &--tonal:disabled {
     color: var(--feyo-color-on-surface-38);
     background: var(--feyo-color-on-surface-12);
-    cursor: not-allowed;
   }
 
   &--tonal {
     color: var(--feyo-color-on-secondary-container);
     background: var(--feyo-color-secondary-container);
-  }
-
-  &--tonal:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-secondary-container) 92%, var(--feyo-color-on-secondary-container));
-  }
-
-  &--tonal:active:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-secondary-container) 88%, var(--feyo-color-on-secondary-container));
   }
 
   &--outlined,
@@ -150,20 +141,9 @@ const isRound = computed(() => props.round || props.shape !== "square");
     border-color: var(--feyo-color-outline-variant);
   }
 
-  &--outlined:hover:not(:disabled),
-  &--text:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 8%, var(--feyo-color-transparent));
-  }
-
-  &--outlined:active:not(:disabled),
-  &--text:active:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 12%, var(--feyo-color-transparent));
-  }
-
   &--outlined:disabled,
   &--text:disabled {
     color: var(--feyo-color-on-surface-38);
-    background: var(--feyo-color-transparent);
   }
 
   &__label,
@@ -171,7 +151,6 @@ const isRound = computed(() => props.round || props.shape !== "square");
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    position: relative;
   }
 
   &__label {

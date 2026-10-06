@@ -48,19 +48,40 @@
   --feyo-radius-xxl: 48px;
   --feyo-radius-full: 999px;
 
-  /* ---- Motion ---- */
-  /* DMS Theme.qml: base 250ms; short 0.3, medium 0.6, long 1.0. */
-  --feyo-duration-short: 75ms;
-  --feyo-duration-medium: 150ms;
-  --feyo-duration-long: 250ms;
-  /* DMS expressiveDurations.expressiveEffects = base * 0.4. */
-  --feyo-duration-effects: 100ms;
-  /* DMS Theme.qml standardEasing = Easing.OutCubic, emphasizedEasing = Easing.OutQuart. */
-  --feyo-ease-standard: cubic-bezier(0.215, 0.61, 0.355, 1);
-  --feyo-ease-emphasized: cubic-bezier(0.165, 0.84, 0.44, 1);
-  /* DMS expressiveCurves: standard [0.2,0,0,1], expressiveEffects [0.34,0.8,0.34,1]. */
-  --feyo-ease-standard-curve: cubic-bezier(0.2, 0, 0, 1);
-  --feyo-ease-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
+  /* ---- Motion ----
+   * DMS Theme.qml with base duration 250ms.
+   * Durations: expressiveDurations.* ; curves: expressiveCurves.* verbatim. */
+  --feyo-duration-fast: 100ms;
+  --feyo-duration-normal: 200ms;
+  --feyo-duration-large: 300ms;
+  --feyo-duration-extra-large: 500ms;
+  --feyo-duration-shorter: 50ms;
+  --feyo-duration-expressive-fast-spatial: 175ms;
+  --feyo-duration-expressive-default-spatial: 250ms;
+  --feyo-duration-expressive-slow-spatial: 325ms;
+  --feyo-duration-expressive-fast-effects: 75ms;
+  --feyo-duration-expressive-effects: 100ms;
+  --feyo-duration-expressive-slow-effects: 150ms;
+  --feyo-curve-standard: cubic-bezier(0.2, 0, 0, 1);
+  --feyo-curve-standard-decel: cubic-bezier(0, 0, 0, 1);
+  --feyo-curve-standard-accel: cubic-bezier(0.3, 0, 1, 1);
+  --feyo-curve-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --feyo-curve-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --feyo-curve-expressive-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
+  --feyo-curve-expressive-default-spatial: cubic-bezier(0.38, 1.21, 0.22, 1);
+  --feyo-curve-expressive-slow-spatial: cubic-bezier(0.39, 1.29, 0.35, 0.98);
+  --feyo-curve-expressive-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
+  --feyo-curve-expressive-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
+  --feyo-curve-expressive-slow-effects: cubic-bezier(0.34, 0.88, 0.34, 1);
+  /* Legacy names kept so untouched components keep working during the port. */
+  --feyo-duration-short: var(--feyo-duration-fast);
+  --feyo-duration-medium: var(--feyo-duration-normal);
+  --feyo-duration-slow: var(--feyo-duration-large);
+  --feyo-duration-effects: var(--feyo-duration-expressive-effects);
+  --feyo-ease-standard: var(--feyo-curve-standard);
+  --feyo-ease-emphasized: var(--feyo-curve-emphasized-decel);
+  --feyo-ease-standard-curve: var(--feyo-curve-standard);
+  --feyo-ease-effects: var(--feyo-curve-expressive-effects);
 
   /* ---- Component sizes ---- */
   /* DMS Style.qml component metrics. */
