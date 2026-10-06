@@ -52,7 +52,8 @@
   position: relative;
   overflow: hidden;
 
-  .feyo-ripple {
+  /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有该标记。 */
+  :deep(.feyo-ripple) {
     position: absolute;
     z-index: 1;
     border-radius: var(--feyo-radius-full);
