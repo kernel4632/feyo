@@ -100,7 +100,15 @@ pnpm preview     # 预览构建产物
 - 不凭空增加框架或抽象层。
 - 完成一个可用改动后运行 `pnpm build`，确认能通过。
 - 组件库改动还要运行 `pnpm build:lib`，确认 `dist/feyo.js`、`dist/feyo-elements.js` 和 `dist/style.css` 都能生成。
-- 未经明确要求，不提交（commit）代码。
+- 改完一点且处于能用状态（构建和测试通过）就立刻提交并推送，不要攒着。
+  这样改错了能回退，也留下完整的开发过程。
+- commit 信息用中文描述，遵循 Conventional Commits 格式：
+  `type(scope): 中文描述`，type 用英文（feat/fix/refactor/docs/test/build/chore），
+  例如 `feat(按钮): 按 DMS 源码对齐高度和内边距`。
+  改动只涉及一个组件时 scope 写组件名，涉及整体时可省略。
+- 提交前先跑对应的检查：普通改动跑 `pnpm build`；组件库改动还要跑
+  `pnpm build:lib` 和 `pnpm verify:lib`。
+- 推送目标为 `origin main`。
 
 ## 当前状态
 
