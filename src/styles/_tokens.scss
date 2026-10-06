@@ -1,41 +1,111 @@
 /* FEYO design tokens
  * All theming is driven by CSS custom properties with the `--feyo-` prefix.
  * Never hard-code colors in components; always reference a token.
+ *
+ * Values below are taken from the DMS reference sources, not invented:
+ *   - Shape scale: DankCommon/Common/Shape.js `corners`
+ *   - Component baselines: SHAPES.md "Component baselines" table
+ *   - Spacing / font size / motion: Common/Theme.qml and Common/Style.qml
+ * Each token cites the matching DMS token so a later diff stays honest.
  */
 
 :root {
   /* ---- Typography ---- */
-  --feyo-font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --feyo-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  --feyo-font-size-xs: 0.75rem;
-  --feyo-font-size-sm: 0.8125rem;
-  --feyo-font-size-md: 0.875rem;
-  --feyo-font-size-lg: 1rem;
-  --feyo-font-size-xl: 1.25rem;
+  /* DMS Fonts.qml + Theme.qml: sans "Google Sans Flex", mono "Fira Code". */
+  --feyo-font-family: "Google Sans Flex", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --feyo-font-mono: "Fira Code", "SFMono-Regular", Consolas, monospace;
+  /* DMS Theme.qml fontSize*: Small 12, Medium 14, Large 16, XLarge 20, XXLarge 28, Display 36. */
+  --feyo-font-size-small: 12px;
+  --feyo-font-size-medium: 14px;
+  --feyo-font-size-large: 16px;
+  --feyo-font-size-x-large: 20px;
+  --feyo-font-size-xx-large: 28px;
+  --feyo-font-size-display: 36px;
   --feyo-font-weight-regular: 400;
   --feyo-font-weight-medium: 500;
   --feyo-font-weight-bold: 700;
 
   /* ---- Spacing ---- */
-  --feyo-space-1: 4px;
-  --feyo-space-2: 8px;
-  --feyo-space-3: 12px;
-  --feyo-space-4: 16px;
-  --feyo-space-5: 24px;
-  --feyo-space-6: 32px;
+  /* DMS Style.qml spacing*: XXS 2, XS 4, S 8, M 12, L 16, XL 24. */
+  --feyo-space-xxs: 2px;
+  --feyo-space-xs: 4px;
+  --feyo-space-s: 8px;
+  --feyo-space-m: 12px;
+  --feyo-space-l: 16px;
+  --feyo-space-xl: 24px;
 
   /* ---- Shape ---- */
-  --feyo-radius-sm: 6px;
-  --feyo-radius-md: 10px;
-  --feyo-radius-lg: 16px;
+  /* DMS Shape.js corners: XXS 2, XS 4, S 8, M 12, L 16, L+ 20, XL 28, XL+ 32, XXL 48.
+   * Full radius is half the shorter side (Style.fullRadius). */
+  --feyo-radius-xxs: 2px;
+  --feyo-radius-xs: 4px;
+  --feyo-radius-s: 8px;
+  --feyo-radius-m: 12px;
+  --feyo-radius-l: 16px;
+  --feyo-radius-l-increased: 20px;
+  --feyo-radius-xl: 28px;
+  --feyo-radius-xl-increased: 32px;
+  --feyo-radius-xxl: 48px;
   --feyo-radius-full: 999px;
 
   /* ---- Motion ---- */
-  --feyo-duration-fast: 120ms;
-  --feyo-duration-normal: 200ms;
-  --feyo-duration-slow: 320ms;
-  --feyo-ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --feyo-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  /* DMS Theme.qml: base 250ms; short 0.3, medium 0.6, long 1.0. */
+  --feyo-duration-short: 75ms;
+  --feyo-duration-medium: 150ms;
+  --feyo-duration-long: 250ms;
+  /* DMS Theme.qml standardEasing = Easing.OutCubic, emphasizedEasing = Easing.OutQuart. */
+  --feyo-ease-standard: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --feyo-ease-emphasized: cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  /* ---- Component sizes ---- */
+  /* DMS Style.qml component metrics. */
+  --feyo-outline-width: 1px;
+  --feyo-outline-width-focused: 2px;
+  --feyo-focus-ring-width: 2px;
+  /* DMS Style.qml buttonHeight*: XXS 28, XS 32, S 40 (DankButton default), M 56. */
+  --feyo-button-height-xxs: 28px;
+  --feyo-button-height-xs: 32px;
+  --feyo-button-height-s: 40px;
+  --feyo-button-height-m: 56px;
+  --feyo-button-min-width: 58px;
+  --feyo-icon-button-size: 40px;
+  --feyo-icon-size: 24px;
+  --feyo-icon-size-small: 16px;
+  --feyo-icon-size-medium: 20px;
+  --feyo-icon-size-large: 32px;
+  --feyo-field-height: 42px;
+  --feyo-field-height-large: 48px;
+  --feyo-list-item-height: 56px;
+  --feyo-menu-item-height: 40px;
+  --feyo-menu-max-height: 400px;
+  --feyo-tab-min-width: 64px;
+  --feyo-tab-indicator-height: 3px;
+  --feyo-tab-indicator-min-width: 24px;
+  --feyo-dialog-max-width: 560px;
+  --feyo-switch-track-width: 52px;
+  --feyo-switch-track-height: 32px;
+  --feyo-switch-outline-width: 2px;
+  --feyo-switch-thumb-unselected: 16px;
+  --feyo-switch-thumb-selected: 24px;
+  --feyo-switch-thumb-pressed: 28px;
+  --feyo-slider-track-height: 16px;
+  --feyo-slider-handle-width: 4px;
+  --feyo-slider-handle-height: 28px;
+  --feyo-slider-handle-gap: 6px;
+  --feyo-slider-track-radius: 8px;
+  --feyo-slider-track-inside-radius: 2px;
+  --feyo-scrollbar-thickness: 6px;
+  --feyo-tooltip-max-width: 500px;
+  --feyo-tooltip-delay: 400ms;
+
+  /* ---- State layers ---- */
+  /* DMS Style.qml stateLayer*: hover 0.08, focus 0.12, pressed 0.12, drag 0.16. */
+  --feyo-state-hover: 0.08;
+  --feyo-state-focus: 0.12;
+  --feyo-state-pressed: 0.12;
+  --feyo-state-drag: 0.16;
+  --feyo-opacity-disabled: 0.6;
+  --feyo-press-scale: 0.98;
 
   /* ---- Color: dark (default) ---- */
   --feyo-color-surface: #14121b;
@@ -53,10 +123,31 @@
   --feyo-color-on-danger: #2a0d13;
   --feyo-color-success: #5fd39b;
   --feyo-color-on-success: #082116;
-  --feyo-opacity-disabled: 0.55;
+
+  /* ---- Aliases kept for existing components ----
+   * These names predate the DMS alignment pass. Each maps to the nearest
+   * DMS token above; the per-component pass will replace the usages. */
+  --feyo-font-size-xs: var(--feyo-font-size-small);
+  --feyo-font-size-sm: var(--feyo-font-size-small);
+  --feyo-font-size-md: var(--feyo-font-size-medium);
+  --feyo-font-size-lg: var(--feyo-font-size-large);
+  --feyo-font-size-xl: var(--feyo-font-size-x-large);
+  --feyo-space-1: var(--feyo-space-xs);
+  --feyo-space-2: var(--feyo-space-s);
+  --feyo-space-3: var(--feyo-space-m);
+  --feyo-space-4: var(--feyo-space-l);
+  --feyo-space-5: var(--feyo-space-xl);
+  --feyo-space-6: var(--feyo-space-xl);
+  --feyo-radius-sm: var(--feyo-radius-s);
+  --feyo-radius-md: var(--feyo-radius-m);
+  --feyo-radius-lg: var(--feyo-radius-l);
+  --feyo-duration-fast: var(--feyo-duration-short);
+  --feyo-duration-normal: var(--feyo-duration-medium);
+  --feyo-duration-slow: var(--feyo-duration-long);
 }
 
 :root[data-feyo-theme="light"] {
+  /* FEYO's own light palette. Structure follows DMS roles; values are FEYO's. */
   --feyo-color-surface: #f7f5fb;
   --feyo-color-surface-container: #ffffff;
   --feyo-color-surface-container-high: #efecf6;
@@ -72,5 +163,4 @@
   --feyo-color-on-danger: #ffffff;
   --feyo-color-success: #218653;
   --feyo-color-on-success: #ffffff;
-  --feyo-opacity-disabled: 0.55;
 }
