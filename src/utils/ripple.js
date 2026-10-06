@@ -1,11 +1,11 @@
 /*
 涟漪：在宿主元素里从指针按下位置长出一个圆，再淡出。
-按钮、图标按钮、按钮组共用同一个效果，所以放在这里而不是各写一套。
+按钮、图标按钮、按钮组、卡片共用同一个效果，所以放在这里而不是各写一套。
 调用示例：
   const root = ref(null);
   useRipple(root);
-  // root 指向的元素要套 kima-ripple-host mixin（见 _mixins.scss），
-  // 否则圆不会被裁进圆角里，也压不到内容下面。
+  // root 指向的元素要套 kima-ripple-host mixin（见 _mixins.scss）：
+  // 它负责把圆定位成绝对定位、裁进圆角里、压到内容下面。
 */
 import { onBeforeUnmount, onMounted } from "vue";
 
@@ -16,6 +16,13 @@ export function useRipple(host) {
   // 直径取长边的两倍，保证从角落按下也能盖满整个控件。
   function onPointerDown(event) {
     if (!element || element.disabled || event.button !== 0) return;
+
+    // 宿主没套 kima-ripple-host 时不长圆。
+    // 少了那个 mixin，这个 span 会变成一个没定位的普通子元素，被布局算进去，
+    // 凭空把宿主撑高一段（卡片踩过这个坑：高度多出整整一个 gap）。
+    // 拦住比每个调用点都记得套 mixin 可靠。
+    const position = getComputedStyle(element).position;
+    if (position !== "relative" && position !== "absolute" && position !== "fixed") return;
 
     const bounds = element.getBoundingClientRect();
     const diameter = Math.max(bounds.width, bounds.height) * 2;

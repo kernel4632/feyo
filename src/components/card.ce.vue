@@ -29,7 +29,9 @@ const root = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 
-// 可点击时从指针位置长出涟漪（不可点击的卡片不绑，省一个监听）。
+// 可点击时从指针位置长出涟漪。
+// useRipple 内部会检查宿主有没有套 kima-ripple-host，没套就不长圆，
+// 所以这里直接调用即可，不用在这里再判断一次可点击性。
 useRipple(root);
 
 const cardVariant = computed(() => {
