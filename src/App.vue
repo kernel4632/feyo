@@ -53,12 +53,53 @@ import {
   KimaTree,
   KimaVirtualScroll,
 } from "@/index";
-
-// --- 主题和搜索 ---
+import { applyPalette, cssName, defaultSeed, defaultVariant, resetPalette } from "@/utils/theme.js";
+// --- 主题和配色 ---
+// 演示换主题色：点一下直接改写 CSS 变量，不用改文件、不用重新构建。
 const theme = ref("dark");
+const seed = ref(defaultSeed);
+const variant = ref(defaultVariant);
+
+// 几个常用种子色，想试别的颜色改这里的 hex 就行。
+const seeds = [
+  { name: "青蓝", hex: "#61afef" },
+  { name: "紫", hex: "#6750a4" },
+  { name: "绿", hex: "#2e7d32" },
+  { name: "橙", hex: "#e65100" },
+  { name: "纯灰度", hex: "#ffffff" },
+];
+const variants = [
+  { name: "跟随种子", value: "tonal-spot" },
+  { name: "纯灰度", value: "monochrome" },
+  { name: "近灰度", value: "neutral" },
+];
+
+function applyTheme() {
+  applyPalette(seed.value, { isDark: theme.value === "dark", variant: variant.value });
+}
+
 function toggleTheme() {
   theme.value = theme.value === "dark" ? "light" : "dark";
   document.documentElement.dataset.kimaTheme = theme.value;
+  applyTheme();
+}
+
+function chooseSeed(hex) {
+  seed.value = hex;
+  // 白色种子配跟随种子的风格会得到偏红的色板，所以顺手切到纯灰度。
+  if (hex === "#ffffff" && variant.value === "tonal-spot") variant.value = "monochrome";
+  applyTheme();
+}
+
+function chooseVariant(value) {
+  variant.value = value;
+  applyTheme();
+}
+
+function restoreDefault() {
+  seed.value = defaultSeed;
+  variant.value = defaultVariant;
+  resetPalette();
 }
 
 // --- 基础层展示 ---
@@ -222,6 +263,7 @@ const viewItems = [
 
 onMounted(() => {
   document.documentElement.dataset.kimaTheme = theme.value;
+  // 首屏用 _palette.scss 里的默认色，这里不重复算一遍。
 });
 
 const componentCount = 28;
@@ -240,6 +282,30 @@ const isFiltering = computed(() => query.value.trim().length > 0);
       </div>
 
       <div class="kima-gallery__tools">
+        <!-- 换主题色：点一下整套色板立刻跟着变，不用改文件、不用重新构建 -->
+        <div class="kima-gallery__seeds">
+          <button
+            v-for="item in seeds"
+            :key="item.hex"
+            type="button"
+            class="kima-gallery__seed"
+            :class="{ 'kima-gallery__seed--active': seed === item.hex }"
+            :style="{ background: item.hex }"
+            :title="`主题色 ${item.name}（${item.hex}）`"
+            :aria-label="`主题色 ${item.name}`"
+            :aria-pressed="seed === item.hex"
+            @click="chooseSeed(item.hex)"
+          />
+        </div>
+
+        <label class="kima-gallery__variant">
+          <select :value="variant" aria-label="配色风格" @change="chooseVariant($event.target.value)">
+            <option v-for="item in variants" :key="item.value" :value="item.value">{{ item.name }}</option>
+          </select>
+        </label>
+
+        <kima-button variant="text" @click="restoreDefault">恢复默认</kima-button>
+
         <label class="kima-gallery__search">
           <KimaIcon :icon="Search01Icon" :size="18" aria-hidden="true" />
           <input v-model="query" type="search" placeholder="搜索组件，例如 text / 表" aria-label="搜索组件" />
@@ -699,6 +765,39 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     display: flex;
     align-items: center;
     gap: var(--kima-space-2);
+  }
+
+  /* --- 换主题色：一排种子色圆点 + 风格下拉 --- */
+
+  &__seeds {
+    display: flex;
+    align-items: center;
+    gap: var(--kima-space-1);
+  }
+
+  &__seed {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    /* 只用描边标出选中项，不加底色，免得跟种子色本身混在一起。 */
+    border: 2px solid transparent;
+    border-radius: var(--kima-radius-full);
+    cursor: pointer;
+
+    &--active {
+      border-color: var(--kima-color-on-surface);
+    }
+  }
+
+  &__variant select {
+    min-height: 40px;
+    padding: 0 var(--kima-space-2);
+    border: 0;
+    border-radius: var(--kima-radius-s);
+    color: var(--kima-color-on-surface);
+    background: var(--kima-color-layer-3);
+    font: inherit;
+    cursor: pointer;
   }
 
   &__search {

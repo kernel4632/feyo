@@ -1,7 +1,7 @@
 /* 开发预览页专用样式；main.js 引它，组件库入口只引 _tokens.scss。
  * 用法：import "./styles/index.scss"。
  *
- * 这里只做页面级基础：字体、底色、文字色，以及预览用的亚克力壁纸。
+ * 这里只做页面级基础：字体、文字色，以及预览用的亚克力壁纸。
  * 组件自己不带这些，方便放进任何宿主页面。
  */
 @use "tokens";
@@ -30,22 +30,22 @@ body {
 }
 
 /* ---- 亚克力壁纸（预览用）----
- /* ---- 亚克力壁纸（预览用）----
-  * 模仿 Windows 11 终端的亚克力：一张壁纸先放大再模糊、去色、压暗，
-  * 组件就浮在这层之上。组件本身不带底色，所以能看出它们在真实壁纸上的可读性。
-  * 这是预览页自己的事，组件库入口不引这个文件，宿主页面自己决定用什么背景。
-  */
- body::before {
-   content: "";
-   position: fixed;
-   inset: 0;
-   z-index: -2;
-   /* 放大到 110% 是为了让模糊后的边缘不露白，同时保持铺满。 */
-   background: url("/th.jpg") center / cover no-repeat;
-   transform: scale(1.1);
-   /* grayscale 让壁纸只留下明暗，主题是纯灰度时整体才统一。 */
-   filter: blur(28px) grayscale(100%) brightness(0.7);
- }
+ * 模仿 Windows 11 终端的亚克力：一张壁纸先放大再模糊、压暗，
+ * 组件浮在这层之上，就能看出它们在真实背景下的可读性。
+ * 壁纸保持原色，不做去色处理——主题色是组件库的事，壁纸是预览页的事。
+ * 组件库入口不引这个文件，宿主页面自己决定用什么背景。
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  /* 放大到 110% 是为了让模糊后的边缘不露白，同时保持铺满。 */
+  background: url("/th.jpg") center / cover no-repeat;
+  transform: scale(1.1);
+  filter: blur(28px) saturate(140%) brightness(0.55);
+}
+
 /* 压暗那层单独拿出来：调它一个值就能控制壁纸整体明暗，不用重算模糊。 */
 body::after {
   content: "";

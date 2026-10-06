@@ -13,6 +13,18 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
   // 首屏：基础层（色板、字体阶梯、圆角层级）
   await page.screenshot({ path: "shots/base-dark.png" });
 
+  // 换主题色：点第 2 个种子色（紫），确认整套色板跟着变。
+  // 这一步验证的是"运行时换色"这条路是通的，不是只有构建期能换。
+  const secondSeed = page.locator(".kima-gallery__seed").nth(1);
+  if (await secondSeed.count()) {
+    await secondSeed.click();
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: "shots/theme-purple.png" });
+    // 点回第一个（青蓝）供后面的截图用。
+    await page.locator(".kima-gallery__seed").first().click();
+    await page.waitForTimeout(300);
+  }
+
   // 按钮组：重点看整条是否连贯、外侧是不是满圆
   const buttonGroup = page.locator("#actions");
   await buttonGroup.scrollIntoViewIfNeeded();
