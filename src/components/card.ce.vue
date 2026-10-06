@@ -92,46 +92,55 @@ function handleKeyup(event) {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--feyo-space-4);
-  padding: var(--feyo-space-5);
+  /* DMS DankCard：内边距 spacingM 12，圆角 cornerRadiusM 12，默认无边框。 */
+  gap: var(--feyo-space-s);
+  padding: var(--feyo-space-m);
   border: 1px solid var(--feyo-color-transparent);
-  border-radius: 12px;
+  border-radius: var(--feyo-radius-m);
   color: var(--feyo-color-on-surface);
   background: var(--feyo-color-surface-container);
   font-family: var(--feyo-font-family);
   transition:
-    background-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    border-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    box-shadow var(--feyo-duration-fast) var(--feyo-ease-standard),
-    opacity var(--feyo-duration-fast) var(--feyo-ease-standard);
+    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    border-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    box-shadow var(--feyo-duration-effects) var(--feyo-ease-effects),
+    opacity var(--feyo-duration-effects) var(--feyo-ease-effects),
+    transform var(--feyo-duration-effects) var(--feyo-ease-effects);
 }
 
 .feyo-card--outlined {
-  border-color: var(--feyo-color-outline);
+  border-color: var(--feyo-color-outline-variant);
   background: var(--feyo-color-transparent);
 }
 
 .feyo-card--elevated {
   background: var(--feyo-color-surface-container-high);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
+  box-shadow: var(--feyo-shadow-2);
 }
 
 .feyo-card--clickable {
   cursor: pointer;
 }
 
+/* DMS 状态层：悬停叠加 accent（primary）8%。 */
 .feyo-card--clickable:not(.feyo-card--disabled):hover {
-  background: var(--feyo-color-surface-container-high);
+  background: color-mix(in srgb, var(--feyo-color-primary) 8%, var(--feyo-color-transparent));
+}
+
+.feyo-card--clickable:not(.feyo-card--disabled):active {
+  background: color-mix(in srgb, var(--feyo-color-primary) 12%, var(--feyo-color-transparent));
 }
 
 .feyo-card--clickable:not(.feyo-card--disabled):focus-visible {
-  outline: 2px solid var(--feyo-color-primary);
-  outline-offset: 2px;
+  outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
+  outline-offset: var(--feyo-focus-ring-offset);
 }
 
+/* DMS 非交互态：透明度 0.45，缩放到 0.92。 */
 .feyo-card--disabled {
   cursor: not-allowed;
-  opacity: var(--feyo-opacity-disabled);
+  opacity: 0.45;
+  transform: scale(0.92);
 }
 
 .feyo-card__header,
@@ -139,7 +148,14 @@ function handleKeyup(event) {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: var(--feyo-space-3);
+  gap: var(--feyo-space-s);
+}
+
+/* DMS 标题：字号 Medium 14、字重 Medium、颜色 accent（primary）。 */
+.feyo-card__header {
+  font-size: var(--feyo-font-size-medium);
+  font-weight: var(--feyo-font-weight-medium);
+  color: var(--feyo-color-primary);
 }
 
 .feyo-card__body {

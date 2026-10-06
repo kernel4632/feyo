@@ -1,9 +1,9 @@
 <!--
-按钮：提供 FEYO 的四种按钮外观，并保留原生 button 的表单行为。
+按钮：提供 FEYO 的四种按钮外观，几何和状态照 DMS 的 DankButton 对齐，并保留原生 button 的表单行为。
 调用示例：
   <feyo-button variant="filled" type="submit">保存</feyo-button>
   <feyo-button variant="outlined" :loading="saving">继续</feyo-button>
-  <feyo-button round><template #leading>...</template>添加</feyo-button>
+  <feyo-button shape="square"><template #leading>...</template>添加</feyo-button>
 -->
 <script setup>
 import { computed, ref, useAttrs } from "vue";
@@ -16,13 +16,19 @@ const props = defineProps({
     type: String,
     default: "filled",
   },
+  // DMS DankButton 默认形状是 round（药丸），square 是方形。
+  shape: {
+    type: String,
+    default: "round",
+  },
+  // 旧属性，等价于 shape="round"，保留以免老调用报错。
+  round: Boolean,
   disabled: Boolean,
   loading: Boolean,
   type: {
     type: String,
     default: "button",
   },
-  round: Boolean,
 });
 
 const attrs = useAttrs();
@@ -35,6 +41,8 @@ const buttonVariant = computed(() => {
   return variants.includes(props.variant) ? props.variant : "filled";
 });
 
+const isRound = computed(() => props.round || props.shape !== "square");
+
 </script>
 
 <template>
@@ -44,7 +52,7 @@ const buttonVariant = computed(() => {
     class="feyo-button"
     :class="[
       `feyo-button--${buttonVariant}`,
-      { 'feyo-button--round': round },
+      { 'feyo-button--round': isRound },
     ]"
     :type="type"
     :disabled="disabled || loading"
@@ -63,63 +71,73 @@ const buttonVariant = computed(() => {
 
 <style scoped lang="scss">
 .feyo-button {
-  min-width: 58px;
-  min-height: 40px;
+  /* DMS DankButton：最小宽度 58，高度取 buttonHeightS 40，内边距 spacingL 16，内容间距 spacingS 8。 */
+  min-width: var(--feyo-button-min-width);
+  min-height: var(--feyo-button-height-s);
   display: inline-flex;
+  position: relative;
   align-items: center;
   justify-content: center;
-  gap: var(--feyo-space-2);
-  padding: 0 var(--feyo-space-4);
+  gap: var(--feyo-space-s);
+  padding: 0 var(--feyo-space-l);
   border: 1px solid var(--feyo-color-transparent);
-  border-radius: 12px;
+  /* square 用 M 圆角 12；round 用整高药丸。 */
+  border-radius: var(--feyo-radius-m);
   box-sizing: border-box;
   font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-md);
+  font-size: var(--feyo-font-size-medium);
   font-weight: var(--feyo-font-weight-medium);
   line-height: 1;
   color: var(--feyo-color-on-primary);
   background: var(--feyo-color-primary);
   cursor: pointer;
   user-select: none;
+  /* 状态层用文字色的透明度叠加，时长为 expressiveEffects，圆角用 standard 曲线。 */
   transition:
-    background-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    border-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    border-radius var(--feyo-duration-fast) var(--feyo-ease-standard),
-    opacity var(--feyo-duration-normal) var(--feyo-ease-standard);
-
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
-  }
-
-  &:active:not(:disabled) {
-    border-radius: 8px;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    opacity: var(--feyo-opacity-disabled);
-    cursor: not-allowed;
-  }
+    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    border-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    border-radius var(--feyo-duration-effects) var(--feyo-ease-standard-curve),
+    color var(--feyo-duration-effects) var(--feyo-ease-effects);
 
   &--round {
     border-radius: var(--feyo-radius-full);
   }
 
-  &--round:active:not(:disabled) {
-    border-radius: var(--feyo-radius-full);
+  /* DMS 状态层：悬停 8%，按下 12%，叠加在填充色上。 */
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-primary) 92%, var(--feyo-color-on-primary));
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
+    /* DMS 按下时圆角收成 S（8），药丸和方形一样。 */
+    border-radius: var(--feyo-radius-s);
+  }
+
+  /* DMS FocusRing：宽度 1.5，偏移 3，颜色 primary。 */
+  &:focus-visible {
+    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
+    outline-offset: var(--feyo-focus-ring-offset);
+  }
+
+  /* DMS 禁用：底色 onSurface_12，文字 onSurface_38。 */
+  &:disabled {
+    color: var(--feyo-color-on-surface-38);
+    background: var(--feyo-color-on-surface-12);
+    cursor: not-allowed;
   }
 
   &--tonal {
-    color: var(--feyo-color-on-primary-container);
-    background: var(--feyo-color-primary-container);
+    color: var(--feyo-color-on-secondary-container);
+    background: var(--feyo-color-secondary-container);
   }
 
   &--tonal:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary-container) 88%, var(--feyo-color-on-primary-container));
+    background: color-mix(in srgb, var(--feyo-color-secondary-container) 92%, var(--feyo-color-on-secondary-container));
+  }
+
+  &--tonal:active:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-secondary-container) 88%, var(--feyo-color-on-secondary-container));
   }
 
   &--outlined,
@@ -129,12 +147,23 @@ const buttonVariant = computed(() => {
   }
 
   &--outlined {
-    border-color: var(--feyo-color-outline);
+    border-color: var(--feyo-color-outline-variant);
   }
 
   &--outlined:hover:not(:disabled),
   &--text:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-primary) 8%, var(--feyo-color-transparent));
+  }
+
+  &--outlined:active:not(:disabled),
+  &--text:active:not(:disabled) {
     background: color-mix(in srgb, var(--feyo-color-primary) 12%, var(--feyo-color-transparent));
+  }
+
+  &--outlined:disabled,
+  &--text:disabled {
+    color: var(--feyo-color-on-surface-38);
+    background: var(--feyo-color-transparent);
   }
 
   &__label,
@@ -142,6 +171,7 @@ const buttonVariant = computed(() => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    position: relative;
   }
 
   &__label {
@@ -149,14 +179,15 @@ const buttonVariant = computed(() => {
     white-space: nowrap;
   }
 
+  /* DMS DankSpinner：直径取图标 20，描边 2，转一圈 1568ms。 */
   &__spinner {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 16px;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
     border: 2px solid currentColor;
     border-right-color: var(--feyo-color-transparent);
     border-radius: var(--feyo-radius-full);
-    animation: feyo-button-spin var(--feyo-duration-slow) linear infinite;
+    animation: feyo-button-spin var(--feyo-spinner-duration) linear infinite;
   }
 }
 

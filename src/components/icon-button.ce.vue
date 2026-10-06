@@ -1,8 +1,10 @@
 <!--
-图标按钮：为单个图标提供可访问的原生按钮行为和 FEYO 的四种外观。
+图标按钮：为单个图标提供可访问的原生按钮行为和 FEYO 的外观，几何照 DMS 的 DankIconButton 对齐。
+默认外观 standard（透明底、图标用 onSurfaceVariant）；尺寸 s 40、m 56。
 调用示例：
   <feyo-icon-button aria-label="搜索" title="搜索" />
   <feyo-icon-button aria-label="设置" variant="outlined" :icon="Settings01Icon" />
+  <feyo-icon-button aria-label="收藏" variant="filled" :icon="HeartIcon" />
   <feyo-icon-button aria-label="自定义动作"><MyIcon /></feyo-icon-button>
 -->
 <script setup>
@@ -23,7 +25,7 @@ const props = defineProps({
   },
   variant: {
     type: String,
-    default: "filled",
+    default: "standard",
   },
   size: {
     type: String,
@@ -42,9 +44,10 @@ const root = ref(null);
 const isCustomElement = Boolean(getCurrentInstance()?.ce);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 
+// standard 是 DMS 的默认外观，text 作为等价别名保留。
 const buttonVariant = computed(() => {
-  const variants = ["filled", "tonal", "outlined", "text"];
-  return variants.includes(props.variant) ? props.variant : "filled";
+  const variants = ["standard", "filled", "tonal", "outlined", "text"];
+  return variants.includes(props.variant) ? props.variant : "standard";
 });
 
 const buttonSize = computed(() => {
@@ -57,7 +60,8 @@ function accessibleLabel() {
   return props.label || attrs["aria-label"] || attrs.ariaLabel || attrs.title || "图标按钮";
 }
 const buttonIcon = computed(() => props.icon || Settings01Icon);
-const iconSize = computed(() => ({ small: 18, default: 20, large: 24 })[buttonSize.value]);
+// DMS DankIconButton iconSize 固定为 iconSize 24；small 是 FEYO 附带档位，取 20。
+const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSize.value]);
 
 </script>
 
@@ -85,8 +89,9 @@ const iconSize = computed(() => ({ small: 18, default: 20, large: 24 })[buttonSi
 
 <style scoped lang="scss">
 .feyo-icon-button {
-  width: 40px;
-  height: 40px;
+  /* DMS DankIconButton：s 档 40×40，图标 24，横向留白 8，整圆。 */
+  width: var(--feyo-button-height-s);
+  height: var(--feyo-button-height-s);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -96,66 +101,83 @@ const iconSize = computed(() => ({ small: 18, default: 20, large: 24 })[buttonSi
   border-radius: var(--feyo-radius-full);
   box-sizing: border-box;
   font-family: var(--feyo-font-family);
-  color: var(--feyo-color-on-primary);
-  background: var(--feyo-color-primary);
+  /* standard 外观：透明底，图标用 onSurfaceVariant。 */
+  color: var(--feyo-color-on-surface-variant);
+  background: var(--feyo-color-transparent);
   cursor: pointer;
   user-select: none;
   transition:
-    background-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    border-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    border-radius var(--feyo-duration-fast) var(--feyo-ease-standard),
-    opacity var(--feyo-duration-normal) var(--feyo-ease-standard);
+    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    border-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    border-radius var(--feyo-duration-effects) var(--feyo-ease-standard-curve),
+    color var(--feyo-duration-effects) var(--feyo-ease-effects);
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
+    background: color-mix(in srgb, var(--feyo-color-on-surface-variant) 8%, var(--feyo-color-transparent));
   }
 
   &:active:not(:disabled) {
-    border-radius: var(--feyo-radius-md);
+    background: color-mix(in srgb, var(--feyo-color-on-surface-variant) 12%, var(--feyo-color-transparent));
+    /* DMS 按下时圆角收成 S（8）。 */
+    border-radius: var(--feyo-radius-s);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
-    outline-offset: 2px;
+    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
+    outline-offset: var(--feyo-focus-ring-offset);
   }
 
+  /* DMS 禁用：图标降到 onSurface_38。 */
   &:disabled {
-    opacity: var(--feyo-opacity-disabled);
+    color: var(--feyo-color-on-surface-38);
     cursor: not-allowed;
   }
 
   &--small {
-    width: 32px;
-    height: 32px;
+    width: var(--feyo-button-height-xs);
+    height: var(--feyo-button-height-xs);
   }
 
+  /* DMS m 档 56×56，图标仍为 24。 */
   &--large {
-    width: 48px;
-    height: 48px;
+    width: var(--feyo-button-height-m);
+    height: var(--feyo-button-height-m);
+  }
+
+  &--filled {
+    color: var(--feyo-color-on-primary);
+    background: var(--feyo-color-primary);
+  }
+
+  &--filled:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-primary) 92%, var(--feyo-color-on-primary));
+  }
+
+  &--filled:active:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
+  }
+
+  &--filled:disabled {
+    color: var(--feyo-color-on-surface-38);
+    background: var(--feyo-color-on-surface-12);
   }
 
   &--tonal {
-    color: var(--feyo-color-on-primary-container);
-    background: var(--feyo-color-primary-container);
+    color: var(--feyo-color-on-secondary-container);
+    background: var(--feyo-color-secondary-container);
   }
 
   &--tonal:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary-container) 88%, var(--feyo-color-on-primary-container));
+    background: color-mix(in srgb, var(--feyo-color-secondary-container) 92%, var(--feyo-color-on-secondary-container));
   }
 
-  &--outlined,
-  &--text {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-transparent);
+  &--tonal:active:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-secondary-container) 88%, var(--feyo-color-on-secondary-container));
   }
 
   &--outlined {
-    border-color: var(--feyo-color-outline);
-  }
-
-  &--outlined:hover:not(:disabled),
-  &--text:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 12%, var(--feyo-color-transparent));
+    color: var(--feyo-color-on-surface-variant);
+    border-color: var(--feyo-color-outline-variant);
   }
 
   &__icon,
@@ -165,13 +187,19 @@ const iconSize = computed(() => ({ small: 18, default: 20, large: 24 })[buttonSi
     justify-content: center;
   }
 
+  /* DMS DankSpinner：直径取图标，描边 2，转一圈 1568ms。 */
   &__spinner {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     border: 2px solid currentColor;
     border-right-color: var(--feyo-color-transparent);
     border-radius: var(--feyo-radius-full);
-    animation: feyo-icon-button-spin var(--feyo-duration-slow) linear infinite;
+    animation: feyo-icon-button-spin var(--feyo-spinner-duration) linear infinite;
+  }
+
+  &--small .feyo-icon-button__spinner {
+    width: 20px;
+    height: 20px;
   }
 }
 

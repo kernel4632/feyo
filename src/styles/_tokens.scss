@@ -53,15 +53,23 @@
   --feyo-duration-short: 75ms;
   --feyo-duration-medium: 150ms;
   --feyo-duration-long: 250ms;
+  /* DMS expressiveDurations.expressiveEffects = base * 0.4. */
+  --feyo-duration-effects: 100ms;
   /* DMS Theme.qml standardEasing = Easing.OutCubic, emphasizedEasing = Easing.OutQuart. */
   --feyo-ease-standard: cubic-bezier(0.215, 0.61, 0.355, 1);
   --feyo-ease-emphasized: cubic-bezier(0.165, 0.84, 0.44, 1);
+  /* DMS expressiveCurves: standard [0.2,0,0,1], expressiveEffects [0.34,0.8,0.34,1]. */
+  --feyo-ease-standard-curve: cubic-bezier(0.2, 0, 0, 1);
+  --feyo-ease-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
 
   /* ---- Component sizes ---- */
   /* DMS Style.qml component metrics. */
   --feyo-outline-width: 1px;
   --feyo-outline-width-focused: 2px;
-  --feyo-focus-ring-width: 2px;
+  /* DMS SettingsSpec focusRingWidth 1.5, Topic ring offset 3. */
+  --feyo-focus-ring-width: 1.5px;
+  --feyo-focus-ring-offset: 3px;
+  --feyo-spinner-duration: 1568ms;
   /* DMS Style.qml buttonHeight*: XXS 28, XS 32, S 40 (DankButton default), M 56. */
   --feyo-button-height-xxs: 28px;
   --feyo-button-height-xs: 32px;
@@ -105,6 +113,10 @@
   --feyo-state-pressed: 0.12;
   --feyo-state-drag: 0.16;
   --feyo-opacity-disabled: 0.6;
+  /* DMS Style.qml elevationLevel1/2/3（blur / offsetY / alpha）。 */
+  --feyo-shadow-1: 0 1px 4px rgba(0, 0, 0, 0.2);
+  --feyo-shadow-2: 0 4px 8px rgba(0, 0, 0, 0.25);
+  --feyo-shadow-3: 0 6px 12px rgba(0, 0, 0, 0.3);
   --feyo-press-scale: 0.98;
 
   /* ---- Color: dark (default) ---- */
@@ -123,6 +135,14 @@
   --feyo-color-on-danger: #2a0d13;
   --feyo-color-success: #5fd39b;
   --feyo-color-on-success: #082116;
+  /* Role colors DMS components reference; FEYO owns these values. */
+  --feyo-color-secondary-container: #2b2740;
+  --feyo-color-on-secondary-container: #ded7f5;
+  --feyo-color-outline-variant: #3a3650;
+  /* Alpha roles derive from the base surface color, so themes stay in sync. */
+  --feyo-color-on-surface-12: color-mix(in srgb, var(--feyo-color-on-surface) 12%, transparent);
+  --feyo-color-on-surface-38: color-mix(in srgb, var(--feyo-color-on-surface) 38%, transparent);
+  --feyo-color-on-surface-variant-30: color-mix(in srgb, var(--feyo-color-on-surface-variant) 30%, transparent);
 
   /* ---- Aliases kept for existing components ----
    * These names predate the DMS alignment pass. Each maps to the nearest
@@ -163,4 +183,7 @@
   --feyo-color-on-danger: #ffffff;
   --feyo-color-success: #218653;
   --feyo-color-on-success: #ffffff;
+  --feyo-color-secondary-container: #e9e3f7;
+  --feyo-color-on-secondary-container: #241b3d;
+  --feyo-color-outline-variant: #ddd8ea;
 }
