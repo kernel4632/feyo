@@ -91,4 +91,4 @@ src/
 
 协作约定见 [AGENTS.md](./AGENTS.md)。
 上游源码的固定版本与测量记录见 [参考研究笔记](./docs/reference.md)。
-组件自动从 `src/components/*/*.ce.vue` 发现，不需要修改中央注册表。
+组件自动从 `src/components/*.ce.vue` 发现，不需要修改中央注册表。

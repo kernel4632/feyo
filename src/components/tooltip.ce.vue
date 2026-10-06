@@ -13,7 +13,7 @@
 -->
 <script setup>
 import { Comment, computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, useSlots, watch } from "vue";
-import { useNativeSlots } from "../../utils/native-slots.js";
+import { useNativeSlots } from "../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 

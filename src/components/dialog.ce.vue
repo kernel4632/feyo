@@ -11,7 +11,7 @@ title 沿用原生属性，作为 attrs 读取，不声明同名组件 prop。
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
-import { useNativeSlots } from "../../utils/native-slots.js";
+import { useNativeSlots } from "../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 

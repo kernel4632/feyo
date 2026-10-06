@@ -5,7 +5,7 @@
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
-import { useNativeSlots } from "../../utils/native-slots.js";
+import { useNativeSlots } from "../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 

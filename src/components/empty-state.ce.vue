@@ -14,7 +14,7 @@ icon 插槽放装饰图标；没有 icon 插槽时，默认插槽就是图标内
 -->
 <script setup>
 import { computed, ref, useAttrs } from "vue";
-import { useNativeSlots } from "../../utils/native-slots.js";
+import { useNativeSlots } from "../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 const attrs = useAttrs();

@@ -79,7 +79,7 @@ src/
   styles/
     _tokens.scss    设计 token（字体、间距、圆角、动画、颜色）
     index.scss      全局样式入口
-  components/       组件（每个组件一个目录）
+  components/       组件，一个组件一个 xxx.ce.vue 文件，直接平铺，放进来就自动登记
   App.vue           开发预览页
   main.js           开发入口
 ```

@@ -7,7 +7,7 @@
 -->
 <script setup>
 import { computed, ref, useAttrs } from "vue";
-import { useNativeSlots } from "../../utils/native-slots.js";
+import { useNativeSlots } from "../utils/native-slots.js";
 
 defineOptions({ inheritAttrs: false });
 

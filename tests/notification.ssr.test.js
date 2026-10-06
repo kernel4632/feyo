@@ -8,7 +8,7 @@ test("SSR of an open notification does not schedule a close timer", async () => 
   const setTimeoutOriginal = globalThis.setTimeout;
   const timers = [];
   try {
-    const { default: Notification } = await server.ssrLoadModule("/src/components/notification/notification.ce.vue");
+    const { default: Notification } = await server.ssrLoadModule("/src/components/notification.ce.vue");
     const { createSSRApp, h } = await import("vue");
     const { renderToString } = await import("vue/server-renderer");
     globalThis.setTimeout = (...args) => {
