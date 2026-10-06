@@ -1,15 +1,15 @@
 <!--
 提示框：在鼠标悬停或键盘聚焦触发器时显示说明，也支持由 open 属性控制显示状态。
 调用示例：
-  <feyo-tooltip text="保存当前内容">
+  <kima-tooltip text="保存当前内容">
     <template #trigger="{ triggerAttrs }">
       <button type="button" v-bind="triggerAttrs">保存</button>
     </template>
-  </feyo-tooltip>
-  <feyo-tooltip position="top" :open="showHint">
+  </kima-tooltip>
+  <kima-tooltip position="top" :open="showHint">
     <template #trigger><span>账户状态</span></template>
     <template #content>当前账户已验证</template>
-  </feyo-tooltip>
+  </kima-tooltip>
 -->
 <script setup>
 import { Comment, computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, useSlots, watch } from "vue";
@@ -45,7 +45,7 @@ const triggerRoot = ref(null);
 const hovered = ref(false);
 const focused = ref(false);
 const dismissed = ref(false);
-const tooltipId = `feyo-tooltip-${useId()}`;
+const tooltipId = `kima-tooltip-${useId()}`;
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 let openTimer = null;
@@ -186,8 +186,8 @@ onBeforeUnmount(() => {
   <span
     ref="root"
     v-bind="forwardedAttrs"
-    class="feyo-tooltip"
-    :class="{ 'feyo-tooltip--open': tooltipOpen, 'feyo-tooltip--disabled': disabled }"
+    class="kima-tooltip"
+    :class="{ 'kima-tooltip--open': tooltipOpen, 'kima-tooltip--disabled': disabled }"
     @mouseenter="handleMouseenter"
     @mouseleave="handleMouseleave"
     @focusin="handleFocusin"
@@ -195,7 +195,7 @@ onBeforeUnmount(() => {
   >
     <span
       ref="triggerRoot"
-      class="feyo-tooltip__trigger"
+      class="kima-tooltip__trigger"
       :aria-describedby="tooltipOpen ? tooltipId : undefined"
     >
       <slot
@@ -211,8 +211,8 @@ onBeforeUnmount(() => {
     <span
       v-if="tooltipOpen"
       :id="tooltipId"
-      class="feyo-tooltip__content"
-      :class="`feyo-tooltip__content--${tooltipPosition}`"
+      class="kima-tooltip__content"
+      :class="`kima-tooltip__content--${tooltipPosition}`"
       role="tooltip"
     >
       <slot name="content">{{ text }}</slot>
@@ -221,67 +221,67 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
-.feyo-tooltip {
+.kima-tooltip {
   position: relative;
   display: inline-flex;
   max-width: 100%;
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 }
 
-.feyo-tooltip--disabled {
+.kima-tooltip--disabled {
   cursor: default;
-  opacity: var(--feyo-opacity-disabled);
+  opacity: var(--kima-opacity-disabled);
 }
 
-.feyo-tooltip__trigger {
+.kima-tooltip__trigger {
   display: inline-flex;
   min-width: 0;
   max-width: 100%;
 }
 
-.feyo-tooltip__content {
+.kima-tooltip__content {
   position: absolute;
   z-index: 20;
   width: max-content;
   max-width: min(320px, calc(100vw - 24px));
-  padding: var(--feyo-space-2) var(--feyo-space-3);
+  padding: var(--kima-space-2) var(--kima-space-3);
   border-radius: 4px;
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container-high);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
-  font-size: var(--feyo-font-size-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container-high);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
+  font-size: var(--kima-font-size-sm);
   line-height: 1.4;
   white-space: normal;
   pointer-events: none;
-  animation: feyo-tooltip-enter var(--feyo-duration-fast) var(--feyo-ease-emphasized);
+  animation: kima-tooltip-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
-.feyo-tooltip__content--bottom {
-  top: calc(100% + var(--feyo-space-2));
+.kima-tooltip__content--bottom {
+  top: calc(100% + var(--kima-space-2));
   left: 50%;
   transform: translateX(-50%);
 }
 
-.feyo-tooltip__content--top {
-  bottom: calc(100% + var(--feyo-space-2));
+.kima-tooltip__content--top {
+  bottom: calc(100% + var(--kima-space-2));
   left: 50%;
   transform: translateX(-50%);
 }
 
-.feyo-tooltip__content--right {
+.kima-tooltip__content--right {
   top: 50%;
-  left: calc(100% + var(--feyo-space-2));
+  left: calc(100% + var(--kima-space-2));
   transform: translateY(-50%);
 }
 
-.feyo-tooltip__content--left {
+.kima-tooltip__content--left {
   top: 50%;
-  right: calc(100% + var(--feyo-space-2));
+  right: calc(100% + var(--kima-space-2));
   transform: translateY(-50%);
 }
 
-@keyframes feyo-tooltip-enter {
+@keyframes kima-tooltip-enter {
   from {
     opacity: 0;
   }

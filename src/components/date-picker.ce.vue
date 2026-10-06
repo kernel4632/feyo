@@ -5,8 +5,8 @@
 Vue 用 v-model 和 v-model:open 同步状态；原生 HTML 直接写属性即可。
 表单重置会回到挂载时的值；清除选择返回 null。
 调用示例：
-   <feyo-date-picker name="birthday" label="生日" required></feyo-date-picker>
-   <feyo-date-picker v-model="day" v-model:open="pickerOpen" min="2024-01-01" max="2024-12-31"
+   <kima-date-picker name="birthday" label="生日" required></kima-date-picker>
+   <kima-date-picker v-model="day" v-model:open="pickerOpen" min="2024-01-01" max="2024-12-31"
      first-day="1" locale="en-GB" clearable placeholder="选择日期" />
 -->
 <script setup>
@@ -85,7 +85,7 @@ const todayKey = ref("");
 let ownerDocument;
 let initialValue;
 
-const baseId = `feyo-date-picker-${useId()}`;
+const baseId = `kima-date-picker-${useId()}`;
 const labelId = `${baseId}-label`;
 const triggerId = `${baseId}-trigger`;
 const gridId = `${baseId}-grid`;
@@ -298,7 +298,7 @@ function handleGridKeydown(event) {
     return;
   }
   // Enter 和空格由原生按钮自己激活，这里只处理换日和翻页。
-  if (!event.target.closest(".feyo-date-picker__day")) return;
+  if (!event.target.closest(".kima-date-picker__day")) return;
   const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
   let target = null;
   if (event.key in moves) target = shiftIso(focusedIso.value, moves[event.key]);
@@ -351,16 +351,16 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="feyo-date-picker" :class="{ 'feyo-date-picker--open': localOpen, 'feyo-date-picker--disabled': disabled }">
-    <span v-if="label" :id="labelId" class="feyo-date-picker__label">
+  <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="kima-date-picker" :class="{ 'kima-date-picker--open': localOpen, 'kima-date-picker--disabled': disabled }">
+    <span v-if="label" :id="labelId" class="kima-date-picker__label">
       {{ label }}<span v-if="required" aria-hidden="true"> *</span>
     </span>
 
-    <div class="feyo-date-picker__control" :class="{ 'feyo-date-picker__control--clearable': clearable && localValue }">
+    <div class="kima-date-picker__control" :class="{ 'kima-date-picker__control--clearable': clearable && localValue }">
       <button
         :id="triggerId"
         ref="trigger"
-        class="feyo-date-picker__trigger"
+        class="kima-date-picker__trigger"
         type="button"
         role="combobox"
         aria-haspopup="grid"
@@ -373,14 +373,14 @@ onBeforeUnmount(() => {
         @click="toggleCalendar"
         @keydown="handleTriggerKeydown"
       >
-        <span class="feyo-date-picker__trigger-label" :class="{ 'feyo-date-picker__trigger-label--placeholder': !localValue }">
+        <span class="kima-date-picker__trigger-label" :class="{ 'kima-date-picker__trigger-label--placeholder': !localValue }">
           {{ displayText }}
         </span>
-        <HugeiconsIcon class="feyo-date-picker__icon" :icon="Calendar01Icon" :size="20" aria-hidden="true" />
+        <HugeiconsIcon class="kima-date-picker__icon" :icon="Calendar01Icon" :size="20" aria-hidden="true" />
       </button>
       <button
         v-if="clearable && localValue"
-        class="feyo-date-picker__clear"
+        class="kima-date-picker__clear"
         type="button"
         :aria-label="clearLabel"
         :title="clearLabel"
@@ -394,7 +394,7 @@ onBeforeUnmount(() => {
     <!-- 隐藏输入框带着真实 ISO 值：原生表单能读到它，必填校验也能在这里触发。 -->
     <input
       ref="nativeInput"
-      class="feyo-date-picker__native"
+      class="kima-date-picker__native"
       type="text"
       :name="name"
       :value="localValue || ''"
@@ -407,10 +407,10 @@ onBeforeUnmount(() => {
       @invalid="handleInvalid"
     >
 
-    <div v-if="localOpen" class="feyo-date-picker__popup" @keydown="handleGridKeydown">
-      <div class="feyo-date-picker__head">
+    <div v-if="localOpen" class="kima-date-picker__popup" @keydown="handleGridKeydown">
+      <div class="kima-date-picker__head">
         <button
-          class="feyo-date-picker__nav"
+          class="kima-date-picker__nav"
           type="button"
           :aria-label="previousMonthLabel"
           :title="previousMonthLabel"
@@ -419,9 +419,9 @@ onBeforeUnmount(() => {
         >
           <HugeiconsIcon :icon="ArrowLeft01Icon" :size="18" aria-hidden="true" />
         </button>
-        <span :id="titleId" class="feyo-date-picker__month">{{ monthTitle }}</span>
+        <span :id="titleId" class="kima-date-picker__month">{{ monthTitle }}</span>
         <button
-          class="feyo-date-picker__nav"
+          class="kima-date-picker__nav"
           type="button"
           :aria-label="nextMonthLabel"
           :title="nextMonthLabel"
@@ -432,30 +432,30 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <div :id="gridId" class="feyo-date-picker__grid" role="grid" :aria-labelledby="titleId">
-        <div class="feyo-date-picker__row" role="row">
+      <div :id="gridId" class="kima-date-picker__grid" role="grid" :aria-labelledby="titleId">
+        <div class="kima-date-picker__row" role="row">
           <span
             v-for="(weekday, index) in weekdayLabels"
             :key="index"
-            class="feyo-date-picker__weekday"
+            class="kima-date-picker__weekday"
             role="columnheader"
           >{{ weekday }}</span>
         </div>
-        <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="feyo-date-picker__row" role="row">
+        <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="kima-date-picker__row" role="row">
           <div
             v-for="day in week"
             :key="day.iso"
-            class="feyo-date-picker__cell"
+            class="kima-date-picker__cell"
             role="gridcell"
             :aria-selected="day.iso === localValue"
           >
             <button
               :id="`${gridId}-day-${day.iso}`"
-              class="feyo-date-picker__day"
+              class="kima-date-picker__day"
               :class="{
-                'feyo-date-picker__day--outside': day.outside,
-                'feyo-date-picker__day--today': day.iso === todayKey,
-                'feyo-date-picker__day--selected': day.iso === localValue,
+                'kima-date-picker__day--outside': day.outside,
+                'kima-date-picker__day--today': day.iso === todayKey,
+                'kima-date-picker__day--selected': day.iso === localValue,
               }"
               type="button"
               :aria-label="day.label"
@@ -472,86 +472,86 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
-.feyo-date-picker {
+.kima-date-picker {
   position: relative;
   display: inline-flex;
   width: 100%;
   max-width: 320px;
   min-width: 0;
   flex-direction: column;
-  gap: var(--feyo-space-1);
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  gap: var(--kima-space-1);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 }
 
-.feyo-date-picker__label {
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-sm);
-  font-weight: var(--feyo-font-weight-medium);
+.kima-date-picker__label {
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-sm);
+  font-weight: var(--kima-font-weight-medium);
 }
 
-.feyo-date-picker__control {
+.kima-date-picker__control {
   position: relative;
   display: flex;
   min-height: 42px;
 }
 
-.feyo-date-picker__trigger {
+.kima-date-picker__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
   min-height: 42px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: 0 var(--feyo-space-4);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container);
+  gap: var(--kima-space-3);
+  padding: 0 var(--kima-space-4);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--feyo-duration-fast) var(--feyo-ease-standard), background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
-  .feyo-date-picker--open & {
-    border-color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+  .kima-date-picker--open & {
+    border-color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-date-picker__control--clearable .feyo-date-picker__trigger {
+.kima-date-picker__control--clearable .kima-date-picker__trigger {
   padding-right: 44px;
 }
 
-.feyo-date-picker__trigger-label {
+.kima-date-picker__trigger-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.feyo-date-picker__trigger-label--placeholder {
-  color: var(--feyo-color-on-surface-variant);
+.kima-date-picker__trigger-label--placeholder {
+  color: var(--kima-color-on-surface-variant);
 }
 
-.feyo-date-picker__icon {
+.kima-date-picker__icon {
   flex: 0 0 auto;
-  color: var(--feyo-color-on-surface-variant);
+  color: var(--kima-color-on-surface-variant);
 }
 
-.feyo-date-picker__clear {
+.kima-date-picker__clear {
   position: absolute;
   top: 50%;
   right: 36px;
@@ -562,30 +562,30 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-transparent);
   cursor: pointer;
   transform: translateY(-50%);
 
   &:hover:not(:disabled),
   &:focus-visible {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-date-picker__native {
+.kima-date-picker__native {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -597,36 +597,36 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-.feyo-date-picker__popup {
+.kima-date-picker__popup {
   box-sizing: border-box;
   position: absolute;
   z-index: 20;
-  top: calc(100% + var(--feyo-space-2));
+  top: calc(100% + var(--kima-space-2));
   left: 0;
   width: max(100%, 268px);
-  padding: var(--feyo-space-2);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-md);
-  background: var(--feyo-color-surface-container);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
-  animation: feyo-date-picker-enter var(--feyo-duration-fast) var(--feyo-ease-emphasized);
+  padding: var(--kima-space-2);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-md);
+  background: var(--kima-color-surface-container);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
+  animation: kima-date-picker-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
-.feyo-date-picker__head {
+.kima-date-picker__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-2);
-  padding: 0 var(--feyo-space-1) var(--feyo-space-2);
+  gap: var(--kima-space-2);
+  padding: 0 var(--kima-space-1) var(--kima-space-2);
 }
 
-.feyo-date-picker__month {
-  font-size: var(--feyo-font-size-md);
-  font-weight: var(--feyo-font-weight-medium);
+.kima-date-picker__month {
+  font-size: var(--kima-font-size-md);
+  font-weight: var(--kima-font-weight-medium);
   text-align: center;
 }
 
-.feyo-date-picker__nav {
+.kima-date-picker__nav {
   display: inline-flex;
   width: 32px;
   height: 32px;
@@ -634,53 +634,53 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-transparent);
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-date-picker__grid {
+.kima-date-picker__grid {
   display: grid;
   gap: 2px;
 }
 
-.feyo-date-picker__row {
+.kima-date-picker__row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
 }
 
-.feyo-date-picker__weekday {
-  padding: var(--feyo-space-1) 0;
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-xs);
-  font-weight: var(--feyo-font-weight-medium);
+.kima-date-picker__weekday {
+  padding: var(--kima-space-1) 0;
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-xs);
+  font-weight: var(--kima-font-weight-medium);
   text-align: center;
 }
 
-.feyo-date-picker__cell {
+.kima-date-picker__cell {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.feyo-date-picker__day {
+.kima-date-picker__day {
   display: inline-flex;
   width: 100%;
   aspect-ratio: 1;
@@ -689,58 +689,58 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-transparent);
   font: inherit;
-  font-size: var(--feyo-font-size-md);
+  font-size: var(--kima-font-size-md);
   cursor: pointer;
-  transition: background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled) {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 
   &--outside {
-    color: var(--feyo-color-on-surface-variant);
-    opacity: var(--feyo-opacity-disabled);
+    color: var(--kima-color-on-surface-variant);
+    opacity: var(--kima-opacity-disabled);
   }
 
-  &--today:not(.feyo-date-picker__day--selected) {
-    color: var(--feyo-color-primary);
-    box-shadow: inset 0 0 0 1px var(--feyo-color-primary);
+  &--today:not(.kima-date-picker__day--selected) {
+    color: var(--kima-color-primary);
+    box-shadow: inset 0 0 0 1px var(--kima-color-primary);
   }
 
   &--selected,
   &--selected:hover:not(:disabled) {
-    color: var(--feyo-color-on-primary);
-    background: var(--feyo-color-primary);
+    color: var(--kima-color-on-primary);
+    background: var(--kima-color-primary);
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
     pointer-events: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feyo-date-picker__trigger,
-  .feyo-date-picker__day {
+  .kima-date-picker__trigger,
+  .kima-date-picker__day {
     transition: none;
   }
 
-  .feyo-date-picker__popup {
+  .kima-date-picker__popup {
     animation: none;
   }
 }
 
-@keyframes feyo-date-picker-enter {
+@keyframes kima-date-picker-enter {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.98);

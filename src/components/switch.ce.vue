@@ -2,7 +2,7 @@
 开关：用原生 checkbox 承担表单和辅助技术语义，再用 52×32 的轨道显示状态。
 几何和颜色照 DMS 的 DankToggle 对齐：轨道 52×32，滑块 16/24/28，选中轨道无描边。
 调用示例：
-  <feyo-switch v-model="enabled" name="enabled"><span>启用同步</span></feyo-switch>
+  <kima-switch v-model="enabled" name="enabled"><span>启用同步</span></kima-switch>
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
@@ -68,13 +68,13 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 <template>
   <label
     ref="root"
-    class="feyo-switch"
-    :class="{ 'feyo-switch--disabled': disabled }"
+    class="kima-switch"
+    :class="{ 'kima-switch--disabled': disabled }"
   >
     <input
       ref="input"
        v-bind="forwardedAttrs"
-      class="feyo-switch__input"
+      class="kima-switch__input"
       type="checkbox"
       role="switch"
       :checked="localValue"
@@ -85,26 +85,26 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       @input.stop
       @change.stop="handleChange"
     />
-    <span v-if="$slots.default || hasNativeSlot('default')" class="feyo-switch__label">
+    <span v-if="$slots.default || hasNativeSlot('default')" class="kima-switch__label">
       <slot />
     </span>
-    <span class="feyo-switch__track" aria-hidden="true">
-      <span class="feyo-switch__thumb">
-        <HugeiconsIcon class="feyo-switch__check" :icon="Tick02Icon" :size="16" />
+    <span class="kima-switch__track" aria-hidden="true">
+      <span class="kima-switch__thumb">
+        <HugeiconsIcon class="kima-switch__check" :icon="Tick02Icon" :size="16" />
       </span>
     </span>
   </label>
 </template>
 
 <style scoped lang="scss">
-.feyo-switch {
+.kima-switch {
   position: relative;
   display: inline-flex;
   align-items: center;
   /* DMS 设置行：文字在左，开关在右，间距 spacingM 12。 */
-  gap: var(--feyo-space-m);
-  min-height: var(--feyo-switch-track-height);
-  color: var(--feyo-color-on-surface);
+  gap: var(--kima-space-m);
+  min-height: var(--kima-switch-track-height);
+  color: var(--kima-color-on-surface);
   cursor: pointer;
   user-select: none;
 
@@ -121,8 +121,8 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
   &__label {
     min-width: 0;
-    font-size: var(--feyo-font-size-medium);
-    font-weight: var(--feyo-font-weight-medium);
+    font-size: var(--kima-font-size-medium);
+    font-weight: var(--kima-font-weight-medium);
     line-height: 1.35;
   }
 
@@ -130,15 +130,15 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   &__track {
     box-sizing: border-box;
     position: relative;
-    flex: 0 0 var(--feyo-switch-track-width);
-    width: var(--feyo-switch-track-width);
-    height: var(--feyo-switch-track-height);
-    border: var(--feyo-switch-outline-width) solid var(--feyo-color-outline);
-    border-radius: var(--feyo-radius-full);
-    background: var(--feyo-color-surface-container-high);
+    flex: 0 0 var(--kima-switch-track-width);
+    width: var(--kima-switch-track-width);
+    height: var(--kima-switch-track-height);
+    border: var(--kima-switch-outline-width) solid var(--kima-color-outline);
+    border-radius: var(--kima-radius-full);
+    background: var(--kima-color-surface-container-high);
     transition:
-      background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-      border-color var(--feyo-duration-effects) var(--feyo-ease-effects);
+      background-color var(--kima-duration-effects) var(--kima-ease-effects),
+      border-color var(--kima-duration-effects) var(--kima-ease-effects);
   }
 
   /* 滑块：未选中 16，选中 24，按下 28；位置用 DMS 的 4px 内边距推算。 */
@@ -152,54 +152,54 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     justify-content: center;
     width: 16px;
     height: 16px;
-    border-radius: var(--feyo-radius-full);
-    background: var(--feyo-color-outline);
+    border-radius: var(--kima-radius-full);
+    background: var(--kima-color-outline);
     transform: translateY(-50%);
     transition:
-      left var(--feyo-duration-long) var(--feyo-ease-emphasized),
-      width var(--feyo-duration-medium) var(--feyo-ease-emphasized),
-      height var(--feyo-duration-medium) var(--feyo-ease-emphasized),
-      background-color var(--feyo-duration-effects) var(--feyo-ease-effects);
+      left var(--kima-duration-long) var(--kima-ease-emphasized),
+      width var(--kima-duration-medium) var(--kima-ease-emphasized),
+      height var(--kima-duration-medium) var(--kima-ease-emphasized),
+      background-color var(--kima-duration-effects) var(--kima-ease-effects);
   }
 
   &__check {
-    color: var(--feyo-color-on-primary-container);
+    color: var(--kima-color-on-primary-container);
     opacity: 0;
-    transition: opacity var(--feyo-duration-effects) var(--feyo-ease-effects);
+    transition: opacity var(--kima-duration-effects) var(--kima-ease-effects);
   }
 
-  &__input:checked ~ .feyo-switch__track {
+  &__input:checked ~ .kima-switch__track {
     /* 选中：轨道 primary 无描边，滑块 onPrimary 带对勾。 */
-    border-color: var(--feyo-color-primary);
-    background: var(--feyo-color-primary);
+    border-color: var(--kima-color-primary);
+    background: var(--kima-color-primary);
 
-    .feyo-switch__thumb {
+    .kima-switch__thumb {
       left: 24px;
       width: 24px;
       height: 24px;
-      background: var(--feyo-color-on-primary);
+      background: var(--kima-color-on-primary);
     }
 
-    .feyo-switch__check {
+    .kima-switch__check {
       opacity: 1;
     }
   }
 
-  &__input:active ~ .feyo-switch__track .feyo-switch__thumb {
+  &__input:active ~ .kima-switch__track .kima-switch__thumb {
     left: 2px;
-    width: var(--feyo-switch-thumb-pressed);
-    height: var(--feyo-switch-thumb-pressed);
-    background: var(--feyo-color-on-surface-variant);
+    width: var(--kima-switch-thumb-pressed);
+    height: var(--kima-switch-thumb-pressed);
+    background: var(--kima-color-on-surface-variant);
   }
 
-  &__input:checked:active ~ .feyo-switch__track .feyo-switch__thumb {
+  &__input:checked:active ~ .kima-switch__track .kima-switch__thumb {
     left: 22px;
-    background: var(--feyo-color-primary-container);
+    background: var(--kima-color-primary-container);
   }
 
-  &__input:focus-visible ~ .feyo-switch__track {
-    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
-    outline-offset: var(--feyo-focus-ring-offset);
+  &__input:focus-visible ~ .kima-switch__track {
+    outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
+    outline-offset: var(--kima-focus-ring-offset);
   }
 
   /* DMS 禁用：轨道选中用 onSurface_12，滑块降到 onSurface_38。 */
@@ -208,24 +208,24 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   }
 
   &--disabled &__label {
-    color: var(--feyo-color-on-surface-38);
+    color: var(--kima-color-on-surface-38);
   }
 
-  &--disabled &__input:not(:checked) ~ .feyo-switch__track {
-    background: color-mix(in srgb, var(--feyo-color-surface-container-high) 12%, transparent);
+  &--disabled &__input:not(:checked) ~ .kima-switch__track {
+    background: color-mix(in srgb, var(--kima-color-surface-container-high) 12%, transparent);
   }
 
-  &--disabled &__input:checked ~ .feyo-switch__track {
-    border-color: var(--feyo-color-on-surface-12);
-    background: var(--feyo-color-on-surface-12);
+  &--disabled &__input:checked ~ .kima-switch__track {
+    border-color: var(--kima-color-on-surface-12);
+    background: var(--kima-color-on-surface-12);
   }
 
   &--disabled &__thumb {
-    background: var(--feyo-color-on-surface-38);
+    background: var(--kima-color-on-surface-38);
   }
 
-  &--disabled &__input:checked ~ .feyo-switch__track .feyo-switch__thumb {
-    background: var(--feyo-color-surface);
+  &--disabled &__input:checked ~ .kima-switch__track .kima-switch__thumb {
+    background: var(--kima-color-surface);
   }
 }
 </style>

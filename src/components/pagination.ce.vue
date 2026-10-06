@@ -2,8 +2,8 @@
 分页：根据总条目数生成页码、前后按钮和省略号，当前页由 modelValue 控制。
 total 是总条目数，pageSize 是每页条目数；modelValue 从 1 开始。
 调用示例：
-  <feyo-pagination v-model="page" :total="240" :page-size="20" @change="loadPage" />
-  <feyo-pagination v-model="page" :total="240" compact sibling-count="1" />
+  <kima-pagination v-model="page" :total="240" :page-size="20" @change="loadPage" />
+  <kima-pagination v-model="page" :total="240" compact sibling-count="1" />
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, ref, useAttrs, useHost, watch } from "vue";
@@ -116,28 +116,28 @@ watch(pageCount, (count) => {
   <nav
     v-if="pageCount"
     v-bind="forwardedAttrs"
-    class="feyo-pagination"
-    :class="{ 'feyo-pagination--compact': compact, 'feyo-pagination--disabled': disabled }"
+    class="kima-pagination"
+    :class="{ 'kima-pagination--compact': compact, 'kima-pagination--disabled': disabled }"
     :aria-label="attrs['aria-label'] || '分页'"
     :aria-disabled="disabled || undefined"
   >
-    <div class="feyo-pagination__list">
+    <div class="kima-pagination__list">
       <button
-        class="feyo-pagination__button feyo-pagination__button--direction"
+        class="kima-pagination__button kima-pagination__button--direction"
         type="button"
         :tabindex="disabled ? -1 : 0"
         :disabled="disabled || currentPage <= 1"
         aria-label="上一页"
         @click="goTo(currentPage - 1)"
       >
-        <span class="feyo-pagination__arrow feyo-pagination__arrow--previous" aria-hidden="true" />
+        <span class="kima-pagination__arrow kima-pagination__arrow--previous" aria-hidden="true" />
       </button>
 
       <template v-for="item in pageItems" :key="item.key">
         <button
           v-if="item.type === 'page'"
           :ref="(element) => setPageButton(item.page, element)"
-          class="feyo-pagination__button"
+          class="kima-pagination__button"
           type="button"
           :tabindex="disabled ? -1 : 0"
           :aria-label="`第 ${item.page} 页`"
@@ -148,89 +148,89 @@ watch(pageCount, (count) => {
         >
           {{ item.page }}
         </button>
-        <span v-else class="feyo-pagination__ellipsis" aria-hidden="true">…</span>
+        <span v-else class="kima-pagination__ellipsis" aria-hidden="true">…</span>
       </template>
 
       <button
-        class="feyo-pagination__button feyo-pagination__button--direction"
+        class="kima-pagination__button kima-pagination__button--direction"
         type="button"
         :tabindex="disabled ? -1 : 0"
         :disabled="disabled || currentPage >= pageCount"
         aria-label="下一页"
         @click="goTo(currentPage + 1)"
       >
-        <span class="feyo-pagination__arrow feyo-pagination__arrow--next" aria-hidden="true" />
+        <span class="kima-pagination__arrow kima-pagination__arrow--next" aria-hidden="true" />
       </button>
     </div>
   </nav>
 </template>
 
 <style scoped lang="scss">
-.feyo-pagination {
+.kima-pagination {
   display: flex;
   min-width: 0;
   justify-content: center;
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-md);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
+  font-size: var(--kima-font-size-md);
 }
 
-.feyo-pagination__list {
+.kima-pagination__list {
   display: flex;
   max-width: 100%;
   align-items: center;
   justify-content: center;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
   overflow-x: auto;
-  padding: var(--feyo-space-1);
+  padding: var(--kima-space-1);
 }
 
-.feyo-pagination__button {
+.kima-pagination__button {
   display: inline-flex;
   min-width: 40px;
   min-height: 40px;
   flex: 0 0 40px;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--feyo-space-2);
-  border: 1px solid var(--feyo-color-transparent);
-  border-radius: var(--feyo-radius-sm);
+  padding: 0 var(--kima-space-2);
+  border: 1px solid var(--kima-color-transparent);
+  border-radius: var(--kima-radius-sm);
   box-sizing: border-box;
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-transparent);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-transparent);
   font: inherit;
   cursor: pointer;
-  transition: background-color var(--feyo-duration-fast) var(--feyo-ease-standard), border-color var(--feyo-duration-fast) var(--feyo-ease-standard), color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: background-color var(--kima-duration-fast) var(--kima-ease-standard), border-color var(--kima-duration-fast) var(--kima-ease-standard), color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
   &:focus-visible {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 
   &[aria-current="page"] {
-    border-color: var(--feyo-color-primary);
-    color: var(--feyo-color-on-primary-container);
-    background: var(--feyo-color-primary-container);
-    font-weight: var(--feyo-font-weight-bold);
+    border-color: var(--kima-color-primary);
+    color: var(--kima-color-on-primary-container);
+    background: var(--kima-color-primary-container);
+    font-weight: var(--kima-font-weight-bold);
   }
 
   &:disabled {
-    color: var(--feyo-color-on-surface-variant);
+    color: var(--kima-color-on-surface-variant);
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-pagination__button--direction {
-  color: var(--feyo-color-primary);
+.kima-pagination__button--direction {
+  color: var(--kima-color-primary);
 }
 
-.feyo-pagination__arrow {
+.kima-pagination__arrow {
   width: 8px;
   height: 8px;
   border-right: 1.5px solid currentColor;
@@ -245,30 +245,30 @@ watch(pageCount, (count) => {
   }
 }
 
-.feyo-pagination__ellipsis {
+.kima-pagination__ellipsis {
   display: inline-flex;
   min-width: 24px;
   min-height: 40px;
   align-items: center;
   justify-content: center;
-  color: var(--feyo-color-on-surface-variant);
+  color: var(--kima-color-on-surface-variant);
   user-select: none;
 }
 
-.feyo-pagination--compact {
-  .feyo-pagination__button {
+.kima-pagination--compact {
+  .kima-pagination__button {
     min-width: 32px;
     min-height: 32px;
     flex-basis: 32px;
   }
 
-  .feyo-pagination__ellipsis {
+  .kima-pagination__ellipsis {
     min-height: 32px;
   }
 }
 
 @media (max-width: 480px) {
-  .feyo-pagination__list {
+  .kima-pagination__list {
     justify-content: flex-start;
   }
 }

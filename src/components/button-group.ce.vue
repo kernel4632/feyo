@@ -1,9 +1,9 @@
 <!--
 按钮组：把一组项目渲染成单选、多选或标签页，并提供方向键移动焦点。
 调用示例：
-  <feyo-button-group v-model="view" :items="views" />
-  <feyo-button-group v-model="filters" :items="filters" multiple orientation="vertical" />
-  <feyo-button-group v-model="tab" :items="tabs" role="tablist" />
+  <kima-button-group v-model="view" :items="views" />
+  <kima-button-group v-model="filters" :items="filters" multiple orientation="vertical" />
+  <kima-button-group v-model="tab" :items="tabs" role="tablist" />
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, ref, shallowRef, useAttrs, watch } from "vue";
@@ -137,10 +137,10 @@ function moveFocus(index, event) {
 
 <template>
   <div
-    class="feyo-button-group"
+    class="kima-button-group"
     :class="[
-      `feyo-button-group--${groupOrientation}`,
-      `feyo-button-group--${groupSize}`,
+      `kima-button-group--${groupOrientation}`,
+      `kima-button-group--${groupSize}`,
     ]"
      v-bind="forwardedAttrs"
     :role="groupRole"
@@ -150,8 +150,8 @@ function moveFocus(index, event) {
       v-for="(item, index) in items"
       :key="item.value"
       :ref="(element) => setButtonRef(element, index)"
-      class="feyo-button-group__item"
-      :class="{ 'feyo-button-group__item--selected': isSelected(item) }"
+      class="kima-button-group__item"
+      :class="{ 'kima-button-group__item--selected': isSelected(item) }"
       type="button"
       :disabled="item.disabled"
       :role="groupRole === 'tablist' ? 'tab' : undefined"
@@ -162,7 +162,7 @@ function moveFocus(index, event) {
       @focus="focusedIndex = index"
       @keydown="moveFocus(index, $event)"
     >
-      <span v-if="isSelected(item)" class="feyo-button-group__check" aria-hidden="true">
+      <span v-if="isSelected(item)" class="kima-button-group__check" aria-hidden="true">
         <HugeiconsIcon :icon="Tick02Icon" :size="16" />
       </span>
       <slot :item="item" :index="index" :selected="isSelected(item)">{{ item.label }}</slot>
@@ -173,103 +173,103 @@ function moveFocus(index, event) {
 <style scoped lang="scss">
 @use "../styles/mixins" as *;
 
-.feyo-button-group {
+.kima-button-group {
   /* DMS：段与段之间间隙 groupedListGap = spacingXXS 2。 */
   display: inline-flex;
   align-items: stretch;
-  gap: var(--feyo-space-xxs);
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  gap: var(--kima-space-xxs);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 
   &--vertical {
     flex-direction: column;
   }
 }
 
-.feyo-button-group__item {
+.kima-button-group__item {
   box-sizing: border-box;
   /* DMS 中等档：高 40、最小宽 64、内边距 16、圆角 S 8。 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--feyo-space-s);
+  gap: var(--kima-space-s);
   min-width: 64px;
   min-height: 40px;
-  padding: 0 var(--feyo-space-l);
+  padding: 0 var(--kima-space-l);
   border: 0;
-  border-radius: var(--feyo-radius-s);
-  color: var(--feyo-color-on-secondary-container);
-  background: var(--feyo-color-secondary-container);
+  border-radius: var(--kima-radius-s);
+  color: var(--kima-color-on-secondary-container);
+  background: var(--kima-color-secondary-container);
   font: inherit;
-  font-size: var(--feyo-font-size-medium);
-  font-weight: var(--feyo-font-weight-medium);
+  font-size: var(--kima-font-size-medium);
+  font-weight: var(--kima-font-weight-medium);
   cursor: pointer;
   transition:
-    background-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    border-radius var(--feyo-duration-expressive-fast-spatial) var(--feyo-curve-standard);
+    background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    border-radius var(--kima-duration-expressive-fast-spatial) var(--kima-curve-standard);
 
-  @include feyo-state-layer;
-  @include feyo-focus-ring;
+  @include kima-state-layer;
+  @include kima-focus-ring;
 
   /* DMS 首末段外侧取整圆，内侧取 S 8。 */
   &:first-child {
-    border-radius: var(--feyo-radius-full) var(--feyo-radius-s) var(--feyo-radius-s) var(--feyo-radius-full);
+    border-radius: var(--kima-radius-full) var(--kima-radius-s) var(--kima-radius-s) var(--kima-radius-full);
   }
 
   &:last-child {
-    border-radius: var(--feyo-radius-s) var(--feyo-radius-full) var(--feyo-radius-full) var(--feyo-radius-s);
+    border-radius: var(--kima-radius-s) var(--kima-radius-full) var(--kima-radius-full) var(--kima-radius-s);
   }
 
   /* DMS 按下时内侧圆角收成 XS 4。 */
   &:active:not(:disabled) {
-    border-radius: var(--feyo-radius-xs);
+    border-radius: var(--kima-radius-xs);
   }
 
   /* DMS 禁用：底色 onSurface_12，文字 onSurface_38。 */
   &:disabled {
-    color: var(--feyo-color-on-surface-38);
-    background: var(--feyo-color-on-surface-12);
+    color: var(--kima-color-on-surface-38);
+    background: var(--kima-color-on-surface-12);
     cursor: not-allowed;
   }
 }
 
 /* DMS 选中段：变整圆 primary 药丸；两段类名确保压过首末段圆角。 */
-.feyo-button-group__item.feyo-button-group__item--selected {
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-primary);
-  background: var(--feyo-color-primary);
+.kima-button-group__item.kima-button-group__item--selected {
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-primary);
+  background: var(--kima-color-primary);
 }
 
-.feyo-button-group__item.feyo-button-group__item--selected:active:not(:disabled) {
-  border-radius: var(--feyo-radius-xs);
+.kima-button-group__item.kima-button-group__item--selected:active:not(:disabled) {
+  border-radius: var(--kima-radius-xs);
 }
 
-.feyo-button-group__check {
+.kima-button-group__check {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 /* 纵向：首段圆上角，末段圆下角。 */
-.feyo-button-group--vertical .feyo-button-group__item:first-child {
-  border-radius: var(--feyo-radius-full) var(--feyo-radius-full) var(--feyo-radius-s) var(--feyo-radius-s);
+.kima-button-group--vertical .kima-button-group__item:first-child {
+  border-radius: var(--kima-radius-full) var(--kima-radius-full) var(--kima-radius-s) var(--kima-radius-s);
 }
 
-.feyo-button-group--vertical .feyo-button-group__item:last-child {
-  border-radius: var(--feyo-radius-s) var(--feyo-radius-s) var(--feyo-radius-full) var(--feyo-radius-full);
+.kima-button-group--vertical .kima-button-group__item:last-child {
+  border-radius: var(--kima-radius-s) var(--kima-radius-s) var(--kima-radius-full) var(--kima-radius-full);
 }
 
 /* DMS small 档：高 32、最小宽 56、内边距 12、字号 Small 12。 */
-.feyo-button-group--small .feyo-button-group__item {
+.kima-button-group--small .kima-button-group__item {
   min-width: 56px;
   min-height: 32px;
-  padding-inline: var(--feyo-space-m);
-  font-size: var(--feyo-font-size-small);
+  padding-inline: var(--kima-space-m);
+  font-size: var(--kima-font-size-small);
 }
 
-.feyo-button-group--large .feyo-button-group__item {
+.kima-button-group--large .kima-button-group__item {
   min-height: 48px;
-  padding-inline: var(--feyo-space-xl);
+  padding-inline: var(--kima-space-xl);
 }
 </style>

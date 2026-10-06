@@ -1,8 +1,8 @@
 <!--
 进度条：使用原生 progress 元素，保留浏览器的进度语义和不确定状态。
 调用示例：
-  <feyo-progress :value="downloaded" label="下载进度" />
-  <feyo-progress indeterminate label="正在连接" />
+  <kima-progress :value="downloaded" label="下载进度" />
+  <kima-progress indeterminate label="正在连接" />
 -->
 <script setup>
 import { computed, getCurrentInstance, useAttrs } from "vue";
@@ -24,31 +24,31 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
 </script>
 
 <template>
-  <label class="feyo-progress">
-    <span v-if="label" class="feyo-progress__label">{{ label }}</span>
-    <span class="feyo-progress__track">
+  <label class="kima-progress">
+    <span v-if="label" class="kima-progress__label">{{ label }}</span>
+    <span class="kima-progress__track">
        <progress
          v-bind="forwardedAttrs"
-        class="feyo-progress__bar"
+        class="kima-progress__bar"
         :value="indeterminate ? undefined : safeValue"
         :max="safeMax"
         :aria-label="attrs['aria-label'] || label || undefined"
       />
-      <span v-if="indeterminate" class="feyo-progress__motion" aria-hidden="true"><span /></span>
+      <span v-if="indeterminate" class="kima-progress__motion" aria-hidden="true"><span /></span>
     </span>
   </label>
 </template>
 
 <style scoped lang="scss">
-.feyo-progress {
+.kima-progress {
   display: block;
   width: 100%;
-  color: var(--feyo-color-on-surface);
+  color: var(--kima-color-on-surface);
 
   &__label {
     display: block;
-    margin-bottom: var(--feyo-space-2);
-    color: var(--feyo-color-on-surface-variant);
+    margin-bottom: var(--kima-space-2);
+    color: var(--kima-color-on-surface-variant);
     line-height: 1.35;
   }
 
@@ -59,23 +59,23 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
     overflow: hidden;
     appearance: none;
     border: 0;
-    border-radius: var(--feyo-radius-full);
-    background: var(--feyo-color-surface-container-high);
+    border-radius: var(--kima-radius-full);
+    background: var(--kima-color-surface-container-high);
   }
 
   &__bar::-webkit-progress-bar {
-    border-radius: var(--feyo-radius-full);
-    background: var(--feyo-color-surface-container-high);
+    border-radius: var(--kima-radius-full);
+    background: var(--kima-color-surface-container-high);
   }
 
   &__bar::-webkit-progress-value {
-    border-radius: var(--feyo-radius-full);
-    background: var(--feyo-color-primary);
+    border-radius: var(--kima-radius-full);
+    background: var(--kima-color-primary);
   }
 
   &__bar::-moz-progress-bar {
-    border-radius: var(--feyo-radius-full);
-    background: var(--feyo-color-primary);
+    border-radius: var(--kima-radius-full);
+    background: var(--kima-color-primary);
   }
 
   &__track {
@@ -83,34 +83,34 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
     display: block;
     height: 8px;
     overflow: hidden;
-    border-radius: var(--feyo-radius-full);
+    border-radius: var(--kima-radius-full);
   }
 
   &__motion {
     position: absolute;
     inset: 0;
     overflow: hidden;
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
     pointer-events: none;
 
     > span {
       display: block;
       width: 40%;
       height: 100%;
-      border-radius: var(--feyo-radius-full);
-      background: var(--feyo-color-primary);
-      animation: feyo-progress-motion 1.4s linear infinite;
+      border-radius: var(--kima-radius-full);
+      background: var(--kima-color-primary);
+      animation: kima-progress-motion 1.4s linear infinite;
     }
   }
 }
 
-@keyframes feyo-progress-motion {
+@keyframes kima-progress-motion {
   from { transform: translateX(-100%); }
   to { transform: translateX(250%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feyo-progress__motion > span {
+  .kima-progress__motion > span {
     margin-inline: auto;
     animation: none;
   }

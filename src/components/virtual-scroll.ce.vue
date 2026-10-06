@@ -2,9 +2,9 @@
 虚拟滚动：固定每行高度，只把视口附近的 items 渲染出来，并用上下空白占住完整列表高度。
 items 可以是任意值，也可以是带 value、key 或 id 的对象；对象的 value 会作为选中值。
 调用示例：
-  <feyo-virtual-scroll :items="rows" :item-height="44" height="320px" :overscan="4" v-model="selected">
+  <kima-virtual-scroll :items="rows" :item-height="44" height="320px" :overscan="4" v-model="selected">
     <template #default="{ item, index }">{{ index + 1 }}. {{ item.label }}</template>
-  </feyo-virtual-scroll>
+  </kima-virtual-scroll>
 键盘焦点在列表容器上，ArrowUp、ArrowDown、Home、End 移动高亮，Enter 或空格选择当前项。
 自定义元素宿主的 id 会保留在宿主上，light DOM 内部不会复制同一个 id。
 上游记录：本地参考仓库没有独立的 VirtualScroll；列表行为参考 DankListView、DankFlickable 和 FileListView 的固定行高与可见范围计算。
@@ -49,7 +49,7 @@ const activeIndex = ref(-1);
 const localValue = shallowRef(props.modelValue);
 let resizeObserver;
 
-const listId = `feyo-virtual-scroll-${useId()}`;
+const listId = `kima-virtual-scroll-${useId()}`;
 const safeItemHeight = computed(() => {
   const value = Number(props.itemHeight);
   return Number.isFinite(value) && value > 0 ? Math.max(1, Math.floor(value)) : 40;
@@ -213,7 +213,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
   <div
     :ref="setViewport"
     v-bind="forwardedAttrs"
-    class="feyo-virtual-scroll"
+    class="kima-virtual-scroll"
     :style="{ height: heightStyle }"
     role="list"
     tabindex="0"
@@ -221,16 +221,16 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
     @scroll="handleScroll"
     @keydown="handleKeydown"
   >
-    <div class="feyo-virtual-scroll__content" :style="{ height: `${totalHeight}px` }">
-      <div class="feyo-virtual-scroll__spacer" :style="{ height: `${topSpacerHeight}px` }" aria-hidden="true"></div>
+    <div class="kima-virtual-scroll__content" :style="{ height: `${totalHeight}px` }">
+      <div class="kima-virtual-scroll__spacer" :style="{ height: `${topSpacerHeight}px` }" aria-hidden="true"></div>
       <div
         v-for="row in visibleItems"
         :id="itemId(row.index)"
         :key="row.key"
-        class="feyo-virtual-scroll__item"
+        class="kima-virtual-scroll__item"
         :class="{
-          'feyo-virtual-scroll__item--active': row.index === activeIndex,
-          'feyo-virtual-scroll__item--selected': hasSelection && Object.is(itemValue(row.item), localValue),
+          'kima-virtual-scroll__item--active': row.index === activeIndex,
+          'kima-virtual-scroll__item--selected': hasSelection && Object.is(itemValue(row.item), localValue),
         }"
         role="listitem"
         :aria-posinset="row.index + 1"
@@ -241,67 +241,67 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
       >
          <slot :item="row.item" :index="row.index">{{ itemLabel(row.item) }}</slot>
       </div>
-      <div class="feyo-virtual-scroll__spacer" :style="{ height: `${bottomSpacerHeight}px` }" aria-hidden="true"></div>
+      <div class="kima-virtual-scroll__spacer" :style="{ height: `${bottomSpacerHeight}px` }" aria-hidden="true"></div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.feyo-virtual-scroll {
+.kima-virtual-scroll {
   display: block;
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface);
-  font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-md);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface);
+  font-family: var(--kima-font-family);
+  font-size: var(--kima-font-size-md);
   line-height: 1.4;
   outline: none;
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 }
 
-.feyo-virtual-scroll__content {
+.kima-virtual-scroll__content {
   min-width: 100%;
 }
 
-.feyo-virtual-scroll__spacer {
+.kima-virtual-scroll__spacer {
   width: 1px;
   pointer-events: none;
 }
 
-.feyo-virtual-scroll__item {
+.kima-virtual-scroll__item {
   display: flex;
   min-width: 0;
   align-items: center;
   box-sizing: border-box;
-  padding: 0 var(--feyo-space-3);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
+  padding: 0 var(--kima-space-3);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
   cursor: pointer;
   contain: layout paint;
 
   &:hover,
   &--active {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 
   &--selected {
-    color: var(--feyo-color-primary);
+    color: var(--kima-color-primary);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feyo-virtual-scroll {
+  .kima-virtual-scroll {
     scroll-behavior: auto;
   }
 }

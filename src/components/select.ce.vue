@@ -6,8 +6,8 @@ Vue 用 v-model 和 v-model:open 同步状态；原生 HTML 设置元素的 item
 但原生表单会用 String(value) 提交（对象为 [object Object]）；表单请用唯一的字符串或数字 value。
 form.reset() 恢复挂载时的 modelValue；清除选择返回 null，必填时为空值。
 调用示例：
-  <feyo-select v-model="country" name="country" label="国家" :items="countries" searchable clearable />
-  <feyo-select v-model="choice" v-model:open="selectOpen" :items="items" placeholder="请选择" />
+  <kima-select v-model="country" name="country" label="国家" :items="countries" searchable clearable />
+  <kima-select v-model="choice" v-model:open="selectOpen" :items="items" placeholder="请选择" />
 -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useHost, useId, getCurrentInstance, watch } from "vue";
@@ -61,10 +61,10 @@ let initialValue;
 let resetTimer;
 let restoreFocus = true;
 const baseId = useId();
-const labelId = `feyo-select-${baseId}-label`;
-const triggerId = `feyo-select-${baseId}-trigger`;
-const listboxId = `feyo-select-${baseId}-listbox`;
-const hiddenSelectId = `feyo-select-${baseId}-native`;
+const labelId = `kima-select-${baseId}-label`;
+const triggerId = `kima-select-${baseId}-trigger`;
+const listboxId = `kima-select-${baseId}-listbox`;
+const hiddenSelectId = `kima-select-${baseId}-native`;
 
 const visibleItems = computed(() => {
   const text = query.value.trim().toLocaleLowerCase();
@@ -227,16 +227,16 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="feyo-select" :class="{ 'feyo-select--open': localOpen, 'feyo-select--disabled': disabled }">
-    <span v-if="label" :id="labelId" class="feyo-select__label">
+  <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="kima-select" :class="{ 'kima-select--open': localOpen, 'kima-select--disabled': disabled }">
+    <span v-if="label" :id="labelId" class="kima-select__label">
       {{ label }}<span v-if="required" aria-hidden="true"> *</span>
     </span>
 
-    <div class="feyo-select__control" :class="{ 'feyo-select__control--clearable': clearable && selectedItem }">
+    <div class="kima-select__control" :class="{ 'kima-select__control--clearable': clearable && selectedItem }">
       <button
         :id="triggerId"
         ref="trigger"
-        class="feyo-select__trigger"
+        class="kima-select__trigger"
         type="button"
         role="combobox"
         :disabled="disabled"
@@ -249,14 +249,14 @@ onBeforeUnmount(() => {
         @click="toggleSelect"
         @keydown="handleKeydown"
       >
-        <span class="feyo-select__trigger-label" :class="{ 'feyo-select__trigger-label--placeholder': !selectedItem }">
+        <span class="kima-select__trigger-label" :class="{ 'kima-select__trigger-label--placeholder': !selectedItem }">
           {{ selectedItem ? selectedItem.label : placeholder }}
         </span>
-        <HugeiconsIcon class="feyo-select__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
+        <HugeiconsIcon class="kima-select__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
       </button>
       <button
         v-if="clearable && selectedItem"
-        class="feyo-select__clear"
+        class="kima-select__clear"
         type="button"
         aria-label="清除选择"
         title="清除选择"
@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
       ref="nativeSelect"
       v-model="nativeValue"
       :id="hiddenSelectId"
-      class="feyo-select__native"
+      class="kima-select__native"
       :name="name"
       :required="required"
       :disabled="disabled"
@@ -295,14 +295,14 @@ onBeforeUnmount(() => {
 
     <div
       v-if="localOpen"
-      class="feyo-select__popup"
+      class="kima-select__popup"
     >
-      <div v-if="searchable" class="feyo-select__search-wrap">
-        <HugeiconsIcon class="feyo-select__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
+      <div v-if="searchable" class="kima-select__search-wrap">
+        <HugeiconsIcon class="kima-select__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
         <input
           ref="searchInput"
           v-model="query"
-          class="feyo-select__search"
+          class="kima-select__search"
           type="search"
           role="combobox"
           aria-label="搜索选项"
@@ -316,124 +316,124 @@ onBeforeUnmount(() => {
         >
       </div>
 
-      <div :id="listboxId" class="feyo-select__options" role="listbox" :aria-labelledby="label ? labelId : triggerId">
+      <div :id="listboxId" class="kima-select__options" role="listbox" :aria-labelledby="label ? labelId : triggerId">
         <div
           v-for="(item, index) in visibleItems"
           :id="`${listboxId}-option-${index}`"
           :key="index"
           :ref="(element) => { optionElements[index] = element; }"
-          class="feyo-select__option"
-          :class="{ 'feyo-select__option--active': index === activeIndex, 'feyo-select__option--selected': Object.is(item.value, localValue) }"
+          class="kima-select__option"
+          :class="{ 'kima-select__option--active': index === activeIndex, 'kima-select__option--selected': Object.is(item.value, localValue) }"
           role="option"
           :aria-selected="Object.is(item.value, localValue)"
           :aria-disabled="item.disabled || undefined"
           @pointerdown.prevent
           @click="selectItem(item)"
         >
-          <span class="feyo-select__option-copy">
-            <span class="feyo-select__option-label">{{ item.label }}</span>
-            <span v-if="item.description" class="feyo-select__option-description">{{ item.description }}</span>
+          <span class="kima-select__option-copy">
+            <span class="kima-select__option-label">{{ item.label }}</span>
+            <span v-if="item.description" class="kima-select__option-description">{{ item.description }}</span>
           </span>
-          <HugeiconsIcon v-if="Object.is(item.value, localValue)" class="feyo-select__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
+          <HugeiconsIcon v-if="Object.is(item.value, localValue)" class="kima-select__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
         </div>
       </div>
-      <div v-if="visibleItems.length === 0" class="feyo-select__empty" role="status">没有匹配选项</div>
+      <div v-if="visibleItems.length === 0" class="kima-select__empty" role="status">没有匹配选项</div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.feyo-select {
+.kima-select {
   position: relative;
   display: inline-flex;
   width: 100%;
   max-width: 320px;
   min-width: 0;
   flex-direction: column;
-  gap: var(--feyo-space-1);
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  gap: var(--kima-space-1);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 }
 
-.feyo-select__label {
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-sm);
-  font-weight: var(--feyo-font-weight-medium);
+.kima-select__label {
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-sm);
+  font-weight: var(--kima-font-weight-medium);
 }
 
-.feyo-select__control {
+.kima-select__control {
   position: relative;
   display: flex;
   min-height: 42px;
 }
 
-.feyo-select__trigger {
+.kima-select__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
   min-height: 42px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: 0 var(--feyo-space-4);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container);
+  gap: var(--kima-space-3);
+  padding: 0 var(--kima-space-4);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--feyo-duration-fast) var(--feyo-ease-standard), background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
-  .feyo-select--open & {
-    border-color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+  .kima-select--open & {
+    border-color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-select__control--clearable .feyo-select__trigger {
+.kima-select__control--clearable .kima-select__trigger {
   padding-right: 72px;
 }
 
-.feyo-select__control--clearable .feyo-select__arrow {
+.kima-select__control--clearable .kima-select__arrow {
   position: absolute;
-  right: var(--feyo-space-4);
+  right: var(--kima-space-4);
 }
 
-.feyo-select__trigger-label {
+.kima-select__trigger-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.feyo-select__trigger-label--placeholder,
-.feyo-select__search::placeholder {
-  color: var(--feyo-color-on-surface-variant);
+.kima-select__trigger-label--placeholder,
+.kima-select__search::placeholder {
+  color: var(--kima-color-on-surface-variant);
 }
 
-.feyo-select__arrow {
+.kima-select__arrow {
   flex: 0 0 auto;
-  color: var(--feyo-color-on-surface-variant);
-  transition: transform var(--feyo-duration-fast) var(--feyo-ease-standard);
+  color: var(--kima-color-on-surface-variant);
+  transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
 }
 
-.feyo-select--open .feyo-select__arrow {
+.kima-select--open .kima-select__arrow {
   transform: rotate(180deg);
 }
 
-.feyo-select__clear {
+.kima-select__clear {
   position: absolute;
   top: 50%;
   right: 36px;
@@ -444,30 +444,30 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-transparent);
   cursor: pointer;
   transform: translateY(-50%);
 
   &:hover:not(:disabled),
   &:focus-visible {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-select__native {
+.kima-select__native {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -479,132 +479,132 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-.feyo-select__popup {
+.kima-select__popup {
   box-sizing: border-box;
   position: absolute;
   z-index: 20;
-  top: calc(100% + var(--feyo-space-2));
+  top: calc(100% + var(--kima-space-2));
   left: 0;
   width: 100%;
   max-height: min(360px, 50vh);
   overflow: auto;
-  padding: var(--feyo-space-2);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-md);
-  background: var(--feyo-color-surface-container);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
-  animation: feyo-select-enter var(--feyo-duration-fast) var(--feyo-ease-emphasized);
+  padding: var(--kima-space-2);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-md);
+  background: var(--kima-color-surface-container);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
+  animation: kima-select-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
-.feyo-select__search-wrap {
+.kima-select__search-wrap {
   position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: var(--feyo-space-2);
+  margin-bottom: var(--kima-space-2);
 }
 
-.feyo-select__search-icon {
+.kima-select__search-icon {
   position: absolute;
-  left: var(--feyo-space-3);
-  color: var(--feyo-color-on-surface-variant);
+  left: var(--kima-space-3);
+  color: var(--kima-color-on-surface-variant);
   pointer-events: none;
 }
 
-.feyo-select__search {
+.kima-select__search {
   box-sizing: border-box;
   width: 100%;
   min-height: 40px;
-  padding: 0 var(--feyo-space-3) 0 40px;
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface);
+  padding: 0 var(--kima-space-3) 0 40px;
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface);
   font: inherit;
   outline: none;
 
   &:focus {
-    border-color: var(--feyo-color-primary);
-    outline: 2px solid var(--feyo-color-primary);
+    border-color: var(--kima-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 }
 
-.feyo-select__options {
+.kima-select__options {
   display: grid;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
 }
 
-.feyo-select__option {
+.kima-select__option {
   display: flex;
   min-height: 44px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: var(--feyo-space-2) var(--feyo-space-3);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
+  gap: var(--kima-space-3);
+  padding: var(--kima-space-2) var(--kima-space-3);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
   cursor: pointer;
 
   &:hover,
   &:focus-visible,
   &--active {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 
   &--selected {
-    color: var(--feyo-color-primary);
+    color: var(--kima-color-primary);
   }
 
   &[aria-disabled="true"] {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-select__option-copy {
+.kima-select__option-copy {
   min-width: 0;
   display: grid;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
 }
 
-.feyo-select__option-label,
-.feyo-select__option-description {
+.kima-select__option-label,
+.kima-select__option-description {
   overflow-wrap: anywhere;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feyo-select__trigger,
-  .feyo-select__arrow {
+  .kima-select__trigger,
+  .kima-select__arrow {
     transition: none;
   }
 
-  .feyo-select__popup {
+  .kima-select__popup {
     animation: none;
   }
 }
 
-.feyo-select__option-description,
-.feyo-select__empty {
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-sm);
+.kima-select__option-description,
+.kima-select__empty {
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-sm);
 }
 
-.feyo-select__check {
+.kima-select__check {
   flex: 0 0 auto;
-  color: var(--feyo-color-primary);
+  color: var(--kima-color-primary);
 }
 
-.feyo-select__empty {
-  padding: var(--feyo-space-3);
+.kima-select__empty {
+  padding: var(--kima-space-3);
   text-align: center;
 }
 
-@keyframes feyo-select-enter {
+@keyframes kima-select-enter {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.98);

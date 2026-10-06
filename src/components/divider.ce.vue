@@ -1,9 +1,9 @@
 <!--
 分割线：用水平或垂直的语义分隔线组织内容，也可以在中间显示文字或插槽内容。
 调用示例：
-  <feyo-divider />
-  <feyo-divider inset label="或者" />
-  <feyo-divider vertical><span aria-hidden="true">+</span></feyo-divider>
+  <kima-divider />
+  <kima-divider inset label="或者" />
+  <kima-divider vertical><span aria-hidden="true">+</span></kima-divider>
 -->
 <script setup>
 import { Comment, computed, ref, useAttrs, useSlots } from "vue";
@@ -36,76 +36,76 @@ const hasContent = computed(() => Boolean(props.label.trim()) || hasSlotContent.
   <div
     ref="root"
     v-bind="forwardedAttrs"
-    class="feyo-divider"
+    class="kima-divider"
     :class="{
-      'feyo-divider--vertical': vertical,
-      'feyo-divider--inset': inset,
-      'feyo-divider--labeled': hasContent,
+      'kima-divider--vertical': vertical,
+      'kima-divider--inset': inset,
+      'kima-divider--labeled': hasContent,
     }"
     role="separator"
     :aria-orientation="vertical ? 'vertical' : undefined"
   >
-    <span class="feyo-divider__line" aria-hidden="true" />
-    <span v-if="hasContent" class="feyo-divider__label">
+    <span class="kima-divider__line" aria-hidden="true" />
+    <span v-if="hasContent" class="kima-divider__label">
       <slot v-if="hasSlotContent" />
       <template v-else>{{ label }}</template>
     </span>
-    <span v-if="hasContent" class="feyo-divider__line" aria-hidden="true" />
+    <span v-if="hasContent" class="kima-divider__line" aria-hidden="true" />
   </div>
 </template>
 
 <style scoped lang="scss">
-.feyo-divider {
+.kima-divider {
   display: flex;
   width: 100%;
   min-height: 1px;
   align-items: center;
-  gap: var(--feyo-space-3);
-  color: var(--feyo-color-on-surface-variant);
-  font-family: var(--feyo-font-family);
+  gap: var(--kima-space-3);
+  color: var(--kima-color-on-surface-variant);
+  font-family: var(--kima-font-family);
 }
 
-.feyo-divider--inset:not(.feyo-divider--vertical) {
+.kima-divider--inset:not(.kima-divider--vertical) {
   width: auto;
-  margin-inline: var(--feyo-space-6);
+  margin-inline: var(--kima-space-6);
 }
 
-.feyo-divider__line {
+.kima-divider__line {
   display: block;
   min-width: 0;
   flex: 1 1 auto;
   height: 1px;
-  background: var(--feyo-color-outline);
+  background: var(--kima-color-outline);
 }
 
-.feyo-divider__label {
+.kima-divider__label {
   flex: 0 0 auto;
-  font-size: var(--feyo-font-size-sm);
+  font-size: var(--kima-font-size-sm);
   line-height: 1.4;
   text-align: center;
 }
 
-.feyo-divider--vertical {
+.kima-divider--vertical {
   width: 1px;
   min-height: 48px;
   height: 100%;
   flex-direction: column;
-  gap: var(--feyo-space-2);
+  gap: var(--kima-space-2);
 }
 
-.feyo-divider--vertical.feyo-divider--inset {
+.kima-divider--vertical.kima-divider--inset {
   height: auto;
-  margin-block: var(--feyo-space-6);
+  margin-block: var(--kima-space-6);
 }
 
-.feyo-divider--vertical .feyo-divider__line {
+.kima-divider--vertical .kima-divider__line {
   width: 1px;
   min-height: 0;
   height: auto;
   flex: 1 1 auto;
 }
 
-.feyo-divider--vertical .feyo-divider__label {
+.kima-divider--vertical .kima-divider__label {
   writing-mode: vertical-rl;
 }
 </style>

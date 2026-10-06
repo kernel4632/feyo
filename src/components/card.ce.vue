@@ -1,11 +1,11 @@
 <!--
 卡片：提供表面、描边和抬升三种容器样式，也支持可点击和分区插槽。
 调用示例：
-  <feyo-card variant="outlined" clickable aria-label="打开账户设置" @click="openSettings">
+  <kima-card variant="outlined" clickable aria-label="打开账户设置" @click="openSettings">
     <template #header><h2>账户设置</h2></template>
     <p>管理登录方式和通知偏好。</p>
     <template #footer><button type="button">查看详情</button></template>
-  </feyo-card>
+  </kima-card>
 -->
 <script setup>
 import { computed, ref, useAttrs } from "vue";
@@ -63,12 +63,12 @@ function handleKeyup(event) {
 
 <template>
   <article
-    class="feyo-card"
+    class="kima-card"
     :class="[
-      `feyo-card--${cardVariant}`,
+      `kima-card--${cardVariant}`,
       {
-        'feyo-card--clickable': clickable,
-        'feyo-card--disabled': disabled,
+        'kima-card--clickable': clickable,
+        'kima-card--disabled': disabled,
       },
     ]"
     :role="clickable ? 'button' : undefined"
@@ -80,89 +80,89 @@ function handleKeyup(event) {
     @keydown="handleKeydown"
     @keyup="handleKeyup"
   >
-    <header v-if="$slots.header || hasNativeSlot('header')" class="feyo-card__header"><slot name="header" /></header>
-    <div v-if="$slots.default || hasNativeSlot('default')" class="feyo-card__body"><slot /></div>
-    <footer v-if="$slots.footer || hasNativeSlot('footer')" class="feyo-card__footer"><slot name="footer" /></footer>
+    <header v-if="$slots.header || hasNativeSlot('header')" class="kima-card__header"><slot name="header" /></header>
+    <div v-if="$slots.default || hasNativeSlot('default')" class="kima-card__body"><slot /></div>
+    <footer v-if="$slots.footer || hasNativeSlot('footer')" class="kima-card__footer"><slot name="footer" /></footer>
   </article>
 </template>
 
 <style scoped lang="scss">
-.feyo-card {
+.kima-card {
   box-sizing: border-box;
   display: flex;
   min-width: 0;
   flex-direction: column;
   /* DMS DankCard：内边距 spacingM 12，圆角 cornerRadiusM 12，默认无边框。 */
-  gap: var(--feyo-space-s);
-  padding: var(--feyo-space-m);
-  border: 1px solid var(--feyo-color-transparent);
-  border-radius: var(--feyo-radius-m);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container);
-  font-family: var(--feyo-font-family);
+  gap: var(--kima-space-s);
+  padding: var(--kima-space-m);
+  border: 1px solid var(--kima-color-transparent);
+  border-radius: var(--kima-radius-m);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container);
+  font-family: var(--kima-font-family);
   transition:
-    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    border-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    box-shadow var(--feyo-duration-effects) var(--feyo-ease-effects),
-    opacity var(--feyo-duration-effects) var(--feyo-ease-effects),
-    transform var(--feyo-duration-effects) var(--feyo-ease-effects);
+    background-color var(--kima-duration-effects) var(--kima-ease-effects),
+    border-color var(--kima-duration-effects) var(--kima-ease-effects),
+    box-shadow var(--kima-duration-effects) var(--kima-ease-effects),
+    opacity var(--kima-duration-effects) var(--kima-ease-effects),
+    transform var(--kima-duration-effects) var(--kima-ease-effects);
 }
 
-.feyo-card--outlined {
-  border-color: var(--feyo-color-outline-variant);
-  background: var(--feyo-color-transparent);
+.kima-card--outlined {
+  border-color: var(--kima-color-outline-variant);
+  background: var(--kima-color-transparent);
 }
 
-.feyo-card--elevated {
-  background: var(--feyo-color-surface-container-high);
-  box-shadow: var(--feyo-shadow-2);
+.kima-card--elevated {
+  background: var(--kima-color-surface-container-high);
+  box-shadow: var(--kima-shadow-2);
 }
 
-.feyo-card--clickable {
+.kima-card--clickable {
   cursor: pointer;
 }
 
 /* DMS 状态层：悬停叠加 accent（primary）8%。 */
-.feyo-card--clickable:not(.feyo-card--disabled):hover {
-  background: color-mix(in srgb, var(--feyo-color-primary) 8%, var(--feyo-color-transparent));
+.kima-card--clickable:not(.kima-card--disabled):hover {
+  background: color-mix(in srgb, var(--kima-color-primary) 8%, var(--kima-color-transparent));
 }
 
-.feyo-card--clickable:not(.feyo-card--disabled):active {
-  background: color-mix(in srgb, var(--feyo-color-primary) 12%, var(--feyo-color-transparent));
+.kima-card--clickable:not(.kima-card--disabled):active {
+  background: color-mix(in srgb, var(--kima-color-primary) 12%, var(--kima-color-transparent));
 }
 
-.feyo-card--clickable:not(.feyo-card--disabled):focus-visible {
-  outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
-  outline-offset: var(--feyo-focus-ring-offset);
+.kima-card--clickable:not(.kima-card--disabled):focus-visible {
+  outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
+  outline-offset: var(--kima-focus-ring-offset);
 }
 
 /* DMS 非交互态：透明度 0.45，缩放到 0.92。 */
-.feyo-card--disabled {
+.kima-card--disabled {
   cursor: not-allowed;
   opacity: 0.45;
   transform: scale(0.92);
 }
 
-.feyo-card__header,
-.feyo-card__footer {
+.kima-card__header,
+.kima-card__footer {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: var(--feyo-space-s);
+  gap: var(--kima-space-s);
 }
 
 /* DMS 标题：字号 Medium 14、字重 Medium、颜色 accent（primary）。 */
-.feyo-card__header {
-  font-size: var(--feyo-font-size-medium);
-  font-weight: var(--feyo-font-weight-medium);
-  color: var(--feyo-color-primary);
+.kima-card__header {
+  font-size: var(--kima-font-size-medium);
+  font-weight: var(--kima-font-weight-medium);
+  color: var(--kima-color-primary);
 }
 
-.feyo-card__body {
+.kima-card__body {
   min-width: 0;
 }
 
-.feyo-card__footer {
+.kima-card__footer {
   justify-content: flex-end;
 }
 </style>

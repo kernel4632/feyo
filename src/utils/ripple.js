@@ -4,7 +4,7 @@
 调用示例：
   const root = ref(null);
   useRipple(root);
-  // root 指向的元素要套用 feyo-ripple-host mixin。
+  // root 指向的元素要套用 kima-ripple-host mixin。
 */
 import { onBeforeUnmount, onMounted } from "vue";
 
@@ -17,7 +17,7 @@ export function useRipple(host) {
     const bounds = element.getBoundingClientRect();
     const diameter = Math.max(bounds.width, bounds.height) * 2;
     const ripple = document.createElement("span");
-    ripple.className = "feyo-ripple";
+    ripple.className = "kima-ripple";
     ripple.style.width = `${diameter}px`;
     ripple.style.height = `${diameter}px`;
     ripple.style.left = `${event.clientX - bounds.left - diameter / 2}px`;

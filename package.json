@@ -1,29 +1,29 @@
 {
-  "name": "@kernel4632/feyo",
+  "name": "@kernel4632/kima",
   "version": "0.6.0",
-  "description": "FEYO (Flow, Ease, Yield, Orientation) - a high-focus Web UI design system and component library.",
+  "description": "KIMA (Kinetic, Interaction, Motion, Alive) - a Material 3 style Web UI design system and component library.",
   "type": "module",
   "license": "MIT",
   "files": [
     "dist"
   ],
-  "main": "./dist/feyo.js",
-  "module": "./dist/feyo.js",
+  "main": "./dist/kima.js",
+  "module": "./dist/kima.js",
   "style": "./dist/style.css",
   "exports": {
     ".": {
-      "import": "./dist/feyo.js",
-      "default": "./dist/feyo.js"
+      "import": "./dist/kima.js",
+      "default": "./dist/kima.js"
     },
     "./elements": {
-      "import": "./dist/feyo-elements.js",
-      "default": "./dist/feyo-elements.js"
+      "import": "./dist/kima-elements.js",
+      "default": "./dist/kima-elements.js"
     },
     "./style.css": "./dist/style.css"
   },
   "sideEffects": [
     "**/*.css",
-    "./dist/feyo-elements.js"
+    "./dist/kima-elements.js"
   ],
   "publishConfig": {
     "access": "public"

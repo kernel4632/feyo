@@ -20,7 +20,7 @@ window.fixture = {
       Object.assign(template.content.getElementById(id), values);
     }
     for (const host of template.content.querySelectorAll("*")) {
-      if (!host.tagName.startsWith("FEYO-")) continue;
+      if (!host.tagName.startsWith("KIMA-")) continue;
       for (const type of eventNames) {
         host.addEventListener(type, (event) => {
           if (event.currentTarget !== host) return;

@@ -1,13 +1,13 @@
-# FEYO
+# KIMA
 
-**F**low、**E**ase、**Y**ield、**O**rientation。
+**K**inetic、**I**nteraction、**M**otion、**A**live。
 
-FEYO 是一个面向高专注、高体验感 Web 应用的 UI 设计系统与组件库。
-参考成熟桌面壳层组件的结构与行为，最终打包为通用 Web Components。
+KIMA 是一个面向高专注、高体验 Web 应用的 UI 设计系统与组件库。
+外观与交互遵循 Material 3（Material You），尺寸比官方默认放大一号，最终打包成通用 Web Components。
 
 ## 技术栈
 
-Vue 3 · JavaScript · Vite · SCSS · Hugeicons · pnpm
+Vue 3 · JavaScript · Vite · SCSS · Hugeicons · Reka UI · pnpm
 
 ## 开始
 
@@ -31,15 +31,15 @@ pnpm test
 pnpm test:ssr
 ```
 
-Vue 组件从 `@kernel4632/feyo` 导入；原生元素从 `@kernel4632/feyo/elements` 导入，样式从 `@kernel4632/feyo/style.css` 导入：
+Vue 组件从 `@kernel4632/kima` 导入；原生元素从 `@kernel4632/kima/elements` 导入，样式从 `@kernel4632/kima/style.css` 导入：
 
 ```js
-import "@kernel4632/feyo/elements";
-import "@kernel4632/feyo/style.css";
+import "@kernel4632/kima/elements";
+import "@kernel4632/kima/style.css";
 ```
 
 ```html
-<feyo-button variant="filled">保存</feyo-button>
+<kima-button variant="filled">保存</kima-button>
 ```
 
 当前导出的组件包括：按钮、文本框、复选框、开关、滑块、进度条、选择器、菜单、
@@ -47,16 +47,16 @@ import "@kernel4632/feyo/style.css";
 数据表、空状态、日期选择器、树、分页、虚拟滚动、时间选择器、级联选择器和组合框。
 
 自定义元素使用普通页面 DOM（light DOM）。注册入口会将组件样式安装到页面中的一个
-`<style id="feyo-component-styles">`，重复导入不会重复安装。仍需导入
-`@kernel4632/feyo/style.css`，它提供全局设计 token 和基础样式。
+`<style id="kima-component-styles">`，重复导入不会重复安装。仍需导入
+`@kernel4632/kima/style.css`，它提供全局设计 token 和基础样式。
 
 ## 公开事件
 
-- `FeyoTextField` / `<feyo-text-field>`：输入时发送 `update:modelValue`，完成修改或清空时发送 `change`，值为字符串。清空也发送 `update:modelValue`。
-- `FeyoCheckbox` / `<feyo-checkbox>`、`FeyoSwitch` / `<feyo-switch>`：切换时各发送一次 `update:modelValue` 和 `change`，值为布尔值。
-- `FeyoSlider` / `<feyo-slider>`：拖动或键盘修改时发送 `update:modelValue`，提交修改时发送 `change`，值为数字。
-- `FeyoButton` / `<feyo-button>`：保留原生 `click`，点击一次只收到一个事件，不额外发送同名自定义事件。
-- `FeyoProgress` / `<feyo-progress>`：没有组件自定义事件。
+- `KimaTextField` / `<kima-text-field>`：输入时发送 `update:modelValue`，完成修改或清空时发送 `change`，值为字符串。清空也发送 `update:modelValue`。
+- `KimaCheckbox` / `<kima-checkbox>`、`KimaSwitch` / `<kima-switch>`：切换时各发送一次 `update:modelValue` 和 `change`，值为布尔值。
+- `KimaSlider` / `<kima-slider>`：拖动或键盘修改时发送 `update:modelValue`，提交修改时发送 `change`，值为数字。
+- `KimaButton` / `<kima-button>`：保留原生 `click`，点击一次只收到一个事件，不额外发送同名自定义事件。
+- `KimaProgress` / `<kima-progress>`：没有组件自定义事件。
 
 在 Vue 组件中，`v-model` 使用 `update:modelValue`，`@change` 直接收到新值。
 在自定义元素上，Vue 发出的事件是 `CustomEvent`，参数放在 `event.detail` **数组**中，
@@ -65,7 +65,7 @@ import "@kernel4632/feyo/style.css";
 原生按钮 `click` 仍使用普通鼠标事件，不遵循这个数组规则。
 
 ```js
-const field = document.querySelector("feyo-text-field");
+const field = document.querySelector("kima-text-field");
 field.addEventListener("update:modelValue", (event) => {
   const [value] = event.detail;
   console.log(value);
@@ -84,11 +84,12 @@ field.addEventListener("change", (event) => {
 ```
 src/
   styles/          设计 token 与全局样式
-  components/      组件
+  components/      组件，一个组件一个文件，放进来就自动登记
+  utils/           不属于单个组件的共用小工具
   App.vue          开发预览页
   main.js          开发入口
 ```
 
 协作约定见 [AGENTS.md](./AGENTS.md)。
-上游源码的固定版本与测量记录见 [参考研究笔记](./docs/reference.md)。
 组件自动从 `src/components/*.ce.vue` 发现，不需要修改中央注册表。
+[参考研究笔记](./docs/reference.md) 是改名前的上游测量记录，已过时，仅作历史参考。

@@ -4,8 +4,8 @@ options 格式为 { value, label, children, disabled }；children 缺失时按�
 本地上游参考只有 DankDropdown、DankListView 和 DankListItem，没有 Cascader 或 Combobox 控件。
 原生表单只提交路径最后一个 value；对象会按 String(value) 提交，复杂路径请在 Vue 事件中读取完整数组。
 Vue 用 v-model 和 v-model:open 同步状态；调用示例：
-  <feyo-cascader v-model="path" name="category" label="分类" :options="categories" clearable />
-  <feyo-cascader v-model="path" v-model:open="open" :options="categories" required />
+  <kima-cascader v-model="path" name="category" label="分类" :options="categories" clearable />
+  <kima-cascader v-model="path" v-model:open="open" :options="categories" required />
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useHost, useId, watch } from "vue";
@@ -51,7 +51,7 @@ const localPath = shallowRef(Array.isArray(props.modelValue) ? [...props.modelVa
 const localOpen = ref(props.open && !props.disabled);
 const activeColumn = ref(0);
 const activeIndexes = ref([]);
-const baseId = `feyo-cascader-${useId()}`;
+const baseId = `kima-cascader-${useId()}`;
 const labelId = `${baseId}-label`;
 const triggerId = `${baseId}-trigger`;
 const listboxId = `${baseId}-listbox`;
@@ -301,18 +301,18 @@ onBeforeUnmount(() => {
   <div
     ref="root"
     v-bind="forwardedAttrs"
-    class="feyo-cascader"
-    :class="{ 'feyo-cascader--open': localOpen, 'feyo-cascader--disabled': disabled }"
+    class="kima-cascader"
+    :class="{ 'kima-cascader--open': localOpen, 'kima-cascader--disabled': disabled }"
   >
-    <span v-if="label" :id="labelId" class="feyo-cascader__label">
+    <span v-if="label" :id="labelId" class="kima-cascader__label">
       {{ label }}<span v-if="required" aria-hidden="true"> *</span>
     </span>
 
-    <div class="feyo-cascader__control" :class="{ 'feyo-cascader__control--clearable': clearable && localPath.length }">
+    <div class="kima-cascader__control" :class="{ 'kima-cascader__control--clearable': clearable && localPath.length }">
       <button
         :id="triggerId"
         ref="trigger"
-        class="feyo-cascader__trigger"
+        class="kima-cascader__trigger"
         type="button"
         role="combobox"
         :disabled="disabled"
@@ -325,14 +325,14 @@ onBeforeUnmount(() => {
         @click="toggleCascader"
         @keydown="handleKeydown"
       >
-        <span class="feyo-cascader__trigger-label" :class="{ 'feyo-cascader__trigger-label--placeholder': !displayLabel }">
+        <span class="kima-cascader__trigger-label" :class="{ 'kima-cascader__trigger-label--placeholder': !displayLabel }">
           {{ displayLabel || placeholder }}
         </span>
-        <HugeiconsIcon class="feyo-cascader__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
+        <HugeiconsIcon class="kima-cascader__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
       </button>
       <button
         v-if="clearable && localPath.length"
-        class="feyo-cascader__clear"
+        class="kima-cascader__clear"
         type="button"
         aria-label="清除选择"
         title="清除选择"
@@ -345,7 +345,7 @@ onBeforeUnmount(() => {
 
     <input
       ref="nativeInput"
-      class="feyo-cascader__native"
+      class="kima-cascader__native"
       type="text"
       :id="inputId"
       :name="name"
@@ -359,17 +359,17 @@ onBeforeUnmount(() => {
       @invalid="handleInvalid"
     >
 
-    <div v-if="localOpen" :id="listboxId" class="feyo-cascader__popup" role="group" :aria-labelledby="label ? labelId : triggerId" @keydown="handleKeydown">
-      <div v-for="(items, column) in columns" :key="column" class="feyo-cascader__column" role="listbox" :aria-label="`第 ${column + 1} 级`">
+    <div v-if="localOpen" :id="listboxId" class="kima-cascader__popup" role="group" :aria-labelledby="label ? labelId : triggerId" @keydown="handleKeydown">
+      <div v-for="(items, column) in columns" :key="column" class="kima-cascader__column" role="listbox" :aria-label="`第 ${column + 1} 级`">
         <div
           v-for="(item, index) in items"
           :id="`${listboxId}-${column}-option-${index}`"
           :key="index"
           :ref="(element) => setOptionRef(element, column, index)"
-          class="feyo-cascader__option"
+          class="kima-cascader__option"
           :class="{
-            'feyo-cascader__option--active': column === activeColumn && index === activeIndexes[column],
-            'feyo-cascader__option--selected': Object.is(item.value, localPath[column]),
+            'kima-cascader__option--active': column === activeColumn && index === activeIndexes[column],
+            'kima-cascader__option--selected': Object.is(item.value, localPath[column]),
           }"
           role="option"
           :aria-selected="Object.is(item.value, localPath[column])"
@@ -378,101 +378,101 @@ onBeforeUnmount(() => {
           @pointerdown.prevent
           @click="selectItem(item, column)"
         >
-          <span class="feyo-cascader__option-label">{{ item.label }}</span>
+          <span class="kima-cascader__option-label">{{ item.label }}</span>
           <HugeiconsIcon v-if="Array.isArray(item.children) && item.children.length" :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
         </div>
-        <div v-if="items.length === 0" class="feyo-cascader__empty" role="status">暂无选项</div>
+        <div v-if="items.length === 0" class="kima-cascader__empty" role="status">暂无选项</div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.feyo-cascader {
+.kima-cascader {
   position: relative;
   display: inline-flex;
   width: 100%;
   max-width: 480px;
   min-width: 0;
   flex-direction: column;
-  gap: var(--feyo-space-1);
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  gap: var(--kima-space-1);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 }
 
-.feyo-cascader__label {
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-sm);
-  font-weight: var(--feyo-font-weight-medium);
+.kima-cascader__label {
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-sm);
+  font-weight: var(--kima-font-weight-medium);
 }
 
-.feyo-cascader__control {
+.kima-cascader__control {
   position: relative;
   display: flex;
   min-height: 42px;
 }
 
-.feyo-cascader__trigger {
+.kima-cascader__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
   min-height: 42px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: 0 var(--feyo-space-4);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container);
+  gap: var(--kima-space-3);
+  padding: 0 var(--kima-space-4);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--feyo-duration-fast) var(--feyo-ease-standard), background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
-  .feyo-cascader--open & {
-    border-color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+  .kima-cascader--open & {
+    border-color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-cascader__control--clearable .feyo-cascader__trigger {
+.kima-cascader__control--clearable .kima-cascader__trigger {
   padding-right: 72px;
 }
 
-.feyo-cascader__trigger-label {
+.kima-cascader__trigger-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.feyo-cascader__trigger-label--placeholder {
-  color: var(--feyo-color-on-surface-variant);
+.kima-cascader__trigger-label--placeholder {
+  color: var(--kima-color-on-surface-variant);
 }
 
-.feyo-cascader__arrow {
+.kima-cascader__arrow {
   flex: 0 0 auto;
-  color: var(--feyo-color-on-surface-variant);
-  transition: transform var(--feyo-duration-fast) var(--feyo-ease-standard);
+  color: var(--kima-color-on-surface-variant);
+  transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
 }
 
-.feyo-cascader--open .feyo-cascader__arrow {
+.kima-cascader--open .kima-cascader__arrow {
   transform: rotate(180deg);
 }
 
-.feyo-cascader__clear {
+.kima-cascader__clear {
   position: absolute;
   top: 50%;
   right: 36px;
@@ -483,30 +483,30 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-transparent);
   cursor: pointer;
   transform: translateY(-50%);
 
   &:hover:not(:disabled),
   &:focus-visible {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-cascader__native {
+.kima-cascader__native {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -518,107 +518,107 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-.feyo-cascader__popup {
+.kima-cascader__popup {
   box-sizing: border-box;
   position: absolute;
   z-index: 20;
-  top: calc(100% + var(--feyo-space-2));
+  top: calc(100% + var(--kima-space-2));
   left: 0;
   display: flex;
   max-width: min(720px, 100vw);
   max-height: min(360px, 50vh);
   overflow: auto;
-  padding: var(--feyo-space-2);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-md);
-  background: var(--feyo-color-surface-container);
-  box-shadow: 0 12px 28px var(--feyo-color-surface);
-  animation: feyo-cascader-enter var(--feyo-duration-fast) var(--feyo-ease-emphasized);
+  padding: var(--kima-space-2);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-md);
+  background: var(--kima-color-surface-container);
+  box-shadow: 0 12px 28px var(--kima-color-surface);
+  animation: kima-cascader-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
-.feyo-cascader__column {
+.kima-cascader__column {
   display: grid;
   min-width: 176px;
   max-height: 320px;
   align-content: start;
-  gap: var(--feyo-space-1);
-  padding: 0 var(--feyo-space-1);
+  gap: var(--kima-space-1);
+  padding: 0 var(--kima-space-1);
   overflow-y: auto;
 }
 
-.feyo-cascader__column + .feyo-cascader__column {
-  border-left: 1px solid var(--feyo-color-outline);
+.kima-cascader__column + .kima-cascader__column {
+  border-left: 1px solid var(--kima-color-outline);
 }
 
-.feyo-cascader__option {
+.kima-cascader__option {
   display: flex;
   min-height: 40px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: var(--feyo-space-2) var(--feyo-space-3);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
+  gap: var(--kima-space-3);
+  padding: var(--kima-space-2) var(--kima-space-3);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
   cursor: pointer;
 
   &:hover,
   &--active {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 
   &--selected {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-primary-container);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-primary-container);
   }
 
   &[aria-disabled="true"] {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-cascader__option-label {
+.kima-cascader__option-label {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.feyo-cascader__option > svg {
+.kima-cascader__option > svg {
   flex: 0 0 auto;
 }
 
-.feyo-cascader__empty {
-  padding: var(--feyo-space-3);
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-sm);
+.kima-cascader__empty {
+  padding: var(--kima-space-3);
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-sm);
   text-align: center;
 }
 
 @media (max-width: 560px) {
-  .feyo-cascader__popup {
+  .kima-cascader__popup {
     right: 0;
     max-width: none;
   }
 
-  .feyo-cascader__column {
+  .kima-cascader__column {
     min-width: 152px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feyo-cascader__trigger,
-  .feyo-cascader__arrow,
-  .feyo-cascader__popup {
+  .kima-cascader__trigger,
+  .kima-cascader__arrow,
+  .kima-cascader__popup {
     transition: none;
     animation: none;
   }
 }
 
-@keyframes feyo-cascader-enter {
+@keyframes kima-cascader-enter {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.98);

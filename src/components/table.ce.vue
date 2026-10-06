@@ -8,7 +8,7 @@ sortDirection 使用 asc / desc；sort-change 返回 { key, direction }，由外
 row-click 返回 row 和原始事件；Enter 激活行，空格选择行，方向键移动焦点。
 Vue 支持 cell-字段名插槽；原生自定义元素用 slot="empty" / slot="loading"。
 调用示例：
-  <feyo-table
+  <kima-table
     :columns="[{ key: 'name', label: '姓名', sortable: true }, { key: 'state', label: '状态' }]"
     :rows="users"
     row-key="id"
@@ -18,7 +18,7 @@ Vue 支持 cell-字段名插槽；原生自定义元素用 slot="empty" / slot="
     :sort-direction="sort.direction"
     @sort-change="sort = $event"
   />
-  <feyo-table :items="[]" :columns="columns"><template #empty>暂无记录</template></feyo-table>
+  <kima-table :items="[]" :columns="columns"><template #empty>暂无记录</template></kima-table>
 -->
 <script setup>
 import { computed, getCurrentInstance, ref, useAttrs, useHost, watch } from "vue";
@@ -135,17 +135,17 @@ function sortLabel(column) {
 </script>
 
 <template>
-  <div class="feyo-table" :class="{ 'feyo-table--striped': striped, 'feyo-table--hoverable': hoverable }">
-    <div class="feyo-table__scroll" tabindex="0" role="region" :aria-label="caption || attrs['aria-label'] || '表格区域'">
+  <div class="kima-table" :class="{ 'kima-table--striped': striped, 'kima-table--hoverable': hoverable }">
+    <div class="kima-table__scroll" tabindex="0" role="region" :aria-label="caption || attrs['aria-label'] || '表格区域'">
       <table v-bind="forwardedAttrs" :aria-busy="loading">
         <caption v-if="caption">{{ caption }}</caption>
         <thead>
           <tr>
-            <th v-if="selectable" scope="col" class="feyo-table__select-column">
+            <th v-if="selectable" scope="col" class="kima-table__select-column">
               <button
                 type="button"
                 role="checkbox"
-                class="feyo-table__select-button"
+                class="kima-table__select-button"
                 :aria-checked="selectionState"
                 :aria-label="selectionLabel"
                 :title="selectionLabel"
@@ -159,13 +159,13 @@ function sortLabel(column) {
               v-for="column in columns"
               :key="column.key"
               scope="col"
-              :class="`feyo-table__align--${column.align || 'start'}`"
+              :class="`kima-table__align--${column.align || 'start'}`"
               :aria-sort="column.sortable ? sortKey === column.key && validDirection ? (validDirection === 'asc' ? 'ascending' : 'descending') : 'none' : undefined"
             >
               <button
                 v-if="column.sortable"
                 type="button"
-                class="feyo-table__sort-button"
+                class="kima-table__sort-button"
                 :aria-label="sortLabel(column)"
                 :title="sortLabel(column)"
                 :disabled="loading"
@@ -179,21 +179,21 @@ function sortLabel(column) {
           </tr>
         </thead>
         <tbody v-if="loading">
-          <tr><td class="feyo-table__message" :colspan="columnCount"><div role="status"><slot name="loading">加载中</slot></div></td></tr>
+          <tr><td class="kima-table__message" :colspan="columnCount"><div role="status"><slot name="loading">加载中</slot></div></td></tr>
         </tbody>
         <tbody v-else-if="tableRows.length">
           <tr
             v-for="(row, index) in tableRows"
             :key="getRowKey(row, index)"
-            :class="{ 'feyo-table__row--selected': selectable && selectedKeys.has(getRowKey(row, index)) }"
+            :class="{ 'kima-table__row--selected': selectable && selectedKeys.has(getRowKey(row, index)) }"
             tabindex="0"
             @click="handleRowClick(row, $event)"
             @keydown="handleRowKeydown(row, index, $event)"
           >
-            <td v-if="selectable" class="feyo-table__select-column">
+            <td v-if="selectable" class="kima-table__select-column">
               <button
                 type="button"
-                class="feyo-table__select-button"
+                class="kima-table__select-button"
                 role="checkbox"
                 :aria-checked="selectedKeys.has(getRowKey(row, index))"
                 :aria-label="`${selectedKeys.has(getRowKey(row, index)) ? '取消选择' : '选择'}第 ${index + 1} 行`"
@@ -203,7 +203,7 @@ function sortLabel(column) {
                 <HugeiconsIcon :icon="selectedKeys.has(getRowKey(row, index)) ? CheckmarkSquare02Icon : SquareIcon" :size="20" aria-hidden="true" />
               </button>
             </td>
-            <td v-for="column in columns" :key="column.key" :class="`feyo-table__align--${column.align || 'start'}`">
+            <td v-for="column in columns" :key="column.key" :class="`kima-table__align--${column.align || 'start'}`">
               <slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]" :column="column">
                 {{ row[column.key] }}
               </slot>
@@ -211,7 +211,7 @@ function sortLabel(column) {
           </tr>
         </tbody>
         <tbody v-else>
-          <tr><td class="feyo-table__message" :colspan="columnCount"><div role="status"><slot name="empty">暂无数据</slot></div></td></tr>
+          <tr><td class="kima-table__message" :colspan="columnCount"><div role="status"><slot name="empty">暂无数据</slot></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -219,22 +219,22 @@ function sortLabel(column) {
 </template>
 
 <style scoped lang="scss">
-.feyo-table {
+.kima-table {
   width: 100%;
   min-width: 0;
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-md);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
+  font-size: var(--kima-font-size-md);
   line-height: 1.5;
   letter-spacing: 0;
 }
 
-.feyo-table__scroll {
+.kima-table__scroll {
   max-width: 100%;
   overflow-x: auto;
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 }
@@ -246,83 +246,83 @@ table {
 }
 
 caption {
-  padding: var(--feyo-space-3) var(--feyo-space-4);
-  color: var(--feyo-color-on-surface-variant);
+  padding: var(--kima-space-3) var(--kima-space-4);
+  color: var(--kima-color-on-surface-variant);
   text-align: start;
   caption-side: top;
 }
 
 th,
 td {
-  padding: var(--feyo-space-3) var(--feyo-space-4);
-  border-bottom: 1px solid var(--feyo-color-outline);
+  padding: var(--kima-space-3) var(--kima-space-4);
+  border-bottom: 1px solid var(--kima-color-outline);
   overflow-wrap: anywhere;
   text-align: start;
   vertical-align: middle;
 }
 
 th {
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-surface-container);
-  font-size: var(--feyo-font-size-sm);
-  font-weight: var(--feyo-font-weight-bold);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-surface-container);
+  font-size: var(--kima-font-size-sm);
+  font-weight: var(--kima-font-weight-bold);
 }
 
 tbody tr {
-  transition: background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 }
 
-.feyo-table--striped tbody tr:nth-child(even) {
-  background: var(--feyo-color-surface-container);
+.kima-table--striped tbody tr:nth-child(even) {
+  background: var(--kima-color-surface-container);
 }
 
-.feyo-table--hoverable tbody tr:hover {
-  background: var(--feyo-color-surface-container-high);
+.kima-table--hoverable tbody tr:hover {
+  background: var(--kima-color-surface-container-high);
 }
 
-.feyo-table tbody tr.feyo-table__row--selected {
-  color: var(--feyo-color-on-primary-container);
-  background: var(--feyo-color-primary-container);
+.kima-table tbody tr.kima-table__row--selected {
+  color: var(--kima-color-on-primary-container);
+  background: var(--kima-color-primary-container);
 }
 
-.feyo-table__sort-button,
-.feyo-table__select-button {
+.kima-table__sort-button,
+.kima-table__select-button {
   display: inline-flex;
   min-height: 40px;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-sm);
+  border-radius: var(--kima-radius-sm);
   color: inherit;
-  background: var(--feyo-color-transparent);
+  background: var(--kima-color-transparent);
   font: inherit;
   letter-spacing: 0;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    color: var(--feyo-color-primary);
+    color: var(--kima-color-primary);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-table__sort-button {
+.kima-table__sort-button {
   max-width: 100%;
-  gap: var(--feyo-space-2);
+  gap: var(--kima-space-2);
   text-align: inherit;
 
   :deep(svg) {
@@ -330,37 +330,37 @@ tbody tr {
   }
 }
 
-.feyo-table__select-column {
+.kima-table__select-column {
   width: 40px;
-  padding: var(--feyo-space-1) var(--feyo-space-2);
+  padding: var(--kima-space-1) var(--kima-space-2);
   text-align: center;
 }
 
-.feyo-table__select-button {
+.kima-table__select-button {
   width: 40px;
   height: 40px;
 
   &[aria-checked="true"],
   &[aria-checked="mixed"] {
-    color: var(--feyo-color-primary);
+    color: var(--kima-color-primary);
   }
 }
 
-.feyo-table__message {
+.kima-table__message {
   height: 96px;
-  color: var(--feyo-color-on-surface-variant);
+  color: var(--kima-color-on-surface-variant);
   text-align: center;
 }
 
-.feyo-table__align--left { text-align: left; }
-.feyo-table__align--right { text-align: right; }
-.feyo-table__align--center { text-align: center; }
-.feyo-table__align--end { text-align: end; }
+.kima-table__align--left { text-align: left; }
+.kima-table__align--right { text-align: right; }
+.kima-table__align--center { text-align: center; }
+.kima-table__align--end { text-align: end; }
 
 @media (max-width: 480px) {
   th,
   td {
-    padding-inline: var(--feyo-space-2);
+    padding-inline: var(--kima-space-2);
   }
 }
 

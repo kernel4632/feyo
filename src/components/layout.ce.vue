@@ -1,11 +1,11 @@
 <!--
 布局容器：用统一的页面或面板宽度、间距和内边距组织设置类内容。
 调用示例：
-  <feyo-layout variant="page" as="main">
+  <kima-layout variant="page" as="main">
     <template #header><h1>设置</h1></template>
     <section>页面内容</section>
-  </feyo-layout>
-  <feyo-layout variant="panel" :max-width="640">表单内容</feyo-layout>
+  </kima-layout>
+  <kima-layout variant="panel" :max-width="640">表单内容</kima-layout>
 -->
 <script setup>
 import { computed, ref, useAttrs } from "vue";
@@ -54,9 +54,9 @@ const dimension = (value) => {
   return value;
 };
 const layoutStyle = computed(() => ({
-  "--feyo-layout-max-width": dimension(props.maxWidth),
-  "--feyo-layout-gap": dimension(props.gap),
-  "--feyo-layout-padding": props.padding === undefined ? undefined : dimension(props.padding),
+  "--kima-layout-max-width": dimension(props.maxWidth),
+  "--kima-layout-gap": dimension(props.gap),
+  "--kima-layout-padding": props.padding === undefined ? undefined : dimension(props.padding),
 }));
 </script>
 
@@ -65,63 +65,63 @@ const layoutStyle = computed(() => ({
     :is="semanticElement"
     ref="root"
     v-bind="forwardedAttrs"
-    class="feyo-layout"
-    :class="`feyo-layout--${layoutVariant}`"
+    class="kima-layout"
+    :class="`kima-layout--${layoutVariant}`"
     :style="layoutStyle"
   >
-    <header v-if="$slots.header || hasNativeSlot('header')" class="feyo-layout__header"><slot name="header" /></header>
-    <div v-if="$slots.default || hasNativeSlot('default')" class="feyo-layout__content"><slot /></div>
-    <footer v-if="$slots.footer || hasNativeSlot('footer')" class="feyo-layout__footer"><slot name="footer" /></footer>
+    <header v-if="$slots.header || hasNativeSlot('header')" class="kima-layout__header"><slot name="header" /></header>
+    <div v-if="$slots.default || hasNativeSlot('default')" class="kima-layout__content"><slot /></div>
+    <footer v-if="$slots.footer || hasNativeSlot('footer')" class="kima-layout__footer"><slot name="footer" /></footer>
   </component>
 </template>
 
 <style scoped lang="scss">
-.feyo-layout {
+.kima-layout {
   box-sizing: border-box;
   width: 100%;
-  max-width: var(--feyo-layout-max-width);
+  max-width: var(--kima-layout-max-width);
   margin: 0 auto;
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 }
 
-.feyo-layout__header,
-.feyo-layout__content,
-.feyo-layout__footer {
+.kima-layout__header,
+.kima-layout__content,
+.kima-layout__footer {
   display: flex;
   flex-direction: column;
-  gap: var(--feyo-layout-gap);
+  gap: var(--kima-layout-gap);
 }
 
-.feyo-layout__content {
+.kima-layout__content {
   min-width: 0;
 }
 
-.feyo-layout__header + .feyo-layout__content,
-.feyo-layout__content + .feyo-layout__footer {
-  margin-top: var(--feyo-layout-gap);
+.kima-layout__header + .kima-layout__content,
+.kima-layout__content + .kima-layout__footer {
+  margin-top: var(--kima-layout-gap);
 }
 
-.feyo-layout--page {
-  padding: var(--feyo-layout-padding, 40px);
+.kima-layout--page {
+  padding: var(--kima-layout-padding, 40px);
 }
 
-.feyo-layout--panel {
-  padding: var(--feyo-layout-padding, 24px);
-  border: 1px solid var(--feyo-color-outline);
+.kima-layout--panel {
+  padding: var(--kima-layout-padding, 24px);
+  border: 1px solid var(--kima-color-outline);
   border-radius: 16px;
-  background: var(--feyo-color-surface-container);
+  background: var(--kima-color-surface-container);
 }
 
 @media (max-width: 720px) {
-  .feyo-layout--page {
+  .kima-layout--page {
     padding: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .feyo-layout--page,
-  .feyo-layout--panel {
+  .kima-layout--page,
+  .kima-layout--panel {
     padding: 16px;
   }
 }

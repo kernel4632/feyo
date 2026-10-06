@@ -1,5 +1,5 @@
-/* FEYO design tokens
- * All theming is driven by CSS custom properties with the `--feyo-` prefix.
+/* KIMA design tokens
+ * All theming is driven by CSS custom properties with the `--kima-` prefix.
  * Never hard-code colors in components; always reference a token.
  *
  * Values below are taken from the DMS reference sources, not invented:
@@ -12,216 +12,216 @@
 :root {
   /* ---- Typography ---- */
   /* DMS Fonts.qml + Theme.qml: sans "Google Sans Flex", mono "Fira Code". */
-  --feyo-font-family: "Google Sans Flex", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --feyo-font-mono: "Fira Code", "SFMono-Regular", Consolas, monospace;
+  --kima-font-family: "Google Sans Flex", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --kima-font-mono: "Fira Code", "SFMono-Regular", Consolas, monospace;
   /* DMS Theme.qml fontSize*: Small 12, Medium 14, Large 16, XLarge 20, XXLarge 28, Display 36. */
-  --feyo-font-size-small: 12px;
-  --feyo-font-size-medium: 14px;
-  --feyo-font-size-large: 16px;
-  --feyo-font-size-x-large: 20px;
-  --feyo-font-size-xx-large: 28px;
-  --feyo-font-size-display: 36px;
-  --feyo-font-weight-regular: 400;
-  --feyo-font-weight-medium: 500;
-  --feyo-font-weight-bold: 700;
+  --kima-font-size-small: 12px;
+  --kima-font-size-medium: 14px;
+  --kima-font-size-large: 16px;
+  --kima-font-size-x-large: 20px;
+  --kima-font-size-xx-large: 28px;
+  --kima-font-size-display: 36px;
+  --kima-font-weight-regular: 400;
+  --kima-font-weight-medium: 500;
+  --kima-font-weight-bold: 700;
 
   /* ---- Spacing ---- */
   /* DMS Style.qml spacing*: XXS 2, XS 4, S 8, M 12, L 16, XL 24. */
-  --feyo-space-xxs: 2px;
-  --feyo-space-xs: 4px;
-  --feyo-space-s: 8px;
-  --feyo-space-m: 12px;
-  --feyo-space-l: 16px;
-  --feyo-space-xl: 24px;
+  --kima-space-xxs: 2px;
+  --kima-space-xs: 4px;
+  --kima-space-s: 8px;
+  --kima-space-m: 12px;
+  --kima-space-l: 16px;
+  --kima-space-xl: 24px;
 
   /* ---- Shape ---- */
   /* DMS Shape.js corners: XXS 2, XS 4, S 8, M 12, L 16, L+ 20, XL 28, XL+ 32, XXL 48.
    * Full radius is half the shorter side (Style.fullRadius). */
-  --feyo-radius-xxs: 2px;
-  --feyo-radius-xs: 4px;
-  --feyo-radius-s: 8px;
-  --feyo-radius-m: 12px;
-  --feyo-radius-l: 16px;
-  --feyo-radius-l-increased: 20px;
-  --feyo-radius-xl: 28px;
-  --feyo-radius-xl-increased: 32px;
-  --feyo-radius-xxl: 48px;
-  --feyo-radius-full: 999px;
+  --kima-radius-xxs: 2px;
+  --kima-radius-xs: 4px;
+  --kima-radius-s: 8px;
+  --kima-radius-m: 12px;
+  --kima-radius-l: 16px;
+  --kima-radius-l-increased: 20px;
+  --kima-radius-xl: 28px;
+  --kima-radius-xl-increased: 32px;
+  --kima-radius-xxl: 48px;
+  --kima-radius-full: 999px;
 
   /* ---- Motion ----
    * DMS Theme.qml with base duration 250ms.
    * Durations: expressiveDurations.* ; curves: expressiveCurves.* verbatim. */
-  --feyo-duration-fast: 100ms;
-  --feyo-duration-normal: 200ms;
-  --feyo-duration-large: 300ms;
-  --feyo-duration-extra-large: 500ms;
-  --feyo-duration-shorter: 50ms;
-  --feyo-duration-expressive-fast-spatial: 175ms;
-  --feyo-duration-expressive-default-spatial: 250ms;
-  --feyo-duration-expressive-slow-spatial: 325ms;
-  --feyo-duration-expressive-fast-effects: 75ms;
-  --feyo-duration-expressive-effects: 100ms;
-  --feyo-duration-expressive-slow-effects: 150ms;
-  --feyo-curve-standard: cubic-bezier(0.2, 0, 0, 1);
-  --feyo-curve-standard-decel: cubic-bezier(0, 0, 0, 1);
-  --feyo-curve-standard-accel: cubic-bezier(0.3, 0, 1, 1);
-  --feyo-curve-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
-  --feyo-curve-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --feyo-curve-expressive-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
-  --feyo-curve-expressive-default-spatial: cubic-bezier(0.38, 1.21, 0.22, 1);
-  --feyo-curve-expressive-slow-spatial: cubic-bezier(0.39, 1.29, 0.35, 0.98);
-  --feyo-curve-expressive-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
-  --feyo-curve-expressive-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
-  --feyo-curve-expressive-slow-effects: cubic-bezier(0.34, 0.88, 0.34, 1);
+  --kima-duration-fast: 100ms;
+  --kima-duration-normal: 200ms;
+  --kima-duration-large: 300ms;
+  --kima-duration-extra-large: 500ms;
+  --kima-duration-shorter: 50ms;
+  --kima-duration-expressive-fast-spatial: 175ms;
+  --kima-duration-expressive-default-spatial: 250ms;
+  --kima-duration-expressive-slow-spatial: 325ms;
+  --kima-duration-expressive-fast-effects: 75ms;
+  --kima-duration-expressive-effects: 100ms;
+  --kima-duration-expressive-slow-effects: 150ms;
+  --kima-curve-standard: cubic-bezier(0.2, 0, 0, 1);
+  --kima-curve-standard-decel: cubic-bezier(0, 0, 0, 1);
+  --kima-curve-standard-accel: cubic-bezier(0.3, 0, 1, 1);
+  --kima-curve-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --kima-curve-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --kima-curve-expressive-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
+  --kima-curve-expressive-default-spatial: cubic-bezier(0.38, 1.21, 0.22, 1);
+  --kima-curve-expressive-slow-spatial: cubic-bezier(0.39, 1.29, 0.35, 0.98);
+  --kima-curve-expressive-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
+  --kima-curve-expressive-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
+  --kima-curve-expressive-slow-effects: cubic-bezier(0.34, 0.88, 0.34, 1);
   /* Legacy names kept so untouched components keep working during the port. */
-  --feyo-duration-short: var(--feyo-duration-fast);
-  --feyo-duration-medium: var(--feyo-duration-normal);
-  --feyo-duration-slow: var(--feyo-duration-large);
-  --feyo-duration-effects: var(--feyo-duration-expressive-effects);
-  --feyo-ease-standard: var(--feyo-curve-standard);
-  --feyo-ease-emphasized: var(--feyo-curve-emphasized-decel);
-  --feyo-ease-standard-curve: var(--feyo-curve-standard);
-  --feyo-ease-effects: var(--feyo-curve-expressive-effects);
+  --kima-duration-short: var(--kima-duration-fast);
+  --kima-duration-medium: var(--kima-duration-normal);
+  --kima-duration-slow: var(--kima-duration-large);
+  --kima-duration-effects: var(--kima-duration-expressive-effects);
+  --kima-ease-standard: var(--kima-curve-standard);
+  --kima-ease-emphasized: var(--kima-curve-emphasized-decel);
+  --kima-ease-standard-curve: var(--kima-curve-standard);
+  --kima-ease-effects: var(--kima-curve-expressive-effects);
 
   /* ---- Component sizes ---- */
   /* DMS Style.qml component metrics. */
-  --feyo-outline-width: 1px;
-  --feyo-outline-width-focused: 2px;
+  --kima-outline-width: 1px;
+  --kima-outline-width-focused: 2px;
   /* DMS SettingsSpec focusRingWidth 1.5, Topic ring offset 3. */
-  --feyo-focus-ring-width: 1.5px;
-  --feyo-focus-ring-offset: 3px;
-  --feyo-spinner-duration: 1568ms;
+  --kima-focus-ring-width: 1.5px;
+  --kima-focus-ring-offset: 3px;
+  --kima-spinner-duration: 1568ms;
   /* DMS Style.qml buttonHeight*: XXS 28, XS 32, S 40 (DankButton default), M 56. */
-  --feyo-button-height-xxs: 28px;
-  --feyo-button-height-xs: 32px;
-  --feyo-button-height-s: 40px;
-  --feyo-button-height-m: 56px;
-  --feyo-button-min-width: 58px;
-  --feyo-icon-button-size: 40px;
-  --feyo-icon-size: 24px;
-  --feyo-icon-size-small: 16px;
-  --feyo-icon-size-medium: 20px;
-  --feyo-icon-size-large: 32px;
-  --feyo-field-height: 42px;
-  --feyo-field-height-large: 48px;
-  --feyo-list-item-height: 56px;
-  --feyo-menu-item-height: 40px;
-  --feyo-menu-max-height: 400px;
-  --feyo-tab-min-width: 64px;
-  --feyo-tab-indicator-height: 3px;
-  --feyo-tab-indicator-min-width: 24px;
-  --feyo-dialog-max-width: 560px;
-  --feyo-switch-track-width: 52px;
-  --feyo-switch-track-height: 32px;
-  --feyo-switch-outline-width: 2px;
-  --feyo-switch-thumb-unselected: 16px;
-  --feyo-switch-thumb-selected: 24px;
-  --feyo-switch-thumb-pressed: 28px;
-  --feyo-slider-track-height: 16px;
-  --feyo-slider-handle-width: 4px;
-  --feyo-slider-handle-height: 28px;
-  --feyo-slider-handle-gap: 6px;
-  --feyo-slider-track-radius: 8px;
-  --feyo-slider-track-inside-radius: 2px;
-  --feyo-scrollbar-thickness: 6px;
-  --feyo-tooltip-max-width: 500px;
-  --feyo-tooltip-delay: 400ms;
+  --kima-button-height-xxs: 28px;
+  --kima-button-height-xs: 32px;
+  --kima-button-height-s: 40px;
+  --kima-button-height-m: 56px;
+  --kima-button-min-width: 58px;
+  --kima-icon-button-size: 40px;
+  --kima-icon-size: 24px;
+  --kima-icon-size-small: 16px;
+  --kima-icon-size-medium: 20px;
+  --kima-icon-size-large: 32px;
+  --kima-field-height: 42px;
+  --kima-field-height-large: 48px;
+  --kima-list-item-height: 56px;
+  --kima-menu-item-height: 40px;
+  --kima-menu-max-height: 400px;
+  --kima-tab-min-width: 64px;
+  --kima-tab-indicator-height: 3px;
+  --kima-tab-indicator-min-width: 24px;
+  --kima-dialog-max-width: 560px;
+  --kima-switch-track-width: 52px;
+  --kima-switch-track-height: 32px;
+  --kima-switch-outline-width: 2px;
+  --kima-switch-thumb-unselected: 16px;
+  --kima-switch-thumb-selected: 24px;
+  --kima-switch-thumb-pressed: 28px;
+  --kima-slider-track-height: 16px;
+  --kima-slider-handle-width: 4px;
+  --kima-slider-handle-height: 28px;
+  --kima-slider-handle-gap: 6px;
+  --kima-slider-track-radius: 8px;
+  --kima-slider-track-inside-radius: 2px;
+  --kima-scrollbar-thickness: 6px;
+  --kima-tooltip-max-width: 500px;
+  --kima-tooltip-delay: 400ms;
 
   /* ---- State layers ---- */
   /* DMS Style.qml stateLayer*: hover 0.08, focus 0.12, pressed 0.12, drag 0.16. */
-  --feyo-state-hover: 0.08;
-  --feyo-state-focus: 0.12;
-  --feyo-state-pressed: 0.12;
-  --feyo-state-drag: 0.16;
-  --feyo-opacity-disabled: 0.6;
+  --kima-state-hover: 0.08;
+  --kima-state-focus: 0.12;
+  --kima-state-pressed: 0.12;
+  --kima-state-drag: 0.16;
+  --kima-opacity-disabled: 0.6;
   /* DMS Style.qml elevationLevel1/2/3（blur / offsetY / alpha）。 */
-  --feyo-shadow-1: 0 1px 4px rgba(0, 0, 0, 0.2);
-  --feyo-shadow-2: 0 4px 8px rgba(0, 0, 0, 0.25);
-  --feyo-shadow-3: 0 6px 12px rgba(0, 0, 0, 0.3);
-  --feyo-press-scale: 0.98;
+  --kima-shadow-1: 0 1px 4px rgba(0, 0, 0, 0.2);
+  --kima-shadow-2: 0 4px 8px rgba(0, 0, 0, 0.25);
+  --kima-shadow-3: 0 6px 12px rgba(0, 0, 0, 0.3);
+  --kima-press-scale: 0.98;
 
   /* ---- Color: dark (default) ----
    * Values are DMS's own Material You palette (StockThemes.js "purple" +
-   * Style.qml role defaults), so FEYS matches DMS's real appearance. */
-  --feyo-color-surface: #141218;
-  --feyo-color-surface-container: #211f24;
-  --feyo-color-surface-container-high: #2b292f;
-  --feyo-color-on-surface: #e6e0e9;
-  --feyo-color-on-surface-variant: #cac4cf;
-  --feyo-color-outline: #948f99;
-  --feyo-color-outline-variant: #49454f;
-  --feyo-color-primary: #d0bcff;
-  --feyo-color-on-primary: #381e72;
-  --feyo-color-primary-container: #4f378b;
-  --feyo-color-on-primary-container: #eaddff;
-  --feyo-color-secondary-container: #4a4458;
-  --feyo-color-on-secondary-container: #e8def8;
-  --feyo-color-tertiary-container: #633b48;
-  --feyo-color-on-tertiary-container: #ffd8e4;
-  --feyo-color-error-container: #8c1d18;
-  --feyo-color-on-error-container: #f9dedc;
-  --feyo-color-inverse-surface: #e6e0e9;
-  --feyo-color-inverse-on-surface: #322f35;
-  --feyo-color-transparent: transparent;
-  --feyo-color-danger: #f2b8b5;
-  --feyo-color-on-danger: #601410;
-  --feyo-color-success: #4caf50;
-  --feyo-color-on-success: #07130a;
-  --feyo-color-warning: #ff9800;
-  --feyo-color-on-warning: #3e2400;
+   * Style.qml role defaults), so KIMA matches DMS's real appearance. */
+  --kima-color-surface: #141218;
+  --kima-color-surface-container: #211f24;
+  --kima-color-surface-container-high: #2b292f;
+  --kima-color-on-surface: #e6e0e9;
+  --kima-color-on-surface-variant: #cac4cf;
+  --kima-color-outline: #948f99;
+  --kima-color-outline-variant: #49454f;
+  --kima-color-primary: #d0bcff;
+  --kima-color-on-primary: #381e72;
+  --kima-color-primary-container: #4f378b;
+  --kima-color-on-primary-container: #eaddff;
+  --kima-color-secondary-container: #4a4458;
+  --kima-color-on-secondary-container: #e8def8;
+  --kima-color-tertiary-container: #633b48;
+  --kima-color-on-tertiary-container: #ffd8e4;
+  --kima-color-error-container: #8c1d18;
+  --kima-color-on-error-container: #f9dedc;
+  --kima-color-inverse-surface: #e6e0e9;
+  --kima-color-inverse-on-surface: #322f35;
+  --kima-color-transparent: transparent;
+  --kima-color-danger: #f2b8b5;
+  --kima-color-on-danger: #601410;
+  --kima-color-success: #4caf50;
+  --kima-color-on-success: #07130a;
+  --kima-color-warning: #ff9800;
+  --kima-color-on-warning: #3e2400;
   /* Alpha roles derive from the base surface color, so themes stay in sync. */
-  --feyo-color-on-surface-12: color-mix(in srgb, var(--feyo-color-on-surface) 12%, transparent);
-  --feyo-color-on-surface-38: color-mix(in srgb, var(--feyo-color-on-surface) 38%, transparent);
-  --feyo-color-on-surface-variant-30: color-mix(in srgb, var(--feyo-color-on-surface-variant) 30%, transparent);
+  --kima-color-on-surface-12: color-mix(in srgb, var(--kima-color-on-surface) 12%, transparent);
+  --kima-color-on-surface-38: color-mix(in srgb, var(--kima-color-on-surface) 38%, transparent);
+  --kima-color-on-surface-variant-30: color-mix(in srgb, var(--kima-color-on-surface-variant) 30%, transparent);
 
   /* ---- Aliases kept for existing components ----
    * These names predate the DMS alignment pass. Each maps to the nearest
    * DMS token above; the per-component pass will replace the usages. */
-  --feyo-font-size-xs: var(--feyo-font-size-small);
-  --feyo-font-size-sm: var(--feyo-font-size-small);
-  --feyo-font-size-md: var(--feyo-font-size-medium);
-  --feyo-font-size-lg: var(--feyo-font-size-large);
-  --feyo-font-size-xl: var(--feyo-font-size-x-large);
-  --feyo-space-1: var(--feyo-space-xs);
-  --feyo-space-2: var(--feyo-space-s);
-  --feyo-space-3: var(--feyo-space-m);
-  --feyo-space-4: var(--feyo-space-l);
-  --feyo-space-5: var(--feyo-space-xl);
-  --feyo-space-6: var(--feyo-space-xl);
-  --feyo-radius-sm: var(--feyo-radius-s);
-  --feyo-radius-md: var(--feyo-radius-m);
-  --feyo-radius-lg: var(--feyo-radius-l);
-  --feyo-duration-fast: var(--feyo-duration-short);
-  --feyo-duration-normal: var(--feyo-duration-medium);
-  --feyo-duration-slow: var(--feyo-duration-long);
+  --kima-font-size-xs: var(--kima-font-size-small);
+  --kima-font-size-sm: var(--kima-font-size-small);
+  --kima-font-size-md: var(--kima-font-size-medium);
+  --kima-font-size-lg: var(--kima-font-size-large);
+  --kima-font-size-xl: var(--kima-font-size-x-large);
+  --kima-space-1: var(--kima-space-xs);
+  --kima-space-2: var(--kima-space-s);
+  --kima-space-3: var(--kima-space-m);
+  --kima-space-4: var(--kima-space-l);
+  --kima-space-5: var(--kima-space-xl);
+  --kima-space-6: var(--kima-space-xl);
+  --kima-radius-sm: var(--kima-radius-s);
+  --kima-radius-md: var(--kima-radius-m);
+  --kima-radius-lg: var(--kima-radius-l);
+  --kima-duration-fast: var(--kima-duration-short);
+  --kima-duration-normal: var(--kima-duration-medium);
+  --kima-duration-slow: var(--kima-duration-long);
 }
 
-:root[data-feyo-theme="light"] {
+:root[data-kima-theme="light"] {
   /* DMS light "purple" palette (StockThemes.js), with Material on-container roles. */
-  --feyo-color-surface: #fef7ff;
-  --feyo-color-surface-container: #f2ecf4;
-  --feyo-color-surface-container-high: #ece6ee;
-  --feyo-color-on-surface: #1d1b20;
-  --feyo-color-on-surface-variant: #49454e;
-  --feyo-color-outline: #7a757f;
-  --feyo-color-outline-variant: #cac4d0;
-  --feyo-color-primary: #6750a4;
-  --feyo-color-on-primary: #ffffff;
-  --feyo-color-primary-container: #eaddff;
-  --feyo-color-on-primary-container: #21005d;
-  --feyo-color-secondary-container: #e8def8;
-  --feyo-color-on-secondary-container: #1d192b;
-  --feyo-color-tertiary-container: #ffd8e4;
-  --feyo-color-on-tertiary-container: #31111d;
-  --feyo-color-error-container: #f9dedc;
-  --feyo-color-on-error-container: #410e0b;
-  --feyo-color-inverse-surface: #322f35;
-  --feyo-color-inverse-on-surface: #f5eff7;
-  --feyo-color-transparent: transparent;
-  --feyo-color-danger: #b3261e;
-  --feyo-color-on-danger: #ffffff;
-  --feyo-color-success: #2e7d32;
-  --feyo-color-on-success: #ffffff;
-  --feyo-color-warning: #f57c00;
-  --feyo-color-on-warning: #ffffff;
+  --kima-color-surface: #fef7ff;
+  --kima-color-surface-container: #f2ecf4;
+  --kima-color-surface-container-high: #ece6ee;
+  --kima-color-on-surface: #1d1b20;
+  --kima-color-on-surface-variant: #49454e;
+  --kima-color-outline: #7a757f;
+  --kima-color-outline-variant: #cac4d0;
+  --kima-color-primary: #6750a4;
+  --kima-color-on-primary: #ffffff;
+  --kima-color-primary-container: #eaddff;
+  --kima-color-on-primary-container: #21005d;
+  --kima-color-secondary-container: #e8def8;
+  --kima-color-on-secondary-container: #1d192b;
+  --kima-color-tertiary-container: #ffd8e4;
+  --kima-color-on-tertiary-container: #31111d;
+  --kima-color-error-container: #f9dedc;
+  --kima-color-on-error-container: #410e0b;
+  --kima-color-inverse-surface: #322f35;
+  --kima-color-inverse-on-surface: #f5eff7;
+  --kima-color-transparent: transparent;
+  --kima-color-danger: #b3261e;
+  --kima-color-on-danger: #ffffff;
+  --kima-color-success: #2e7d32;
+  --kima-color-on-success: #ffffff;
+  --kima-color-warning: #f57c00;
+  --kima-color-on-warning: #ffffff;
 }

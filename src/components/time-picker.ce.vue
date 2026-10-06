@@ -2,8 +2,8 @@
 时间选择器：使用本地 HH:mm 字符串，不创建带时区的值，也不做日期换算。
 modelValue 是 HH:mm 或 null；min、max 是同样格式，step 是分钟间隔。
 调用示例：
-  <feyo-time-picker v-model="time" name="start" label="开始时间" min="08:00" max="18:00" step="15" clearable />
-  <feyo-time-picker v-model="time" v-model:open="open" locale="en-US" hour12 />
+  <kima-time-picker v-model="time" name="start" label="开始时间" min="08:00" max="18:00" step="15" clearable />
+  <kima-time-picker v-model="time" v-model:open="open" locale="en-US" hour12 />
 打开后先选小时，再选分钟；Arrow、Home、End、Enter、Escape 和 Tab 都有对应的键盘行为。
 上游记录：本地参考仓库有 DankTimePicker.qml，采用小时、分钟分步选择和 AM/PM；没有浏览器原生时间选择器实现。
 -->
@@ -77,7 +77,7 @@ let form;
 let initialValue;
 let resetTimer;
 
-const baseId = `feyo-time-picker-${useId()}`;
+const baseId = `kima-time-picker-${useId()}`;
 const labelId = `${baseId}-label`;
 const triggerId = `${baseId}-trigger`;
 const popupId = `${baseId}-popup`;
@@ -411,18 +411,18 @@ onBeforeUnmount(() => {
   <div
     ref="root"
     v-bind="forwardedAttrs"
-    class="feyo-time-picker"
-    :class="{ 'feyo-time-picker--open': localOpen, 'feyo-time-picker--disabled': disabled }"
+    class="kima-time-picker"
+    :class="{ 'kima-time-picker--open': localOpen, 'kima-time-picker--disabled': disabled }"
   >
-    <span v-if="label" :id="labelId" class="feyo-time-picker__label">
+    <span v-if="label" :id="labelId" class="kima-time-picker__label">
       {{ label }}<span v-if="required" aria-hidden="true"> *</span>
     </span>
 
-    <div class="feyo-time-picker__control" :class="{ 'feyo-time-picker__control--clearable': clearable && localValue }">
+    <div class="kima-time-picker__control" :class="{ 'kima-time-picker__control--clearable': clearable && localValue }">
       <button
         :id="triggerId"
         ref="trigger"
-        class="feyo-time-picker__trigger"
+        class="kima-time-picker__trigger"
         type="button"
         role="combobox"
         aria-haspopup="dialog"
@@ -435,14 +435,14 @@ onBeforeUnmount(() => {
         @click="togglePicker"
         @keydown="handleTriggerKeydown"
       >
-        <span class="feyo-time-picker__trigger-label" :class="{ 'feyo-time-picker__trigger-label--placeholder': parseTime(localValue) === null }">
+        <span class="kima-time-picker__trigger-label" :class="{ 'kima-time-picker__trigger-label--placeholder': parseTime(localValue) === null }">
           {{ displayText }}
         </span>
-        <span class="feyo-time-picker__arrow" aria-hidden="true"></span>
+        <span class="kima-time-picker__arrow" aria-hidden="true"></span>
       </button>
       <button
         v-if="clearable && localValue"
-        class="feyo-time-picker__clear"
+        class="kima-time-picker__clear"
         type="button"
         aria-label="Clear time"
         title="Clear time"
@@ -456,7 +456,7 @@ onBeforeUnmount(() => {
     <!-- 隐藏输入框保留 HH:mm 原值，让 FormData、required 和 form.reset() 使用原生表单规则。 -->
     <input
       ref="nativeInput"
-      class="feyo-time-picker__native"
+      class="kima-time-picker__native"
       type="text"
       :name="name"
       :value="localValue || ''"
@@ -469,19 +469,19 @@ onBeforeUnmount(() => {
       @invalid="handleInvalid"
     >
 
-    <div v-if="localOpen" :id="popupId" class="feyo-time-picker__popup" role="dialog" :aria-labelledby="label ? labelId : undefined" @keydown="handlePopupKeydown">
-      <div class="feyo-time-picker__summary" aria-live="polite">{{ formatTime(draftHour, draftMinute) }}</div>
-      <div class="feyo-time-picker__columns">
-        <div class="feyo-time-picker__column">
-          <span class="feyo-time-picker__column-label">Hour</span>
-          <div :id="hourListId" class="feyo-time-picker__list" role="listbox" aria-label="Hour" :aria-activedescendant="activeColumn === 'hour' ? activeOptionId : undefined">
+    <div v-if="localOpen" :id="popupId" class="kima-time-picker__popup" role="dialog" :aria-labelledby="label ? labelId : undefined" @keydown="handlePopupKeydown">
+      <div class="kima-time-picker__summary" aria-live="polite">{{ formatTime(draftHour, draftMinute) }}</div>
+      <div class="kima-time-picker__columns">
+        <div class="kima-time-picker__column">
+          <span class="kima-time-picker__column-label">Hour</span>
+          <div :id="hourListId" class="kima-time-picker__list" role="listbox" aria-label="Hour" :aria-activedescendant="activeColumn === 'hour' ? activeOptionId : undefined">
             <button
               v-for="(option, index) in hourOptions"
               :id="`${baseId}-hour-${index}`"
               :key="option.value"
               :ref="(element) => setOptionRef('hour', index, element)"
-              class="feyo-time-picker__option"
-              :class="{ 'feyo-time-picker__option--active': activeColumn === 'hour' && activeIndex === index, 'feyo-time-picker__option--selected': option.value === draftHour }"
+              class="kima-time-picker__option"
+              :class="{ 'kima-time-picker__option--active': activeColumn === 'hour' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftHour }"
               type="button"
               role="option"
               :aria-selected="option.value === draftHour"
@@ -494,16 +494,16 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div class="feyo-time-picker__column">
-          <span class="feyo-time-picker__column-label">Minute</span>
-          <div :id="minuteListId" class="feyo-time-picker__list" role="listbox" aria-label="Minute" :aria-activedescendant="activeColumn === 'minute' ? activeOptionId : undefined">
+        <div class="kima-time-picker__column">
+          <span class="kima-time-picker__column-label">Minute</span>
+          <div :id="minuteListId" class="kima-time-picker__list" role="listbox" aria-label="Minute" :aria-activedescendant="activeColumn === 'minute' ? activeOptionId : undefined">
             <button
               v-for="(option, index) in minuteOptions"
               :id="`${baseId}-minute-${index}`"
               :key="option.value"
               :ref="(element) => setOptionRef('minute', index, element)"
-              class="feyo-time-picker__option"
-              :class="{ 'feyo-time-picker__option--active': activeColumn === 'minute' && activeIndex === index, 'feyo-time-picker__option--selected': option.value === draftMinute }"
+              class="kima-time-picker__option"
+              :class="{ 'kima-time-picker__option--active': activeColumn === 'minute' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftMinute }"
               type="button"
               role="option"
               :aria-selected="option.value === draftMinute"
@@ -516,16 +516,16 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div v-if="is12Hour" class="feyo-time-picker__column feyo-time-picker__column--period">
-          <span class="feyo-time-picker__column-label">Period</span>
-          <div :id="periodListId" class="feyo-time-picker__list feyo-time-picker__list--period" role="listbox" aria-label="AM or PM" :aria-activedescendant="activeColumn === 'period' ? activeOptionId : undefined">
+        <div v-if="is12Hour" class="kima-time-picker__column kima-time-picker__column--period">
+          <span class="kima-time-picker__column-label">Period</span>
+          <div :id="periodListId" class="kima-time-picker__list kima-time-picker__list--period" role="listbox" aria-label="AM or PM" :aria-activedescendant="activeColumn === 'period' ? activeOptionId : undefined">
             <button
               v-for="(option, index) in periodOptions"
               :id="`${baseId}-period-${index}`"
               :key="option.value"
               :ref="(element) => setOptionRef('period', index, element)"
-              class="feyo-time-picker__option"
-              :class="{ 'feyo-time-picker__option--active': activeColumn === 'period' && activeIndex === index, 'feyo-time-picker__option--selected': option.value === draftPeriod }"
+              class="kima-time-picker__option"
+              :class="{ 'kima-time-picker__option--active': activeColumn === 'period' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftPeriod }"
               type="button"
               role="option"
               :aria-selected="option.value === draftPeriod"
@@ -543,98 +543,98 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
-.feyo-time-picker {
+.kima-time-picker {
   position: relative;
   display: inline-flex;
   width: 100%;
   max-width: 320px;
   min-width: 0;
   flex-direction: column;
-  gap: var(--feyo-space-1);
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-md);
+  gap: var(--kima-space-1);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
+  font-size: var(--kima-font-size-md);
 }
 
-.feyo-time-picker__label,
-.feyo-time-picker__column-label {
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-sm);
-  font-weight: var(--feyo-font-weight-medium);
+.kima-time-picker__label,
+.kima-time-picker__column-label {
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-sm);
+  font-weight: var(--kima-font-weight-medium);
 }
 
-.feyo-time-picker__control {
+.kima-time-picker__control {
   position: relative;
   display: flex;
   min-height: 42px;
 }
 
-.feyo-time-picker__trigger {
+.kima-time-picker__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
   min-height: 42px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: 0 var(--feyo-space-4);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container);
+  gap: var(--kima-space-3);
+  padding: 0 var(--kima-space-4);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--feyo-duration-fast) var(--feyo-ease-standard), background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
-  .feyo-time-picker--open & {
-    border-color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+  .kima-time-picker--open & {
+    border-color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-time-picker__control--clearable .feyo-time-picker__trigger {
+.kima-time-picker__control--clearable .kima-time-picker__trigger {
   padding-right: 72px;
 }
 
-.feyo-time-picker__trigger-label {
+.kima-time-picker__trigger-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.feyo-time-picker__trigger-label--placeholder {
-  color: var(--feyo-color-on-surface-variant);
+.kima-time-picker__trigger-label--placeholder {
+  color: var(--kima-color-on-surface-variant);
 }
 
-.feyo-time-picker__arrow {
+.kima-time-picker__arrow {
   width: 8px;
   height: 8px;
   flex: 0 0 auto;
   border-right: 1.5px solid currentColor;
   border-bottom: 1.5px solid currentColor;
-  color: var(--feyo-color-on-surface-variant);
+  color: var(--kima-color-on-surface-variant);
   transform: translateY(-2px) rotate(45deg);
-  transition: transform var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
 }
 
-.feyo-time-picker--open .feyo-time-picker__arrow {
+.kima-time-picker--open .kima-time-picker__arrow {
   transform: translateY(2px) rotate(225deg);
 }
 
-.feyo-time-picker__clear {
+.kima-time-picker__clear {
   position: absolute;
   top: 50%;
   right: 36px;
@@ -645,26 +645,26 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-transparent);
   font: inherit;
   cursor: pointer;
   transform: translateY(-50%);
 
   &:hover:not(:disabled),
   &:focus-visible {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 }
 
-.feyo-time-picker__native {
+.kima-time-picker__native {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -676,112 +676,112 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-.feyo-time-picker__popup {
+.kima-time-picker__popup {
   box-sizing: border-box;
   position: absolute;
   z-index: 20;
-  top: calc(100% + var(--feyo-space-2));
+  top: calc(100% + var(--kima-space-2));
   left: 0;
   width: max(100%, 248px);
-  padding: var(--feyo-space-3);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-md);
-  background: var(--feyo-color-surface-container);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
-  animation: feyo-time-picker-enter var(--feyo-duration-fast) var(--feyo-ease-emphasized);
+  padding: var(--kima-space-3);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-md);
+  background: var(--kima-color-surface-container);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
+  animation: kima-time-picker-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
-.feyo-time-picker__summary {
-  padding-bottom: var(--feyo-space-2);
-  color: var(--feyo-color-primary);
-  font-size: var(--feyo-font-size-lg);
-  font-weight: var(--feyo-font-weight-bold);
+.kima-time-picker__summary {
+  padding-bottom: var(--kima-space-2);
+  color: var(--kima-color-primary);
+  font-size: var(--kima-font-size-lg);
+  font-weight: var(--kima-font-weight-bold);
   text-align: center;
 }
 
-.feyo-time-picker__columns {
+.kima-time-picker__columns {
   display: flex;
-  gap: var(--feyo-space-2);
+  gap: var(--kima-space-2);
 }
 
-.feyo-time-picker__column {
+.kima-time-picker__column {
   display: grid;
   min-width: 0;
   flex: 1 1 0;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
 }
 
-.feyo-time-picker__column--period {
+.kima-time-picker__column--period {
   flex: 0 0 58px;
 }
 
-.feyo-time-picker__column-label {
+.kima-time-picker__column-label {
   text-align: center;
 }
 
-.feyo-time-picker__list {
+.kima-time-picker__list {
   display: grid;
   max-height: 224px;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
   overflow-y: auto;
   padding: 2px;
   scrollbar-width: thin;
 }
 
-.feyo-time-picker__list--period {
+.kima-time-picker__list--period {
   max-height: none;
 }
 
-.feyo-time-picker__option {
+.kima-time-picker__option {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--feyo-space-2);
-  border: 1px solid var(--feyo-color-transparent);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-transparent);
+  padding: 0 var(--kima-space-2);
+  border: 1px solid var(--kima-color-transparent);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-transparent);
   font: inherit;
   cursor: pointer;
-  transition: background-color var(--feyo-duration-fast) var(--feyo-ease-standard), border-color var(--feyo-duration-fast) var(--feyo-ease-standard), color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: background-color var(--kima-duration-fast) var(--kima-ease-standard), border-color var(--kima-duration-fast) var(--kima-ease-standard), color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
   &--active {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 
   &--selected {
-    border-color: var(--feyo-color-primary);
-    color: var(--feyo-color-on-primary-container);
-    background: var(--feyo-color-primary-container);
+    border-color: var(--kima-color-primary);
+    color: var(--kima-color-on-primary-container);
+    background: var(--kima-color-primary-container);
   }
 
   &:disabled {
-    color: var(--feyo-color-on-surface-variant);
+    color: var(--kima-color-on-surface-variant);
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feyo-time-picker__trigger,
-  .feyo-time-picker__arrow,
-  .feyo-time-picker__option {
+  .kima-time-picker__trigger,
+  .kima-time-picker__arrow,
+  .kima-time-picker__option {
     transition: none;
   }
 
-  .feyo-time-picker__popup {
+  .kima-time-picker__popup {
     animation: none;
   }
 }
 
-@keyframes feyo-time-picker-enter {
+@keyframes kima-time-picker-enter {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.98);

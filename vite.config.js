@@ -11,7 +11,7 @@ export default defineConfig(async ({ mode }) => {
   await generateExports();
   const library = mode === "lib" || mode === "elements";
   const elements = mode === "elements";
-  const entryName = elements ? "feyo-elements" : "feyo";
+  const entryName = elements ? "kima-elements" : "kima";
 
   return {
     root: fileURLToPath(new URL("./", import.meta.url)),

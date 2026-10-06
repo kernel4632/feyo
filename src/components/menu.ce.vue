@@ -1,9 +1,9 @@
 <!--
 菜单：提供可搜索的单选菜单；items 使用 { value, label, disabled, description }。
 调用示例：
-  <feyo-menu v-model="choice" :items="items" label="选择项目" searchable>
+  <kima-menu v-model="choice" :items="items" label="选择项目" searchable>
     <template #trigger="{ selectedItem }">{{ selectedItem?.label || '选择项目' }}</template>
-  </feyo-menu>
+  </kima-menu>
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useId, watch } from "vue";
@@ -53,7 +53,7 @@ const activeIndex = ref(-1);
 const localValue = shallowRef(props.modelValue);
 const localOpen = ref(props.open && !props.disabled);
 let ownerDocument;
-const menuId = `feyo-menu-${useId()}`;
+const menuId = `kima-menu-${useId()}`;
 const triggerId = `${menuId}-trigger`;
 
 const menuPlacement = computed(() => {
@@ -237,11 +237,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-   <div ref="root" v-bind="forwardedAttrs" class="feyo-menu" :class="{ 'feyo-menu--open': localOpen }">
+   <div ref="root" v-bind="forwardedAttrs" class="kima-menu" :class="{ 'kima-menu--open': localOpen }">
     <button
       :id="triggerId"
       ref="trigger"
-      class="feyo-menu__trigger"
+      class="kima-menu__trigger"
       type="button"
       :disabled="disabled"
       aria-haspopup="menu"
@@ -251,28 +251,28 @@ onBeforeUnmount(() => {
       @keydown="handleTriggerKeydown"
     >
       <slot name="trigger" :open="localOpen" :selected-item="selectedItem" :value="localValue">
-        <span class="feyo-menu__trigger-label">{{ selectedLabel }}</span>
+        <span class="kima-menu__trigger-label">{{ selectedLabel }}</span>
       </slot>
-      <HugeiconsIcon class="feyo-menu__trigger-icon" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
+      <HugeiconsIcon class="kima-menu__trigger-icon" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
     </button>
 
     <div
       v-if="localOpen"
       ref="menuPanel"
       :id="menuId"
-      class="feyo-menu__popup"
-      :class="`feyo-menu__popup--${menuPlacement}`"
+      class="kima-menu__popup"
+      :class="`kima-menu__popup--${menuPlacement}`"
       role="menu"
       tabindex="-1"
       :aria-labelledby="triggerId"
       @keydown="handleMenuKeydown"
     >
-      <div v-if="searchable" class="feyo-menu__search-wrap">
-        <HugeiconsIcon class="feyo-menu__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
+      <div v-if="searchable" class="kima-menu__search-wrap">
+        <HugeiconsIcon class="kima-menu__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
         <input
           ref="searchInput"
           v-model="query"
-          class="feyo-menu__search"
+          class="kima-menu__search"
           type="search"
           role="searchbox"
           aria-label="搜索菜单项"
@@ -283,12 +283,12 @@ onBeforeUnmount(() => {
         >
       </div>
 
-      <div class="feyo-menu__items">
+      <div class="kima-menu__items">
         <button
           v-for="(item, index) in visibleItems"
           :key="index"
           :ref="(element) => setItemRef(element, index)"
-          class="feyo-menu__item"
+          class="kima-menu__item"
           type="button"
           role="menuitemradio"
           :disabled="item.disabled"
@@ -298,221 +298,221 @@ onBeforeUnmount(() => {
           @click="selectItem(item)"
           @focus="activeIndex = index"
         >
-          <span class="feyo-menu__item-copy">
-            <span class="feyo-menu__item-label">{{ item.label }}</span>
-            <span v-if="item.description" class="feyo-menu__item-description">{{ item.description }}</span>
+          <span class="kima-menu__item-copy">
+            <span class="kima-menu__item-label">{{ item.label }}</span>
+            <span v-if="item.description" class="kima-menu__item-description">{{ item.description }}</span>
           </span>
           <HugeiconsIcon
             v-if="Object.is(item.value, localValue)"
-            class="feyo-menu__item-check"
+            class="kima-menu__item-check"
             :icon="Tick01Icon"
             :size="18"
             aria-hidden="true"
           />
         </button>
-        <div v-if="visibleItems.length === 0" class="feyo-menu__empty" role="status">没有匹配项目</div>
+        <div v-if="visibleItems.length === 0" class="kima-menu__empty" role="status">没有匹配项目</div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.feyo-menu {
+.kima-menu {
   position: relative;
   display: inline-flex;
   min-width: 180px;
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 }
 
-.feyo-menu__trigger {
+.kima-menu__trigger {
   box-sizing: border-box;
   display: inline-flex;
   width: 100%;
   min-height: 56px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: 0 var(--feyo-space-4);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-md);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container);
+  gap: var(--kima-space-3);
+  padding: 0 var(--kima-space-4);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-md);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container);
   font: inherit;
   cursor: pointer;
-  transition: border-color var(--feyo-duration-fast) var(--feyo-ease-standard), background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
-  .feyo-menu--open & {
-    border-color: var(--feyo-color-primary);
-    background: var(--feyo-color-surface-container-high);
+  .kima-menu--open & {
+    border-color: var(--kima-color-primary);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-menu__trigger-label {
+.kima-menu__trigger-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.feyo-menu__trigger-icon {
+.kima-menu__trigger-icon {
   flex: 0 0 auto;
-  color: var(--feyo-color-on-surface-variant);
-  transition: transform var(--feyo-duration-fast) var(--feyo-ease-standard);
+  color: var(--kima-color-on-surface-variant);
+  transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
 }
 
-.feyo-menu--open .feyo-menu__trigger-icon {
+.kima-menu--open .kima-menu__trigger-icon {
   transform: rotate(180deg);
 }
 
-.feyo-menu__popup {
+.kima-menu__popup {
   box-sizing: border-box;
   position: absolute;
   z-index: 20;
   width: max(100%, 220px);
   max-height: 360px;
   overflow: auto;
-  padding: var(--feyo-space-2);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-md);
-  background: var(--feyo-color-surface-container);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
-  animation: feyo-menu-enter var(--feyo-duration-fast) var(--feyo-ease-emphasized);
+  padding: var(--kima-space-2);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-md);
+  background: var(--kima-color-surface-container);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
+  animation: kima-menu-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 
   &--bottom-start {
-    top: calc(100% + var(--feyo-space-2));
+    top: calc(100% + var(--kima-space-2));
     left: 0;
   }
 
   &--bottom-end {
-    top: calc(100% + var(--feyo-space-2));
+    top: calc(100% + var(--kima-space-2));
     right: 0;
   }
 
   &--top-start {
-    bottom: calc(100% + var(--feyo-space-2));
+    bottom: calc(100% + var(--kima-space-2));
     left: 0;
   }
 
   &--top-end {
     right: 0;
-    bottom: calc(100% + var(--feyo-space-2));
+    bottom: calc(100% + var(--kima-space-2));
   }
 }
 
-.feyo-menu__search-wrap {
+.kima-menu__search-wrap {
   position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: var(--feyo-space-2);
+  margin-bottom: var(--kima-space-2);
 }
 
-.feyo-menu__search-icon {
+.kima-menu__search-icon {
   position: absolute;
-  left: var(--feyo-space-3);
-  color: var(--feyo-color-on-surface-variant);
+  left: var(--kima-space-3);
+  color: var(--kima-color-on-surface-variant);
   pointer-events: none;
 }
 
-.feyo-menu__search {
+.kima-menu__search {
   box-sizing: border-box;
   width: 100%;
   min-height: 40px;
-  padding: 0 var(--feyo-space-3) 0 40px;
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface);
+  padding: 0 var(--kima-space-3) 0 40px;
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface);
   font: inherit;
 
   &:focus {
-    border-color: var(--feyo-color-primary);
-    outline: 2px solid var(--feyo-color-primary);
+    border-color: var(--kima-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
 }
 
-.feyo-menu__items {
+.kima-menu__items {
   display: grid;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
 }
 
-.feyo-menu__item {
+.kima-menu__item {
   box-sizing: border-box;
   display: flex;
   width: 100%;
   min-height: 40px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--feyo-space-3);
-  padding: 0 var(--feyo-space-3);
+  gap: var(--kima-space-3);
+  padding: 0 var(--kima-space-3);
   border: 0;
-  border-radius: var(--feyo-radius-sm);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-sm);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-transparent);
   font: inherit;
   text-align: left;
   cursor: pointer;
 
   &:hover:not(:disabled),
   &:focus-visible {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-menu__item-label {
+.kima-menu__item-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.feyo-menu__item-copy {
+.kima-menu__item-copy {
   display: grid;
   min-width: 0;
-  gap: var(--feyo-space-1);
-  padding-block: var(--feyo-space-2);
+  gap: var(--kima-space-1);
+  padding-block: var(--kima-space-2);
 }
 
-.feyo-menu__item-description {
-  color: var(--feyo-color-on-surface-variant);
-  font-size: var(--feyo-font-size-sm);
+.kima-menu__item-description {
+  color: var(--kima-color-on-surface-variant);
+  font-size: var(--kima-font-size-sm);
   overflow-wrap: anywhere;
 }
 
-.feyo-menu__item-check {
+.kima-menu__item-check {
   flex: 0 0 auto;
-  color: var(--feyo-color-primary);
+  color: var(--kima-color-primary);
 }
 
-.feyo-menu__empty {
-  padding: var(--feyo-space-3);
-  color: var(--feyo-color-on-surface-variant);
+.kima-menu__empty {
+  padding: var(--kima-space-3);
+  color: var(--kima-color-on-surface-variant);
   text-align: center;
 }
 
-@keyframes feyo-menu-enter {
+@keyframes kima-menu-enter {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.98);

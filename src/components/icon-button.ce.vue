@@ -1,11 +1,11 @@
 <!--
-图标按钮：为单个图标提供可访问的原生按钮行为和 FEYO 的外观，几何照 DMS 的 DankIconButton 对齐。
+图标按钮：为单个图标提供可访问的原生按钮行为和 KIMA 的外观，几何照 DMS 的 DankIconButton 对齐。
 默认外观 standard（透明底、图标用 onSurfaceVariant）；尺寸 s 40、m 56。
 调用示例：
-  <feyo-icon-button aria-label="搜索" title="搜索" />
-  <feyo-icon-button aria-label="设置" variant="outlined" :icon="Settings01Icon" />
-  <feyo-icon-button aria-label="收藏" variant="filled" :icon="HeartIcon" />
-  <feyo-icon-button aria-label="自定义动作"><MyIcon /></feyo-icon-button>
+  <kima-icon-button aria-label="搜索" title="搜索" />
+  <kima-icon-button aria-label="设置" variant="outlined" :icon="Settings01Icon" />
+  <kima-icon-button aria-label="收藏" variant="filled" :icon="HeartIcon" />
+  <kima-icon-button aria-label="自定义动作"><MyIcon /></kima-icon-button>
 -->
 <script setup>
 import { computed, getCurrentInstance, ref, useAttrs } from "vue";
@@ -63,7 +63,7 @@ function accessibleLabel() {
   return props.label || attrs["aria-label"] || attrs.ariaLabel || attrs.title || "图标按钮";
 }
 const buttonIcon = computed(() => props.icon || Settings01Icon);
-// DMS DankIconButton iconSize 固定为 iconSize 24；small 是 FEYO 附带档位，取 20。
+// DMS DankIconButton iconSize 固定为 iconSize 24；small 是 KIMA 附带档位，取 20。
 const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSize.value]);
 
 </script>
@@ -72,10 +72,10 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
   <button
     ref="root"
     v-bind="forwardedAttrs"
-    class="feyo-icon-button"
+    class="kima-icon-button"
     :class="[
-      `feyo-icon-button--${buttonVariant}`,
-      `feyo-icon-button--${buttonSize}`,
+      `kima-icon-button--${buttonVariant}`,
+      `kima-icon-button--${buttonSize}`,
     ]"
     :type="type"
     :disabled="disabled || loading"
@@ -83,8 +83,8 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     :aria-busy="loading || undefined"
     :title="attrs.title || accessibleLabel()"
   >
-    <span v-if="loading" class="feyo-icon-button__spinner" aria-hidden="true"></span>
-    <span v-else class="feyo-icon-button__icon" aria-hidden="true">
+    <span v-if="loading" class="kima-icon-button__spinner" aria-hidden="true"></span>
+    <span v-else class="kima-icon-button__icon" aria-hidden="true">
       <slot><HugeiconsIcon :icon="buttonIcon" :size="iconSize" /></slot>
     </span>
   </button>
@@ -93,79 +93,79 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
 <style scoped lang="scss">
 @use "../styles/mixins" as *;
 
-.feyo-icon-button {
+.kima-icon-button {
   /* DMS DankIconButton：s 档 40×40、图标 24、横向留白 8、整圆。 */
-  width: var(--feyo-button-height-s);
-  height: var(--feyo-button-height-s);
+  width: var(--kima-button-height-s);
+  height: var(--kima-button-height-s);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
   padding: 0;
-  border: 1px solid var(--feyo-color-transparent);
-  border-radius: var(--feyo-radius-full);
+  border: 1px solid var(--kima-color-transparent);
+  border-radius: var(--kima-radius-full);
   box-sizing: border-box;
-  font-family: var(--feyo-font-family);
+  font-family: var(--kima-font-family);
   /* standard 外观：透明底，图标用 onSurfaceVariant。 */
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-transparent);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-transparent);
   cursor: pointer;
   user-select: none;
   transition:
-    background-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    border-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    border-radius var(--feyo-duration-expressive-effects) var(--feyo-curve-standard);
+    background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    border-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
-  @include feyo-ripple-host;
-  @include feyo-state-layer;
-  @include feyo-focus-ring;
+  @include kima-ripple-host;
+  @include kima-state-layer;
+  @include kima-focus-ring;
 
   /* DMS：按下时圆角收成 S 8。 */
   &:active:not(:disabled) {
-    border-radius: var(--feyo-radius-s);
+    border-radius: var(--kima-radius-s);
   }
 
   /* DMS 禁用：图标降到 onSurface_38。 */
   &:disabled {
-    color: var(--feyo-color-on-surface-38);
+    color: var(--kima-color-on-surface-38);
     cursor: not-allowed;
   }
 
   &--small {
-    width: var(--feyo-button-height-xs);
-    height: var(--feyo-button-height-xs);
+    width: var(--kima-button-height-xs);
+    height: var(--kima-button-height-xs);
   }
 
   /* DMS m 档 56×56，图标仍为 24。 */
   &--large {
-    width: var(--feyo-button-height-m);
-    height: var(--feyo-button-height-m);
+    width: var(--kima-button-height-m);
+    height: var(--kima-button-height-m);
   }
 
   &--filled {
-    color: var(--feyo-color-on-primary);
-    background: var(--feyo-color-primary);
+    color: var(--kima-color-on-primary);
+    background: var(--kima-color-primary);
   }
 
   &--filled:disabled {
-    color: var(--feyo-color-on-surface-38);
-    background: var(--feyo-color-on-surface-12);
+    color: var(--kima-color-on-surface-38);
+    background: var(--kima-color-on-surface-12);
   }
 
   &--tonal {
-    color: var(--feyo-color-on-secondary-container);
-    background: var(--feyo-color-secondary-container);
+    color: var(--kima-color-on-secondary-container);
+    background: var(--kima-color-secondary-container);
   }
 
   &--tonal:disabled {
-    color: var(--feyo-color-on-surface-38);
-    background: var(--feyo-color-on-surface-12);
+    color: var(--kima-color-on-surface-38);
+    background: var(--kima-color-on-surface-12);
   }
 
   &--outlined {
-    color: var(--feyo-color-on-surface-variant);
-    border-color: var(--feyo-color-outline-variant);
+    color: var(--kima-color-on-surface-variant);
+    border-color: var(--kima-color-outline-variant);
   }
 
   &__icon,
@@ -180,18 +180,18 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     width: 24px;
     height: 24px;
     border: 2px solid currentColor;
-    border-right-color: var(--feyo-color-transparent);
-    border-radius: var(--feyo-radius-full);
-    animation: feyo-icon-button-spin var(--feyo-spinner-duration) linear infinite;
+    border-right-color: var(--kima-color-transparent);
+    border-radius: var(--kima-radius-full);
+    animation: kima-icon-button-spin var(--kima-spinner-duration) linear infinite;
   }
 
-  &--small .feyo-icon-button__spinner {
+  &--small .kima-icon-button__spinner {
     width: 20px;
     height: 20px;
   }
 }
 
-@keyframes feyo-icon-button-spin {
+@keyframes kima-icon-button-spin {
   to {
     transform: rotate(360deg);
   }

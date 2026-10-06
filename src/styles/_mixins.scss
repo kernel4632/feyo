@@ -1,13 +1,13 @@
-/* FEYO 共用交互 mixin，照 DMS 部件搬过来。
+/* KIMA 共用交互 mixin，照 DMS 部件搬过来。
  * 每样只定义一次，所有组件共用，避免每个组件各写一套补丁式的悬停/按压规则。
  *
- * - feyo-state-layer：DMS StateLayer，用内容色叠加（悬停 0.08、聚焦 0.12、按下 0.12），
+ * - kima-state-layer：DMS StateLayer，用内容色叠加（悬停 0.08、聚焦 0.12、按下 0.12），
  *   时长和曲线取 expressiveEffects。
- * - feyo-focus-ring：DMS FocusRing，1.5px、偏移 3、颜色 primary。
- * - feyo-ripple-host：DMS DankRipple，裁剪容器加从指针扩散的圆。
+ * - kima-focus-ring：DMS FocusRing，1.5px、偏移 3、颜色 primary。
+ * - kima-ripple-host：DMS DankRipple，裁剪容器加从指针扩散的圆。
  */
 
-@mixin feyo-state-layer {
+@mixin kima-state-layer {
   position: relative;
 
   &::after {
@@ -19,53 +19,53 @@
     background: currentColor;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects);
+    transition: opacity var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects);
   }
 
   /* 内容压到状态层之上，和 DMS 把 StateLayer 放在内容下方一致。 */
-  > *:not(.feyo-ripple) {
+  > *:not(.kima-ripple) {
     position: relative;
     z-index: 2;
   }
 
   &:hover:not(:disabled)::after {
-    opacity: var(--feyo-state-hover);
+    opacity: var(--kima-state-hover);
   }
 
   &:focus-visible::after {
-    opacity: var(--feyo-state-focus);
+    opacity: var(--kima-state-focus);
   }
 
   &:active:not(:disabled)::after {
-    opacity: var(--feyo-state-pressed);
+    opacity: var(--kima-state-pressed);
   }
 }
 
-@mixin feyo-focus-ring {
+@mixin kima-focus-ring {
   &:focus-visible {
-    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
-    outline-offset: var(--feyo-focus-ring-offset);
+    outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
+    outline-offset: var(--kima-focus-ring-offset);
   }
 }
 
-@mixin feyo-ripple-host {
+@mixin kima-ripple-host {
   position: relative;
   overflow: hidden;
 
   /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有该标记。 */
-  :deep(.feyo-ripple) {
+  :deep(.kima-ripple) {
     position: absolute;
     z-index: 1;
-    border-radius: var(--feyo-radius-full);
+    border-radius: var(--kima-radius-full);
     background: currentColor;
     opacity: 0.18;
     pointer-events: none;
     transform: scale(0);
-    animation: feyo-ripple-expand var(--feyo-duration-expressive-default-spatial) var(--feyo-curve-expressive-fast-effects) forwards;
+    animation: kima-ripple-expand var(--kima-duration-expressive-default-spatial) var(--kima-curve-expressive-fast-effects) forwards;
   }
 }
 
-@keyframes feyo-ripple-expand {
+@keyframes kima-ripple-expand {
   to {
     transform: scale(1);
     opacity: 0;

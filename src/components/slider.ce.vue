@@ -1,7 +1,7 @@
 <!--
-滑块：保留原生 range 的键盘、拖动和表单能力，并采用 FEYO 参考结构的 16px 轨道与 4×28px 滑块。
+滑块：保留原生 range 的键盘、拖动和表单能力，并采用 KIMA 参考结构的 16px 轨道与 4×28px 滑块。
 调用示例：
-  <feyo-slider v-model="volume" label="音量" :show-value="true" name="volume" />
+  <kima-slider v-model="volume" label="音量" :show-value="true" name="volume" />
 -->
 <script setup>
 import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
@@ -88,17 +88,17 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
 <template>
   <label
-    class="feyo-slider"
-    :class="{ 'feyo-slider--disabled': disabled }"
+    class="kima-slider"
+    :class="{ 'kima-slider--disabled': disabled }"
   >
-    <span v-if="label || showValue" class="feyo-slider__header">
-      <span v-if="label" class="feyo-slider__label">{{ label }}</span>
-      <output v-if="showValue" class="feyo-slider__value">{{ localValue }}</output>
+    <span v-if="label || showValue" class="kima-slider__header">
+      <span v-if="label" class="kima-slider__label">{{ label }}</span>
+      <output v-if="showValue" class="kima-slider__value">{{ localValue }}</output>
     </span>
      <input
        ref="input"
        v-bind="forwardedAttrs"
-      class="feyo-slider__input"
+      class="kima-slider__input"
       type="range"
       :value="localValue"
        :min="sliderMin"
@@ -107,7 +107,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       :disabled="disabled"
       :required="required"
       :name="name"
-      :style="{ '--feyo-slider-fill': fill }"
+      :style="{ '--kima-slider-fill': fill }"
       @input.stop="handleInput"
       @change.stop="handleChange"
     />
@@ -115,50 +115,50 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 </template>
 
 <style scoped lang="scss">
-.feyo-slider {
+.kima-slider {
   display: block;
   width: 100%;
-  color: var(--feyo-color-on-surface);
+  color: var(--kima-color-on-surface);
 
   &__header {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: var(--feyo-space-3);
-    margin-bottom: var(--feyo-space-2);
+    gap: var(--kima-space-3);
+    margin-bottom: var(--kima-space-2);
   }
 
   &__label,
   &__value {
-    color: var(--feyo-color-on-surface);
+    color: var(--kima-color-on-surface);
     line-height: 1.35;
   }
 
   &__value {
-    color: var(--feyo-color-on-surface-variant);
+    color: var(--kima-color-on-surface-variant);
     font-variant-numeric: tabular-nums;
   }
 
   &__input {
     /* DMS size s：轨道 24，滑块 36，圆角 8，控件高 = 滑块 36 + spacingXS 4。 */
-    --feyo-slider-fill-color: var(--feyo-color-primary);
-    --feyo-slider-track-color: var(--feyo-color-secondary-container);
+    --kima-slider-fill-color: var(--kima-color-primary);
+    --kima-slider-track-color: var(--kima-color-secondary-container);
 
     display: block;
     width: 100%;
     height: 40px;
     margin: 0;
     appearance: none;
-    background: var(--feyo-color-transparent);
+    background: var(--kima-color-transparent);
     cursor: pointer;
 
     &::-webkit-slider-runnable-track {
       height: 24px;
-      border-radius: var(--feyo-radius-s);
+      border-radius: var(--kima-radius-s);
       background: linear-gradient(
         to right,
-        var(--feyo-slider-fill-color) 0 var(--feyo-slider-fill),
-        var(--feyo-slider-track-color) var(--feyo-slider-fill) 100%
+        var(--kima-slider-fill-color) 0 var(--kima-slider-fill),
+        var(--kima-slider-track-color) var(--kima-slider-fill) 100%
       );
     }
 
@@ -169,46 +169,46 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       margin-top: -6px;
       appearance: none;
       border: 0;
-      border-radius: var(--feyo-radius-full);
-      background: var(--feyo-slider-fill-color);
+      border-radius: var(--kima-radius-full);
+      background: var(--kima-slider-fill-color);
     }
 
     &::-moz-range-track {
       height: 24px;
-      border-radius: var(--feyo-radius-s);
-      background: var(--feyo-slider-track-color);
+      border-radius: var(--kima-radius-s);
+      background: var(--kima-slider-track-color);
     }
 
     &::-moz-range-progress {
       height: 24px;
-      border-radius: var(--feyo-radius-s);
-      background: var(--feyo-slider-fill-color);
+      border-radius: var(--kima-radius-s);
+      background: var(--kima-slider-fill-color);
     }
 
     &::-moz-range-thumb {
       width: 4px;
       height: 36px;
       border: 0;
-      border-radius: var(--feyo-radius-full);
-      background: var(--feyo-slider-fill-color);
+      border-radius: var(--kima-radius-full);
+      background: var(--kima-slider-fill-color);
     }
 
     &:focus-visible {
-      outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
-      outline-offset: var(--feyo-focus-ring-offset);
+      outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
+      outline-offset: var(--kima-focus-ring-offset);
     }
 
     /* DMS 禁用：已填充 onSurface_38，未填充 onSurface_12。 */
     &:disabled {
-      --feyo-slider-fill-color: var(--feyo-color-on-surface-38);
-      --feyo-slider-track-color: var(--feyo-color-on-surface-12);
+      --kima-slider-fill-color: var(--kima-color-on-surface-38);
+      --kima-slider-track-color: var(--kima-color-on-surface-12);
 
       cursor: not-allowed;
     }
   }
 
   &--disabled &__label {
-    color: var(--feyo-color-on-surface-38);
+    color: var(--kima-color-on-surface-38);
   }
 }
 </style>

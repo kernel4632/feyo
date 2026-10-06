@@ -1,4 +1,4 @@
-/* Preview app styles only; main.js imports this file for the FEYO demo page.
+/* Preview app styles only; main.js imports this file for the KIMA demo page.
  * Library entries import _tokens.scss directly so host pages keep their own layout.
  * App usage: import "./styles/index.scss".
  */
@@ -18,9 +18,9 @@ body {
 
 body {
   min-height: 100vh;
-  background: var(--feyo-color-surface);
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-md);
+  background: var(--kima-color-surface);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
+  font-size: var(--kima-font-size-md);
   -webkit-font-smoothing: antialiased;
 }

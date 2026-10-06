@@ -2,10 +2,10 @@
 对话框：使用原生 modal dialog 管理背景隔离、焦点和多层弹窗。
 title 沿用原生属性，作为 attrs 读取，不声明同名组件 prop。
 调用示例：
-  <feyo-dialog v-model:open="dialogOpen" title="删除项目" description="此操作无法撤销">
+  <kima-dialog v-model:open="dialogOpen" title="删除项目" description="此操作无法撤销">
     <p>确定要继续吗？</p>
     <template #footer><button type="button" @click="dialogOpen = false">取消</button></template>
-  </feyo-dialog>
+  </kima-dialog>
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
@@ -50,8 +50,8 @@ const dialogSize = computed(() => {
   return sizes.includes(props.size) ? props.size : "medium";
 });
 const dialogId = useId();
-const titleId = `feyo-dialog-title-${dialogId}`;
-const descriptionId = `feyo-dialog-description-${dialogId}`;
+const titleId = `kima-dialog-title-${dialogId}`;
+const descriptionId = `kima-dialog-description-${dialogId}`;
 
 function close(reason = "close") {
   if (!localOpen.value) return;
@@ -105,7 +105,7 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
     ref="dialog"
     v-bind="forwardedAttrs"
     :title="undefined"
-    class="feyo-dialog"
+    class="kima-dialog"
     :aria-labelledby="attrs.title ? titleId : attrs['aria-labelledby']"
     :aria-describedby="[attrs['aria-describedby'], description ? descriptionId : undefined].filter(Boolean).join(' ') || undefined"
     @cancel.stop="handleCancel"
@@ -113,31 +113,31 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
     @keydown="handleKeydown"
     @click.self="closeOnBackdrop && close('backdrop')"
   >
-    <div class="feyo-dialog__positioner">
+    <div class="kima-dialog__positioner">
       <section
-        class="feyo-dialog__panel"
-        :class="`feyo-dialog__panel--${dialogSize}`"
+        class="kima-dialog__panel"
+        :class="`kima-dialog__panel--${dialogSize}`"
       >
-        <header v-if="attrs.title || $slots.header || hasNativeSlot('header')" class="feyo-dialog__header">
-          <div class="feyo-dialog__heading">
-            <h2 v-if="attrs.title" :id="titleId" class="feyo-dialog__title">{{ attrs.title }}</h2>
-            <div v-if="$slots.header || hasNativeSlot('header')" class="feyo-dialog__header-slot"><slot name="header" /></div>
+        <header v-if="attrs.title || $slots.header || hasNativeSlot('header')" class="kima-dialog__header">
+          <div class="kima-dialog__heading">
+            <h2 v-if="attrs.title" :id="titleId" class="kima-dialog__title">{{ attrs.title }}</h2>
+            <div v-if="$slots.header || hasNativeSlot('header')" class="kima-dialog__header-slot"><slot name="header" /></div>
           </div>
-          <button class="feyo-dialog__close" type="button" aria-label="关闭对话框" @click="close('button')">
+          <button class="kima-dialog__close" type="button" aria-label="关闭对话框" @click="close('button')">
             <HugeiconsIcon :icon="Cancel01Icon" :size="20" color="currentColor" />
           </button>
         </header>
 
-        <p v-if="description" :id="descriptionId" class="feyo-dialog__description">{{ description }}</p>
-        <div v-if="$slots.default || hasNativeSlot('default')" class="feyo-dialog__body"><slot /></div>
-        <footer v-if="$slots.footer || hasNativeSlot('footer')" class="feyo-dialog__footer"><slot name="footer" /></footer>
+        <p v-if="description" :id="descriptionId" class="kima-dialog__description">{{ description }}</p>
+        <div v-if="$slots.default || hasNativeSlot('default')" class="kima-dialog__body"><slot /></div>
+        <footer v-if="$slots.footer || hasNativeSlot('footer')" class="kima-dialog__footer"><slot name="footer" /></footer>
       </section>
     </div>
   </dialog>
 </template>
 
 <style scoped lang="scss">
-.feyo-dialog {
+.kima-dialog {
   box-sizing: border-box;
   position: fixed;
   inset: 0;
@@ -148,19 +148,19 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   margin: 0;
   padding: 16px;
   border: 0;
-  background: var(--feyo-color-transparent);
+  background: var(--kima-color-transparent);
   place-items: center;
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
 
   &[open] { display: grid; }
 
   &::backdrop {
-    background: color-mix(in srgb, var(--feyo-color-surface) 72%, var(--feyo-color-transparent));
+    background: color-mix(in srgb, var(--kima-color-surface) 72%, var(--kima-color-transparent));
   }
 }
 
-.feyo-dialog__positioner {
+.kima-dialog__positioner {
   position: relative;
   z-index: 1;
   display: flex;
@@ -170,19 +170,19 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   pointer-events: none;
 }
 
-.feyo-dialog__panel {
+.kima-dialog__panel {
   box-sizing: border-box;
   width: 100%;
   max-height: 100%;
   overflow: auto;
   padding: 24px;
-  border: 1px solid var(--feyo-color-outline);
+  border: 1px solid var(--kima-color-outline);
   border-radius: 28px;
-  background: var(--feyo-color-surface-container);
-  box-shadow: 0 16px 40px color-mix(in srgb, var(--feyo-color-surface) 60%, var(--feyo-color-transparent));
+  background: var(--kima-color-surface-container);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--kima-color-surface) 60%, var(--kima-color-transparent));
   outline: none;
   pointer-events: auto;
-  animation: feyo-dialog-enter var(--feyo-duration-normal) var(--feyo-ease-emphasized);
+  animation: kima-dialog-enter var(--kima-duration-normal) var(--kima-ease-emphasized);
 
   &--small {
     max-width: 420px;
@@ -197,34 +197,34 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   }
 }
 
-.feyo-dialog__header,
-.feyo-dialog__footer {
+.kima-dialog__header,
+.kima-dialog__footer {
   display: flex;
   align-items: center;
-  gap: var(--feyo-space-3);
+  gap: var(--kima-space-3);
 }
 
-.feyo-dialog__header {
+.kima-dialog__header {
   justify-content: space-between;
 }
 
-.feyo-dialog__heading {
+.kima-dialog__heading {
   min-width: 0;
 }
 
-.feyo-dialog__title {
+.kima-dialog__title {
   margin: 0;
-  color: var(--feyo-color-on-surface);
-  font-size: var(--feyo-font-size-xl);
-  font-weight: var(--feyo-font-weight-bold);
+  color: var(--kima-color-on-surface);
+  font-size: var(--kima-font-size-xl);
+  font-weight: var(--kima-font-weight-bold);
   line-height: 1.25;
 }
 
-.feyo-dialog__header-slot {
-  margin-top: var(--feyo-space-2);
+.kima-dialog__header-slot {
+  margin-top: var(--kima-space-2);
 }
 
-.feyo-dialog__close {
+.kima-dialog__close {
   display: inline-flex;
   flex: 0 0 40px;
   align-items: center;
@@ -233,43 +233,43 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   height: 40px;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
-  color: var(--feyo-color-on-surface-variant);
-  background: var(--feyo-color-transparent);
+  border-radius: var(--kima-radius-full);
+  color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-transparent);
   cursor: pointer;
 }
 
-.feyo-dialog__close:hover {
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container-high);
+.kima-dialog__close:hover {
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container-high);
 }
 
-.feyo-dialog__close:focus-visible,
-.feyo-dialog__panel:focus-visible {
-  outline: 2px solid var(--feyo-color-primary);
+.kima-dialog__close:focus-visible,
+.kima-dialog__panel:focus-visible {
+  outline: 2px solid var(--kima-color-primary);
   outline-offset: 2px;
 }
 
-.feyo-dialog__description,
-.feyo-dialog__body {
-  margin: var(--feyo-space-5) 0 0;
+.kima-dialog__description,
+.kima-dialog__body {
+  margin: var(--kima-space-5) 0 0;
 }
 
-.feyo-dialog__description {
-  color: var(--feyo-color-on-surface-variant);
+.kima-dialog__description {
+  color: var(--kima-color-on-surface-variant);
   line-height: 1.5;
 }
 
-.feyo-dialog__body {
+.kima-dialog__body {
   min-width: 0;
 }
 
-.feyo-dialog__footer {
+.kima-dialog__footer {
   justify-content: flex-end;
-  margin-top: var(--feyo-space-6);
+  margin-top: var(--kima-space-6);
 }
 
-@keyframes feyo-dialog-enter {
+@keyframes kima-dialog-enter {
   from {
     opacity: 0;
     transform: scale(0.96);
@@ -281,11 +281,11 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
 }
 
 @media (max-width: 600px) {
-  .feyo-dialog {
+  .kima-dialog {
     padding: 12px;
   }
 
-  .feyo-dialog__panel {
+  .kima-dialog__panel {
     padding: 20px;
   }
 }

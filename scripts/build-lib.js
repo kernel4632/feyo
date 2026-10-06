@@ -1,6 +1,6 @@
 /* Build both package entries sequentially with Vite's standard build API.
  * Usage: pnpm build:lib; prepack runs the same command before creating a package.
- * Vue writes dist/feyo.js + style.css; elements adds the standalone browser module.
+ * Vue writes dist/kima.js + style.css; elements adds the standalone browser module.
  */
 import { build } from "vite";
 import { fileURLToPath } from "node:url";

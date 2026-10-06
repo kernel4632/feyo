@@ -9,7 +9,7 @@ Then run `pnpm exec playwright test`. No package changes or installs are made by
 The timer tests use Playwright's clock API (Playwright 1.45 or newer).
 
 `playwright.config.js` starts its own Vite server on port 5188 with strict port checking.
-Use `FEYO_TEST_PORT` to choose a free port. Both desktop and mobile Chromium run the suite.
+Use `KIMA_TEST_PORT` to choose a free port. Both desktop and mobile Chromium run the suite.
 Failures preserve a trace in `test-results/`; do not commit generated artifacts.
 
 The SSR check needs only existing Vue/Vite dependencies:

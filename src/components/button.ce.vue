@@ -1,9 +1,9 @@
 <!--
 按钮：照 DMS 的 DankButton 整套搬过来。默认药丸形，按下圆角收成 8，带状态层和涟漪。
 调用示例：
-  <feyo-button variant="filled" type="submit">保存</feyo-button>
-  <feyo-button variant="tonal" :loading="saving">继续</feyo-button>
-  <feyo-button shape="square"><template #leading>...</template>添加</feyo-button>
+  <kima-button variant="filled" type="submit">保存</kima-button>
+  <kima-button variant="tonal" :loading="saving">继续</kima-button>
+  <kima-button shape="square"><template #leading>...</template>添加</kima-button>
 -->
 <script setup>
 import { computed, ref, useAttrs } from "vue";
@@ -52,21 +52,21 @@ const isRound = computed(() => props.round || props.shape !== "square");
   <button
     ref="root"
     v-bind="forwardedAttrs"
-    class="feyo-button"
+    class="kima-button"
     :class="[
-      `feyo-button--${buttonVariant}`,
-      { 'feyo-button--round': isRound },
+      `kima-button--${buttonVariant}`,
+      { 'kima-button--round': isRound },
     ]"
     :type="type"
     :disabled="disabled || loading"
     :aria-busy="loading || undefined"
   >
-    <span v-if="loading" class="feyo-button__spinner" aria-hidden="true"></span>
-    <span v-else-if="$slots.leading || hasNativeSlot('leading')" class="feyo-button__slot feyo-button__slot--leading">
+    <span v-if="loading" class="kima-button__spinner" aria-hidden="true"></span>
+    <span v-else-if="$slots.leading || hasNativeSlot('leading')" class="kima-button__slot kima-button__slot--leading">
       <slot name="leading" />
     </span>
-    <span class="feyo-button__label"><slot /></span>
-    <span v-if="$slots.trailing || hasNativeSlot('trailing')" class="feyo-button__slot feyo-button__slot--trailing">
+    <span class="kima-button__label"><slot /></span>
+    <span v-if="$slots.trailing || hasNativeSlot('trailing')" class="kima-button__slot kima-button__slot--trailing">
       <slot name="trailing" />
     </span>
   </button>
@@ -75,44 +75,44 @@ const isRound = computed(() => props.round || props.shape !== "square");
 <style scoped lang="scss">
 @use "../styles/mixins" as *;
 
-.feyo-button {
+.kima-button {
   /* DMS DankButton：最小宽 58、高 40、内边距 16、内容间距 8、字号 14 中等。 */
-  min-width: var(--feyo-button-min-width);
-  min-height: var(--feyo-button-height-s);
+  min-width: var(--kima-button-min-width);
+  min-height: var(--kima-button-height-s);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--feyo-space-s);
-  padding: 0 var(--feyo-space-l);
-  border: 1px solid var(--feyo-color-transparent);
+  gap: var(--kima-space-s);
+  padding: 0 var(--kima-space-l);
+  border: 1px solid var(--kima-color-transparent);
   /* square 用 M 12；round 用整高药丸。 */
-  border-radius: var(--feyo-radius-m);
+  border-radius: var(--kima-radius-m);
   box-sizing: border-box;
-  font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-medium);
-  font-weight: var(--feyo-font-weight-medium);
+  font-family: var(--kima-font-family);
+  font-size: var(--kima-font-size-medium);
+  font-weight: var(--kima-font-weight-medium);
   line-height: 1;
-  color: var(--feyo-color-on-primary);
-  background: var(--feyo-color-primary);
+  color: var(--kima-color-on-primary);
+  background: var(--kima-color-primary);
   cursor: pointer;
   user-select: none;
   transition:
-    background-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    border-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
-    border-radius var(--feyo-duration-expressive-effects) var(--feyo-curve-standard);
+    background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    border-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
+    border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
-  @include feyo-ripple-host;
-  @include feyo-state-layer;
-  @include feyo-focus-ring;
+  @include kima-ripple-host;
+  @include kima-state-layer;
+  @include kima-focus-ring;
 
   &--round {
-    border-radius: var(--feyo-radius-full);
+    border-radius: var(--kima-radius-full);
   }
 
   /* DMS：按下时圆角收成 S 8。 */
   &:active:not(:disabled) {
-    border-radius: var(--feyo-radius-s);
+    border-radius: var(--kima-radius-s);
   }
 
   /* DMS 禁用：填充分支用 onSurface_12 底 + onSurface_38 字。 */
@@ -122,28 +122,28 @@ const isRound = computed(() => props.round || props.shape !== "square");
 
   &--filled:disabled,
   &--tonal:disabled {
-    color: var(--feyo-color-on-surface-38);
-    background: var(--feyo-color-on-surface-12);
+    color: var(--kima-color-on-surface-38);
+    background: var(--kima-color-on-surface-12);
   }
 
   &--tonal {
-    color: var(--feyo-color-on-secondary-container);
-    background: var(--feyo-color-secondary-container);
+    color: var(--kima-color-on-secondary-container);
+    background: var(--kima-color-secondary-container);
   }
 
   &--outlined,
   &--text {
-    color: var(--feyo-color-primary);
-    background: var(--feyo-color-transparent);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-transparent);
   }
 
   &--outlined {
-    border-color: var(--feyo-color-outline-variant);
+    border-color: var(--kima-color-outline-variant);
   }
 
   &--outlined:disabled,
   &--text:disabled {
-    color: var(--feyo-color-on-surface-38);
+    color: var(--kima-color-on-surface-38);
   }
 
   &__label,
@@ -164,13 +164,13 @@ const isRound = computed(() => props.round || props.shape !== "square");
     height: 20px;
     flex: 0 0 20px;
     border: 2px solid currentColor;
-    border-right-color: var(--feyo-color-transparent);
-    border-radius: var(--feyo-radius-full);
-    animation: feyo-button-spin var(--feyo-spinner-duration) linear infinite;
+    border-right-color: var(--kima-color-transparent);
+    border-radius: var(--kima-radius-full);
+    animation: kima-button-spin var(--kima-spinner-duration) linear infinite;
   }
 }
 
-@keyframes feyo-button-spin {
+@keyframes kima-button-spin {
   to {
     transform: rotate(360deg);
   }

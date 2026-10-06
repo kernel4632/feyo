@@ -3,7 +3,7 @@
 调用示例：
   const root = ref(null)
   const { hasNativeSlot } = useNativeSlots(root)
-  // <feyo-card><span>内容</span></feyo-card>
+  // <kima-card><span>内容</span></kima-card>
   hasNativeSlot('default')
 */
 import { getCurrentInstance, onBeforeUnmount, onMounted, ref, useHost } from "vue";

@@ -5,10 +5,10 @@ heading 是标题属性；Vue 的 title 透传属性也支持，避免覆盖 HTM
 挂载后才开始计时；鼠标停留或焦点在通知内部时暂停，离开后继续剩余时间。
 position 支持 top/bottom 和 top-left/top-center/top-right/bottom-left/bottom-center/bottom-right。
 调用示例：
-  <feyo-notification v-model:open="noticeOpen" title="保存成功" message="项目已保存" variant="success" />
-  <feyo-notification v-model:open="noticeOpen" title="需要确认" message="请检查表单" variant="warning" :duration="0" closable>
+  <kima-notification v-model:open="noticeOpen" title="保存成功" message="项目已保存" variant="success" />
+  <kima-notification v-model:open="noticeOpen" title="需要确认" message="请检查表单" variant="warning" :duration="0" closable>
     <template #action><button type="button">查看</button></template>
-  </feyo-notification>
+  </kima-notification>
 -->
 <script setup>
 import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch, useAttrs, useHost, useId } from "vue";
@@ -53,8 +53,8 @@ const attrs = useAttrs();
 const host = getCurrentInstance().ce ? useHost() : null;
 const localOpen = ref(props.open);
 const baseId = useId();
-const titleId = `feyo-notification-${baseId}-title`;
-const messageId = `feyo-notification-${baseId}-message`;
+const titleId = `kima-notification-${baseId}-title`;
+const messageId = `kima-notification-${baseId}-message`;
 let closeTimer = null;
 let mounted = false;
 let remaining = 0;
@@ -148,8 +148,8 @@ onBeforeUnmount(() => {
   <div
     v-bind="{ ...attrs, id: host ? undefined : attrs.id, title: undefined }"
     v-show="localOpen"
-    class="feyo-notification"
-    :class="[`feyo-notification--${notificationVariant}`, `feyo-notification--${notificationPosition}`]"
+    class="kima-notification"
+    :class="[`kima-notification--${notificationVariant}`, `kima-notification--${notificationPosition}`]"
     :role="notificationRole"
     :aria-live="notificationLive"
     aria-atomic="true"
@@ -160,14 +160,14 @@ onBeforeUnmount(() => {
     @focusin="handleFocus"
     @focusout="handleFocus"
   >
-    <div v-if="localOpen" class="feyo-notification__copy">
-      <strong v-if="heading || attrs.title" :id="titleId" class="feyo-notification__title">{{ heading || attrs.title }}</strong>
-      <span v-if="message" :id="messageId" class="feyo-notification__message">{{ message }}</span>
-      <div v-if="$slots.action || host" class="feyo-notification__action"><slot name="action" /></div>
+    <div v-if="localOpen" class="kima-notification__copy">
+      <strong v-if="heading || attrs.title" :id="titleId" class="kima-notification__title">{{ heading || attrs.title }}</strong>
+      <span v-if="message" :id="messageId" class="kima-notification__message">{{ message }}</span>
+      <div v-if="$slots.action || host" class="kima-notification__action"><slot name="action" /></div>
     </div>
     <button
       v-if="localOpen && closable"
-      class="feyo-notification__close"
+      class="kima-notification__close"
       type="button"
       aria-label="关闭通知"
       title="关闭通知"
@@ -179,7 +179,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
-.feyo-notification {
+.kima-notification {
   box-sizing: border-box;
   position: fixed;
   z-index: 1100;
@@ -189,118 +189,118 @@ onBeforeUnmount(() => {
   overflow: auto;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--feyo-space-4);
-  padding: var(--feyo-space-4);
-  border: 1px solid var(--feyo-color-outline);
-  border-radius: var(--feyo-radius-lg);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-surface-container);
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--feyo-color-surface) 55%, var(--feyo-color-transparent));
-  font-family: var(--feyo-font-family);
-  animation: feyo-notification-enter var(--feyo-duration-normal) var(--feyo-ease-emphasized);
+  gap: var(--kima-space-4);
+  padding: var(--kima-space-4);
+  border: 1px solid var(--kima-color-outline);
+  border-radius: var(--kima-radius-lg);
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-surface-container);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
+  font-family: var(--kima-font-family);
+  animation: kima-notification-enter var(--kima-duration-normal) var(--kima-ease-emphasized);
 }
 
-.feyo-notification--top,
-.feyo-notification--top-center,
-.feyo-notification--top-left,
-.feyo-notification--top-right {
-  top: var(--feyo-space-4);
+.kima-notification--top,
+.kima-notification--top-center,
+.kima-notification--top-left,
+.kima-notification--top-right {
+  top: var(--kima-space-4);
 }
 
-.feyo-notification--bottom,
-.feyo-notification--bottom-center,
-.feyo-notification--bottom-left,
-.feyo-notification--bottom-right {
-  bottom: var(--feyo-space-4);
+.kima-notification--bottom,
+.kima-notification--bottom-center,
+.kima-notification--bottom-left,
+.kima-notification--bottom-right {
+  bottom: var(--kima-space-4);
 }
 
-.feyo-notification--top,
-.feyo-notification--bottom {
+.kima-notification--top,
+.kima-notification--bottom {
   left: 50%;
   transform: translateX(-50%);
 }
 
-.feyo-notification--top-center,
-.feyo-notification--bottom-center {
+.kima-notification--top-center,
+.kima-notification--bottom-center {
   left: 50%;
   transform: translateX(-50%);
 }
 
-.feyo-notification--top-left,
-.feyo-notification--bottom-left {
-  left: var(--feyo-space-4);
+.kima-notification--top-left,
+.kima-notification--bottom-left {
+  left: var(--kima-space-4);
 }
 
-.feyo-notification--top-right,
-.feyo-notification--bottom-right {
-  right: var(--feyo-space-4);
+.kima-notification--top-right,
+.kima-notification--bottom-right {
+  right: var(--kima-space-4);
 }
 
-.feyo-notification--info {
-  border-color: var(--feyo-color-primary);
-  color: var(--feyo-color-on-primary-container);
-  background: var(--feyo-color-primary-container);
+.kima-notification--info {
+  border-color: var(--kima-color-primary);
+  color: var(--kima-color-on-primary-container);
+  background: var(--kima-color-primary-container);
 }
 
-.feyo-notification--warning {
-  border-color: var(--feyo-color-danger);
-  color: var(--feyo-color-on-surface);
-  background: color-mix(in srgb, var(--feyo-color-danger) 12%, var(--feyo-color-surface-container));
+.kima-notification--warning {
+  border-color: var(--kima-color-danger);
+  color: var(--kima-color-on-surface);
+  background: color-mix(in srgb, var(--kima-color-danger) 12%, var(--kima-color-surface-container));
 }
 
-.feyo-notification--success {
-  border-color: var(--feyo-color-success);
-  color: var(--feyo-color-on-success);
-  background: var(--feyo-color-success);
+.kima-notification--success {
+  border-color: var(--kima-color-success);
+  color: var(--kima-color-on-success);
+  background: var(--kima-color-success);
 }
 
-.feyo-notification--danger {
-  border-color: var(--feyo-color-danger);
-  color: var(--feyo-color-on-danger);
-  background: var(--feyo-color-danger);
+.kima-notification--danger {
+  border-color: var(--kima-color-danger);
+  color: var(--kima-color-on-danger);
+  background: var(--kima-color-danger);
 }
 
-.feyo-notification__copy {
+.kima-notification__copy {
   min-width: 0;
   display: grid;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
   overflow-wrap: anywhere;
 }
 
-.feyo-notification__title {
-  font-size: var(--feyo-font-size-md);
-  font-weight: var(--feyo-font-weight-bold);
+.kima-notification__title {
+  font-size: var(--kima-font-size-md);
+  font-weight: var(--kima-font-weight-bold);
   line-height: 1.3;
 }
 
-.feyo-notification__message {
-  font-size: var(--feyo-font-size-sm);
+.kima-notification__message {
+  font-size: var(--kima-font-size-sm);
   line-height: 1.45;
 }
 
-.feyo-notification__action {
+.kima-notification__action {
   display: flex;
   flex-wrap: wrap;
-  margin-top: var(--feyo-space-2);
-  gap: var(--feyo-space-2);
+  margin-top: var(--kima-space-2);
+  gap: var(--kima-space-2);
 }
 
-.feyo-notification__action:empty {
+.kima-notification__action:empty {
   display: none;
 }
 
-.feyo-notification__close:focus-visible {
+.kima-notification__close:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feyo-notification {
+  .kima-notification {
     animation: none;
   }
 }
 
-.feyo-notification__close {
+.kima-notification__close {
   display: inline-flex;
   flex: 0 0 32px;
   width: 32px;
@@ -309,17 +309,17 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-full);
+  border-radius: var(--kima-radius-full);
   color: inherit;
-  background: var(--feyo-color-transparent);
+  background: var(--kima-color-transparent);
   cursor: pointer;
 }
 
-.feyo-notification__close:hover {
-  background: color-mix(in srgb, currentColor 12%, var(--feyo-color-transparent));
+.kima-notification__close:hover {
+  background: color-mix(in srgb, currentColor 12%, var(--kima-color-transparent));
 }
 
-@keyframes feyo-notification-enter {
+@keyframes kima-notification-enter {
   from {
     opacity: 0;
     scale: 0.98;
@@ -332,28 +332,28 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 600px) {
-  .feyo-notification--top,
-  .feyo-notification--top-left,
-  .feyo-notification--top-center,
-  .feyo-notification--top-right {
-    top: var(--feyo-space-3);
+  .kima-notification--top,
+  .kima-notification--top-left,
+  .kima-notification--top-center,
+  .kima-notification--top-right {
+    top: var(--kima-space-3);
   }
 
-  .feyo-notification--bottom,
-  .feyo-notification--bottom-left,
-  .feyo-notification--bottom-center,
-  .feyo-notification--bottom-right {
-    bottom: var(--feyo-space-3);
+  .kima-notification--bottom,
+  .kima-notification--bottom-left,
+  .kima-notification--bottom-center,
+  .kima-notification--bottom-right {
+    bottom: var(--kima-space-3);
   }
 
-  .feyo-notification--top-left,
-  .feyo-notification--bottom-left {
-    left: var(--feyo-space-3);
+  .kima-notification--top-left,
+  .kima-notification--bottom-left {
+    left: var(--kima-space-3);
   }
 
-  .feyo-notification--top-right,
-  .feyo-notification--bottom-right {
-    right: var(--feyo-space-3);
+  .kima-notification--top-right,
+  .kima-notification--bottom-right {
+    right: var(--kima-space-3);
   }
 }
 </style>

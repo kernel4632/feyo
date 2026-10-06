@@ -2,13 +2,13 @@
 树：展示可展开的层级数据，支持单选、多选和键盘移动焦点。
 items 格式为 { value, label, children, disabled }，value 必须在整棵树中唯一且稳定。
 调用示例：
-  <feyo-tree
+  <kima-tree
     v-model="selected"
     v-model:expanded="expanded"
     :items="[{ value: 'docs', label: '文档', children: [{ value: 'readme', label: 'README' }] }]"
     selectable
   />
-  <feyo-tree :items="items"><template #default="{ item }">{{ item.label }}</template></feyo-tree>
+  <kima-tree :items="items"><template #default="{ item }">{{ item.label }}</template></kima-tree>
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, ref, shallowRef, useAttrs, useHost, useId, watch } from "vue";
@@ -38,7 +38,7 @@ const attrs = useAttrs();
 const host = getCurrentInstance()?.ce ? useHost() : null;
 const forwardedAttrs = computed(() => host ? { ...attrs, id: undefined } : attrs);
 
-const treeId = `feyo-tree-${useId()}`;
+const treeId = `kima-tree-${useId()}`;
 const localValue = shallowRef(props.modelValue);
 const localExpanded = ref([...props.expanded]);
 const activeIndex = ref(0);
@@ -240,22 +240,22 @@ watch([visibleNodes, () => props.modelValue], () => {
 <template>
   <div
     v-bind="forwardedAttrs"
-    class="feyo-tree"
-    :class="{ 'feyo-tree--disabled': disabled }"
+    class="kima-tree"
+    :class="{ 'kima-tree--disabled': disabled }"
     role="tree"
     :aria-multiselectable="multiple || undefined"
     :aria-disabled="disabled || undefined"
   >
-    <div v-if="visibleNodes.length" class="feyo-tree__group" role="group">
+    <div v-if="visibleNodes.length" class="kima-tree__group" role="group">
       <div
         v-for="(node, index) in visibleNodes"
         :id="nodeId(node.value)"
         :key="node.value"
         :ref="(element) => setNodeRef(element, index)"
-        class="feyo-tree__item"
+        class="kima-tree__item"
         :class="{
-          'feyo-tree__item--selected': isSelected(node),
-          'feyo-tree__item--disabled': node.item.disabled,
+          'kima-tree__item--selected': isSelected(node),
+          'kima-tree__item--disabled': node.item.disabled,
         }"
         role="treeitem"
         :aria-level="node.level"
@@ -265,14 +265,14 @@ watch([visibleNodes, () => props.modelValue], () => {
         :aria-selected="selectable ? isSelected(node) : undefined"
         :aria-disabled="node.item.disabled || undefined"
         :tabindex="index === activeIndex && isInteractive(node) ? 0 : -1"
-        :style="{ '--feyo-tree-level': node.level - 1 }"
+        :style="{ '--kima-tree-level': node.level - 1 }"
         @click="handleNodeClick(node, index, $event)"
         @focus="setActive(index)"
         @keydown="handleKeydown(node, index, $event)"
       >
         <button
           v-if="node.hasChildren"
-          class="feyo-tree__toggle"
+          class="kima-tree__toggle"
           type="button"
           :disabled="disabled || node.item.disabled"
           :aria-label="`${node.expanded ? '收起' : '展开'} ${node.item.label}`"
@@ -281,77 +281,77 @@ watch([visibleNodes, () => props.modelValue], () => {
         >
           <span aria-hidden="true" />
         </button>
-        <span v-else class="feyo-tree__toggle feyo-tree__toggle--empty" aria-hidden="true" />
-        <span class="feyo-tree__label">
+        <span v-else class="kima-tree__toggle kima-tree__toggle--empty" aria-hidden="true" />
+        <span class="kima-tree__label">
           <slot :item="node.item" :value="node.value" :level="node.level" :selected="isSelected(node)" :expanded="node.expanded" :disabled="node.item.disabled">
             {{ node.item.label }}
           </slot>
         </span>
       </div>
     </div>
-    <div v-else class="feyo-tree__empty" role="status">
+    <div v-else class="kima-tree__empty" role="status">
       <slot name="empty">暂无数据</slot>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.feyo-tree {
+.kima-tree {
   min-width: 0;
-  color: var(--feyo-color-on-surface);
-  font-family: var(--feyo-font-family);
-  font-size: var(--feyo-font-size-md);
+  color: var(--kima-color-on-surface);
+  font-family: var(--kima-font-family);
+  font-size: var(--kima-font-size-md);
   line-height: 1.4;
 }
 
-.feyo-tree__group {
+.kima-tree__group {
   display: grid;
-  gap: var(--feyo-space-1);
+  gap: var(--kima-space-1);
 }
 
-.feyo-tree__item {
+.kima-tree__item {
   display: flex;
   min-height: 40px;
   min-width: 0;
   align-items: center;
-  gap: var(--feyo-space-2);
-  padding: var(--feyo-space-1) var(--feyo-space-3) var(--feyo-space-1) calc(var(--feyo-space-4) + var(--feyo-tree-level) * var(--feyo-space-4));
-  border-radius: var(--feyo-radius-sm);
+  gap: var(--kima-space-2);
+  padding: var(--kima-space-1) var(--kima-space-3) var(--kima-space-1) calc(var(--kima-space-4) + var(--kima-tree-level) * var(--kima-space-4));
+  border-radius: var(--kima-radius-sm);
   box-sizing: border-box;
-  color: var(--feyo-color-on-surface);
+  color: var(--kima-color-on-surface);
   cursor: pointer;
   outline: none;
-  transition: background-color var(--feyo-duration-fast) var(--feyo-ease-standard), color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition: background-color var(--kima-duration-fast) var(--kima-ease-standard), color var(--kima-duration-fast) var(--kima-ease-standard);
 
-  &:hover:not(.feyo-tree__item--disabled),
+  &:hover:not(.kima-tree__item--disabled),
   &:focus-visible {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -2px;
   }
 
   &--selected {
-    color: var(--feyo-color-on-primary-container);
-    background: var(--feyo-color-primary-container);
+    color: var(--kima-color-on-primary-container);
+    background: var(--kima-color-primary-container);
   }
 
   &--disabled {
-    color: var(--feyo-color-on-surface-variant);
+    color: var(--kima-color-on-surface-variant);
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    opacity: var(--kima-opacity-disabled);
   }
 }
 
-.feyo-tree--disabled .feyo-tree__item {
-  color: var(--feyo-color-on-surface-variant);
+.kima-tree--disabled .kima-tree__item {
+  color: var(--kima-color-on-surface-variant);
   cursor: not-allowed;
-  opacity: var(--feyo-opacity-disabled);
+  opacity: var(--kima-opacity-disabled);
 }
 
-.feyo-tree__toggle {
+.kima-tree__toggle {
   display: inline-flex;
   width: 24px;
   height: 24px;
@@ -360,18 +360,18 @@ watch([visibleNodes, () => props.modelValue], () => {
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: var(--feyo-radius-sm);
+  border-radius: var(--kima-radius-sm);
   color: inherit;
-  background: var(--feyo-color-transparent);
+  background: var(--kima-color-transparent);
   cursor: pointer;
 
   &:hover:not(:disabled),
   &:focus-visible {
-    background: var(--feyo-color-surface-container-high);
+    background: var(--kima-color-surface-container-high);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: -1px;
   }
 
@@ -385,7 +385,7 @@ watch([visibleNodes, () => props.modelValue], () => {
     border-right: 1.5px solid currentColor;
     border-bottom: 1.5px solid currentColor;
     transform: rotate(-45deg);
-    transition: transform var(--feyo-duration-fast) var(--feyo-ease-standard);
+    transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
   }
 
   &[aria-expanded="true"] span {
@@ -398,14 +398,14 @@ watch([visibleNodes, () => props.modelValue], () => {
   }
 }
 
-.feyo-tree__label {
+.kima-tree__label {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.feyo-tree__empty {
-  padding: var(--feyo-space-4);
-  color: var(--feyo-color-on-surface-variant);
+.kima-tree__empty {
+  padding: var(--kima-space-4);
+  color: var(--kima-color-on-surface-variant);
   text-align: center;
 }
 </style>

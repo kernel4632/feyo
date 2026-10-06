@@ -1,8 +1,8 @@
 <!--
-复选框：提供可参与表单提交的原生 checkbox，并显示 FEYO 的选中状态。
+复选框：提供可参与表单提交的原生 checkbox，并显示 KIMA 的选中状态。
 调用示例：
-  <feyo-checkbox v-model="accepted" label="接受条款" name="accepted" required />
-  <feyo-checkbox :model-value="true" label="已完成" indeterminate />
+  <kima-checkbox v-model="accepted" label="接受条款" name="accepted" required />
+  <kima-checkbox :model-value="true" label="已完成" indeterminate />
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
@@ -77,17 +77,17 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 <template>
   <label
     ref="root"
-    class="feyo-checkbox"
+    class="kima-checkbox"
     :class="{
-      'feyo-checkbox--checked': localValue,
-      'feyo-checkbox--indeterminate': localIndeterminate,
-      'feyo-checkbox--disabled': disabled,
+      'kima-checkbox--checked': localValue,
+      'kima-checkbox--indeterminate': localIndeterminate,
+      'kima-checkbox--disabled': disabled,
     }"
   >
     <input
       ref="input"
        v-bind="forwardedAttrs"
-      class="feyo-checkbox__input"
+      class="kima-checkbox__input"
       type="checkbox"
       :checked="localValue"
       :indeterminate.prop="localIndeterminate"
@@ -98,23 +98,23 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       @input.stop
       @change.stop="handleChange"
     />
-    <span class="feyo-checkbox__box" aria-hidden="true">
-      <span class="feyo-checkbox__mark" />
+    <span class="kima-checkbox__box" aria-hidden="true">
+      <span class="kima-checkbox__mark" />
     </span>
-    <span v-if="label || $slots.default || hasNativeSlot('default')" class="feyo-checkbox__label">
+    <span v-if="label || $slots.default || hasNativeSlot('default')" class="kima-checkbox__label">
       <slot>{{ label }}</slot>
     </span>
   </label>
 </template>
 
 <style scoped lang="scss">
-.feyo-checkbox {
+.kima-checkbox {
   position: relative;
   display: inline-flex;
   align-items: flex-start;
-  gap: var(--feyo-space-2);
+  gap: var(--kima-space-2);
   min-height: 20px;
-  color: var(--feyo-color-on-surface);
+  color: var(--kima-color-on-surface);
   cursor: pointer;
   user-select: none;
 
@@ -134,58 +134,58 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     flex: 0 0 20px;
     width: 20px;
     height: 20px;
-    border: 2px solid var(--feyo-color-outline);
-    border-radius: var(--feyo-radius-sm);
-    background: var(--feyo-color-transparent);
+    border: 2px solid var(--kima-color-outline);
+    border-radius: var(--kima-radius-sm);
+    background: var(--kima-color-transparent);
     transition:
-      background var(--feyo-duration-fast) var(--feyo-ease-standard),
-      border-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+      background var(--kima-duration-fast) var(--kima-ease-standard),
+      border-color var(--kima-duration-fast) var(--kima-ease-standard);
   }
 
   &__mark {
     position: absolute;
     inset: 3px;
     display: block;
-    border-right: 2px solid var(--feyo-color-on-primary);
-    border-bottom: 2px solid var(--feyo-color-on-primary);
+    border-right: 2px solid var(--kima-color-on-primary);
+    border-bottom: 2px solid var(--kima-color-on-primary);
     transform: rotate(45deg) scale(0);
-    transition: transform var(--feyo-duration-fast) var(--feyo-ease-standard);
+    transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
   }
 
   &__label {
     min-width: 0;
     padding-top: 1px;
-    color: var(--feyo-color-on-surface);
+    color: var(--kima-color-on-surface);
     line-height: 1.35;
   }
 
   &--checked,
   &--indeterminate {
-    .feyo-checkbox__box {
-      border-color: var(--feyo-color-primary);
-      background: var(--feyo-color-primary);
+    .kima-checkbox__box {
+      border-color: var(--kima-color-primary);
+      background: var(--kima-color-primary);
     }
   }
 
-  &--checked .feyo-checkbox__mark {
+  &--checked .kima-checkbox__mark {
     transform: rotate(45deg) scale(1);
   }
 
-  &--indeterminate .feyo-checkbox__mark {
+  &--indeterminate .kima-checkbox__mark {
     inset: 7px 3px;
     border: 0;
-    background: var(--feyo-color-on-primary);
+    background: var(--kima-color-on-primary);
     transform: none;
   }
 
-  &__input:focus-visible + .feyo-checkbox__box {
-    outline: 2px solid var(--feyo-color-primary);
+  &__input:focus-visible + .kima-checkbox__box {
+    outline: 2px solid var(--kima-color-primary);
     outline-offset: 2px;
   }
 
   &--disabled {
-    color: var(--feyo-color-on-surface-variant);
-    opacity: var(--feyo-opacity-disabled);
+    color: var(--kima-color-on-surface-variant);
+    opacity: var(--kima-opacity-disabled);
     cursor: not-allowed;
   }
 }
