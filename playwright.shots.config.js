@@ -11,7 +11,8 @@ export default defineConfig({
   fullyParallel: false,
   reporter: "list",
   use: { baseURL, trace: "off" },
-  projects: [{ name: "desktop", use: { ...devices["Desktop Chrome"] } }],
+  // 3 倍像素密度：截图放大后能看清图标描边的粗细，判断线宽够不够。
+  projects: [{ name: "desktop", use: { ...devices["Desktop Chrome"], deviceScaleFactor: 3 } }],
   webServer: {
     command: `pnpm exec vite --host 127.0.0.1 --port ${port} --strictPort`,
     url: `${baseURL}/tests/fixture.html`,

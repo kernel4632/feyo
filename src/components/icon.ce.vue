@@ -1,14 +1,21 @@
 <!--
-图标：包一层Hugeicons，全库统一线宽。
-Hugeicons 的图标数据自带 stroke-width 1.5，在放大的控件里偏细，所以这里默认改成 2。
-想改动全库图标粗细，只改下面的 --kima-icon-stroke-width，不要在各个组件里单独传 strokeWidth。
+图标：包一层 Hugeicons，全库统一线宽。
+Hugeicons 按 24×24 画布设计，图标数据自带 stroke-width 1.5。
+只传 stroke-width 不管用：它是在 24 的画布坐标系里画的，图标缩到 18px 时
+视觉线宽也跟着缩水，看起来还是细的。所以要配 absolute-stroke-width，
+让线宽不随尺寸缩放——给 2 就是屏幕上实打实的 2px。
+全库粗细只由下面 iconStrokeWidth 一个值决定，不要在别的组件里单独传 strokeWidth。
 调用示例：
   <kima-icon :icon="Search01Icon" :size="20" />
   <kima-icon :icon="StarIcon" :size="32" class="my-icon" />
 -->
 <script setup>
-import { computed } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
+
+// 全库图标线宽的唯一来源。想整体调粗细只改这一个数。
+// 为什么不放 CSS token：线宽要传给 Hugeicons 组件当属性用，JS 读不到 CSS 变量，
+// 放两处就会出现"改了 token 图标没变"的情况。
+const iconStrokeWidth = 2;
 
 const props = defineProps({
   icon: {
@@ -24,10 +31,12 @@ const props = defineProps({
     type: String,
     default: "currentColor",
   },
+  // 个别地方确实需要更粗或更细时传它，正常情况不要传。
+  strokeWidth: {
+    type: Number,
+    default: iconStrokeWidth,
+  },
 });
-
-// 默认 2 倍线宽：Hugeicons 自带的 1.5 在放大尺寸下显得太细。
-const strokeWidth = computed(() => 2);
 </script>
 
 <template>
@@ -36,7 +45,8 @@ const strokeWidth = computed(() => 2);
     :icon="props.icon"
     :size="props.size"
     :color="props.color"
-    :stroke-width="strokeWidth"
+    :stroke-width="props.strokeWidth"
+    absolute-stroke-width
   />
 </template>
 

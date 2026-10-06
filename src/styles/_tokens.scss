@@ -143,6 +143,8 @@
   --kima-icon-size-small: 20px;
   --kima-icon-size: 24px;
   --kima-icon-size-large: 32px;
+  /* 图标线宽不在这里：它要当属性传给 Hugeicons 组件，JS 读不到 CSS 变量，
+   * 所以定义在 src/components/icon.ce.vue 的 iconStrokeWidth。 */
   --kima-icon-button-size: 48px;
   --kima-field-height: 64px;
   --kima-field-padding: 20px;

@@ -37,6 +37,22 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
   await page.waitForTimeout(400);
   await form.screenshot({ path: "shots/form-dark.png" });
 
+  // 图标线宽：把图标按钮那一排按 3 倍像素密度拍下来，
+  // 放大看才能判断 2px 的线到底够不够粗。
+  const iconButtons = page.locator(".kima-icon-button");
+  if (await iconButtons.count()) {
+    const first = iconButtons.first();
+    await first.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    const box = await first.boundingBox();
+    const count = Math.min(await iconButtons.count(), 6);
+    await page.screenshot({
+      path: "shots/icons-zoom.png",
+      // 截取从第一个图标按钮往右的一段，高度留出上下边距。
+      clip: { x: box.x - 10, y: box.y - 14, width: (box.width + 20) * count, height: box.height + 28 },
+    });
+  }
+
   // 切浅色再拍一遍，确认两套主题都正常
   await page.evaluate(() => {
     document.documentElement.dataset.kimaTheme = "light";
