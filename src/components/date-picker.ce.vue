@@ -11,7 +11,7 @@ Vue 用 v-model 和 v-model:open 同步状态；原生 HTML 直接写属性即�
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useHost, useId, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { ArrowLeft01Icon, ArrowRight01Icon, Calendar01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -376,7 +376,7 @@ onBeforeUnmount(() => {
         <span class="kima-date-picker__trigger-label" :class="{ 'kima-date-picker__trigger-label--placeholder': !localValue }">
           {{ displayText }}
         </span>
-        <HugeiconsIcon class="kima-date-picker__icon" :icon="Calendar01Icon" :size="20" aria-hidden="true" />
+        <KimaIcon class="kima-date-picker__icon" :icon="Calendar01Icon" :size="20" aria-hidden="true" />
       </button>
       <button
         v-if="clearable && localValue"
@@ -387,7 +387,7 @@ onBeforeUnmount(() => {
         :disabled="disabled"
         @click.stop="clearValue"
       >
-        <HugeiconsIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
+        <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
       </button>
     </div>
 
@@ -417,7 +417,7 @@ onBeforeUnmount(() => {
           :disabled="disabled || !canGoPrevious"
           @click="changeMonth(-1)"
         >
-          <HugeiconsIcon :icon="ArrowLeft01Icon" :size="18" aria-hidden="true" />
+          <KimaIcon :icon="ArrowLeft01Icon" :size="18" aria-hidden="true" />
         </button>
         <span :id="titleId" class="kima-date-picker__month">{{ monthTitle }}</span>
         <button
@@ -428,7 +428,7 @@ onBeforeUnmount(() => {
           :disabled="disabled || !canGoNext"
           @click="changeMonth(1)"
         >
-          <HugeiconsIcon :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
+          <KimaIcon :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
         </button>
       </div>
 

@@ -7,7 +7,7 @@ const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: "./tests",
   testMatch: "**/*.spec.js",
-  // 截图脚本是给人看的，不参与 pnpm test；单独用 pnpm shots 跑。
+  // 截图脚本不参与 pnpm test，它用 playwright.shots.config.js 单独跑（pnpm shots）。
   testIgnore: "**/shots.spec.js",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),

@@ -9,7 +9,7 @@ title 沿用原生属性，作为 attrs 读取，不声明同名组件 prop。
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useNativeSlots } from "../utils/native-slots.js";
 
@@ -124,7 +124,7 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
             <div v-if="$slots.header || hasNativeSlot('header')" class="kima-dialog__header-slot"><slot name="header" /></div>
           </div>
           <button class="kima-dialog__close" type="button" aria-label="关闭对话框" @click="close('button')">
-            <HugeiconsIcon :icon="Cancel01Icon" :size="20" color="currentColor" />
+            <KimaIcon :icon="Cancel01Icon" :size="20" color="currentColor" />
           </button>
         </header>
 

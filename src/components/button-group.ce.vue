@@ -7,7 +7,7 @@
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, ref, shallowRef, useAttrs, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { Tick02Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -163,7 +163,7 @@ function moveFocus(index, event) {
       @keydown="moveFocus(index, $event)"
     >
       <span v-if="isSelected(item)" class="kima-button-group__check" aria-hidden="true">
-        <HugeiconsIcon :icon="Tick02Icon" :size="16" />
+        <KimaIcon :icon="Tick02Icon" :size="16" />
       </span>
       <slot :item="item" :index="index" :selected="isSelected(item)">{{ item.label }}</slot>
     </button>
@@ -174,12 +174,15 @@ function moveFocus(index, event) {
 @use "../styles/mixins" as *;
 
 .kima-button-group {
-  /* DMS：段与段之间间隙 groupedListGap = spacingXXS 2。 */
+  /* 段与段之间不留缝，整条连成一片，看起来才是一个连续的控件。 */
   display: inline-flex;
   align-items: stretch;
-  gap: var(--kima-space-xxs);
+  gap: 0;
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
+  /* 整条外轮廓用满圆，内部各段自己不带圆角，靠下面的首末段规则给外侧圆角。 */
+  border-radius: var(--kima-radius-full);
+  overflow: hidden;
 
   &--vertical {
     flex-direction: column;
@@ -193,40 +196,30 @@ function moveFocus(index, event) {
   align-items: center;
   justify-content: center;
   gap: var(--kima-space-s);
-  min-width: 64px;
-  min-height: 40px;
-  padding: 0 var(--kima-space-l);
+  min-width: 88px;
+  min-height: var(--kima-button-height-s);
+  padding: 0 var(--kima-space-6);
+  /* 圆角由外层容器统一裁剪，各段自己不带圆角，内角才是真的直角。 */
   border: 0;
-  border-radius: var(--kima-radius-s);
+  border-radius: 0;
   color: var(--kima-color-on-secondary-container);
   background: var(--kima-color-secondary-container);
   font: inherit;
-  font-size: var(--kima-font-size-medium);
-  font-weight: var(--kima-font-weight-medium);
+  font-size: var(--kima-font-size-label-large);
+  font-weight: var(--kima-font-weight-semi-bold);
   cursor: pointer;
   transition:
-    background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    border-radius var(--kima-duration-expressive-fast-spatial) var(--kima-curve-standard);
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
 
   @include kima-state-layer;
   @include kima-focus-ring;
 
-  /* DMS 首末段外侧取整圆，内侧取 S 8。 */
-  &:first-child {
-    border-radius: var(--kima-radius-full) var(--kima-radius-s) var(--kima-radius-s) var(--kima-radius-full);
+  /* 段与段之间用一条弱描边分开，避免相邻两段同色糊成一块。 */
+  & + & {
+    box-shadow: inset var(--kima-outline-width) 0 0 0 var(--kima-color-outline-variant);
   }
 
-  &:last-child {
-    border-radius: var(--kima-radius-s) var(--kima-radius-full) var(--kima-radius-full) var(--kima-radius-s);
-  }
-
-  /* DMS 按下时内侧圆角收成 XS 4。 */
-  &:active:not(:disabled) {
-    border-radius: var(--kima-radius-xs);
-  }
-
-  /* DMS 禁用：底色 onSurface_12，文字 onSurface_38。 */
   &:disabled {
     color: var(--kima-color-on-surface-38);
     background: var(--kima-color-on-surface-12);
@@ -234,15 +227,10 @@ function moveFocus(index, event) {
   }
 }
 
-/* DMS 选中段：变整圆 primary 药丸；两段类名确保压过首末段圆角。 */
-.kima-button-group__item.kima-button-group__item--selected {
-  border-radius: var(--kima-radius-full);
+/* 选中段换成主色实心，是整条里唯一的高亮，一眼能看出当前项。 */
+.kima-button-group__item--selected {
   color: var(--kima-color-on-primary);
   background: var(--kima-color-primary);
-}
-
-.kima-button-group__item.kima-button-group__item--selected:active:not(:disabled) {
-  border-radius: var(--kima-radius-xs);
 }
 
 .kima-button-group__check {
@@ -251,25 +239,28 @@ function moveFocus(index, event) {
   justify-content: center;
 }
 
-/* 纵向：首段圆上角，末段圆下角。 */
-.kima-button-group--vertical .kima-button-group__item:first-child {
-  border-radius: var(--kima-radius-full) var(--kima-radius-full) var(--kima-radius-s) var(--kima-radius-s);
+/* 纵向时把分隔线转成上边线。 */
+.kima-button-group--vertical .kima-button-group__item + .kima-button-group__item {
+  box-shadow: inset 0 var(--kima-outline-width) 0 0 var(--kima-color-outline-variant);
 }
 
-.kima-button-group--vertical .kima-button-group__item:last-child {
-  border-radius: var(--kima-radius-s) var(--kima-radius-s) var(--kima-radius-full) var(--kima-radius-full);
+/* 焦点环往内收：整条被容器裁剪，往外画会被切掉，键盘用户就看不到焦点了。 */
+.kima-button-group__item:focus-visible {
+  outline-offset: calc(0px - var(--kima-focus-ring-offset));
 }
 
-/* DMS small 档：高 32、最小宽 56、内边距 12、字号 Small 12。 */
+/* small 档：矮一档，用在工具栏这类紧凑位置。 */
 .kima-button-group--small .kima-button-group__item {
-  min-width: 56px;
-  min-height: 32px;
-  padding-inline: var(--kima-space-m);
-  font-size: var(--kima-font-size-small);
+  min-width: 72px;
+  min-height: var(--kima-space-10);
+  padding-inline: var(--kima-space-4);
+  font-size: var(--kima-font-size-label-medium);
 }
 
+/* large 档：高一档，用做主操作区的大分段。 */
 .kima-button-group--large .kima-button-group__item {
-  min-height: 48px;
-  padding-inline: var(--kima-space-xl);
+  min-height: var(--kima-button-height-l);
+  padding-inline: var(--kima-space-8);
+  font-size: var(--kima-font-size-body-large);
 }
 </style>

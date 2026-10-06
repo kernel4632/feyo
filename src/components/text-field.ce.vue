@@ -7,7 +7,7 @@
 -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import {
   Cancel01Icon,
   ViewIcon,
@@ -221,7 +221,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
           :disabled="disabled"
           @click="passwordVisible = !passwordVisible"
         >
-          <HugeiconsIcon
+          <KimaIcon
             :icon="passwordVisible ? ViewOffIcon : ViewIcon"
             :size="18"
             color="currentColor"
@@ -235,7 +235,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
           :disabled="disabled"
           @click="clearValue"
         >
-          <HugeiconsIcon :icon="Cancel01Icon" :size="18" color="currentColor" />
+          <KimaIcon :icon="Cancel01Icon" :size="18" color="currentColor" />
         </button>
       </div>
       <button
@@ -246,7 +246,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
         :disabled="disabled"
         @click="clearValue"
       >
-        <HugeiconsIcon :icon="Cancel01Icon" :size="18" color="currentColor" />
+        <KimaIcon :icon="Cancel01Icon" :size="18" color="currentColor" />
       </button>
     </div>
 

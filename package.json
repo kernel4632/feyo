@@ -33,7 +33,7 @@
     "build": "vite build",
     "build:lib": "node scripts/build-lib.js",
     "verify:lib": "node scripts/verify-package.js",
-    "shots": "playwright test tests/shots.spec.js --project=desktop",
+    "shots": "playwright test --config playwright.shots.config.js",
     "prepack": "pnpm build:lib",
     "preview": "vite preview --outDir site-dist",
     "test": "playwright test",

@@ -16,6 +16,7 @@ export { default as KimaDatePicker } from "./components/date-picker.ce.vue";
 export { default as KimaDialog } from "./components/dialog.ce.vue";
 export { default as KimaDivider } from "./components/divider.ce.vue";
 export { default as KimaEmptyState } from "./components/empty-state.ce.vue";
+export { default as KimaIcon } from "./components/icon.ce.vue";
 export { default as KimaIconButton } from "./components/icon-button.ce.vue";
 export { default as KimaLayout } from "./components/layout.ce.vue";
 export { default as KimaMenu } from "./components/menu.ce.vue";
@@ -45,6 +46,7 @@ export const componentNames = [
   "KimaDialog",
   "KimaDivider",
   "KimaEmptyState",
+  "KimaIcon",
   "KimaIconButton",
   "KimaLayout",
   "KimaMenu",

@@ -149,6 +149,7 @@
   /* M3 用这个透明度做禁用态的文字，所以按主文字色派生，跟随主题变化。 */
   --kima-color-on-surface-12: color-mix(in srgb, var(--kima-color-on-surface) 12%, transparent);
   --kima-color-on-surface-38: color-mix(in srgb, var(--kima-color-on-surface) 38%, transparent);
+  --kima-font-weight-medium: 500;
   --kima-font-size-xs: var(--kima-font-size-label-small);
   --kima-font-size-sm: var(--kima-font-size-label-medium);
   --kima-font-size-md: var(--kima-font-size-body-medium);

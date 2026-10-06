@@ -6,7 +6,7 @@
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { Tick02Icon } from "@hugeicons/core-free-icons";
 import { useNativeSlots } from "../utils/native-slots.js";
 
@@ -90,7 +90,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     </span>
     <span class="kima-switch__track" aria-hidden="true">
       <span class="kima-switch__thumb">
-        <HugeiconsIcon class="kima-switch__check" :icon="Tick02Icon" :size="16" />
+        <KimaIcon class="kima-switch__check" :icon="Tick02Icon" :size="16" />
       </span>
     </span>
   </label>

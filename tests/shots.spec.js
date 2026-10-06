@@ -1,20 +1,42 @@
 /*
-基础层截图：把预览页的深色和浅色各拍一张，放在 shots/ 里给用户看。
-用法：先启动 pnpm dev，再运行 pnpm exec playwright test tests/shots.spec.js
-改完 token 或组件后重跑，就能对比前后效果。
+截图：把预览页的几张关键画面拍下来放进 shots/，用于跟用户确认视觉效果。
+用法：pnpm shots（会自己起一个预览页服务器）。
+改完 token 或组件后重跑，就能看前后对比。
 */
 import { expect, test } from "@playwright/test";
 
-test("拍下基础层的深色与浅色效果", async ({ page }) => {
+test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1200 });
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator(".kima-gallery")).toBeVisible();
 
-  await page.screenshot({ path: "shots/base-dark.png", fullPage: false });
+  // 首屏：基础层（色板、字体阶梯、圆角层级）
+  await page.screenshot({ path: "shots/base-dark.png" });
 
-  // 预览页的主题开关会改 html 上的 data-kima-theme，直接改属性就是切浅色。
+  // 按钮组：重点看整条是否连贯、外侧是不是满圆
+  const buttonGroup = page.locator("#actions");
+  await buttonGroup.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+  await buttonGroup.screenshot({ path: "shots/button-group-dark.png" });
+
+  // 切浅色再拍一遍，确认两套主题都正常
   await page.evaluate(() => {
     document.documentElement.dataset.kimaTheme = "light";
   });
-  await page.screenshot({ path: "shots/base-light.png", fullPage: false });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: "shots/base-light.png" });
+  await buttonGroup.screenshot({ path: "shots/button-group-light.png" });
+
+  // 纵向那一条单独放大拍，用来确认首末段的圆角和内部分隔线。
+  const verticalGroup = page.locator(".kima-button-group--vertical").first();
+  await page.evaluate(() => {
+    document.documentElement.dataset.kimaTheme = "dark";
+  });
+  await page.waitForTimeout(300);
+  await verticalGroup.screenshot({ path: "shots/button-group-vertical.png", scale: "css" });
+  const box = await verticalGroup.boundingBox();
+  await page.screenshot({
+    path: "shots/button-group-vertical-zoom.png",
+    clip: { x: box.x - 12, y: box.y - 12, width: box.width + 24, height: box.height + 24 },
+  });
 });

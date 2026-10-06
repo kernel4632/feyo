@@ -22,7 +22,7 @@ Vue 支持 cell-字段名插槽；原生自定义元素用 slot="empty" / slot="
 -->
 <script setup>
 import { computed, getCurrentInstance, ref, useAttrs, useHost, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import {
   ArrowDown01Icon,
   ArrowUp01Icon,
@@ -152,7 +152,7 @@ function sortLabel(column) {
                 :disabled="loading || !tableRows.length"
                 @click="toggleAll"
               >
-                <HugeiconsIcon :icon="allSelected ? CheckmarkSquare02Icon : someSelected ? MinusSignSquareIcon : SquareIcon" :size="20" aria-hidden="true" />
+                <KimaIcon :icon="allSelected ? CheckmarkSquare02Icon : someSelected ? MinusSignSquareIcon : SquareIcon" :size="20" aria-hidden="true" />
               </button>
             </th>
             <th
@@ -172,7 +172,7 @@ function sortLabel(column) {
                 @click="changeSort(column)"
               >
                 <span>{{ column.label }}</span>
-                <HugeiconsIcon :icon="sortKey === column.key && validDirection ? (validDirection === 'asc' ? ArrowUp01Icon : ArrowDown01Icon) : ArrowUpDownIcon" :size="16" aria-hidden="true" />
+                <KimaIcon :icon="sortKey === column.key && validDirection ? (validDirection === 'asc' ? ArrowUp01Icon : ArrowDown01Icon) : ArrowUpDownIcon" :size="16" aria-hidden="true" />
               </button>
               <span v-else>{{ column.label }}</span>
             </th>
@@ -200,7 +200,7 @@ function sortLabel(column) {
                 :title="`${selectedKeys.has(getRowKey(row, index)) ? '取消选择' : '选择'}第 ${index + 1} 行`"
                 @click.stop="toggleRow(row, index)"
               >
-                <HugeiconsIcon :icon="selectedKeys.has(getRowKey(row, index)) ? CheckmarkSquare02Icon : SquareIcon" :size="20" aria-hidden="true" />
+                <KimaIcon :icon="selectedKeys.has(getRowKey(row, index)) ? CheckmarkSquare02Icon : SquareIcon" :size="20" aria-hidden="true" />
               </button>
             </td>
             <td v-for="column in columns" :key="column.key" :class="`kima-table__align--${column.align || 'start'}`">

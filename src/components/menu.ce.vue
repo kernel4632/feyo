@@ -7,7 +7,7 @@
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useId, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { ArrowDown01Icon, Search01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
       <slot name="trigger" :open="localOpen" :selected-item="selectedItem" :value="localValue">
         <span class="kima-menu__trigger-label">{{ selectedLabel }}</span>
       </slot>
-      <HugeiconsIcon class="kima-menu__trigger-icon" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
+      <KimaIcon class="kima-menu__trigger-icon" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
     </button>
 
     <div
@@ -268,7 +268,7 @@ onBeforeUnmount(() => {
       @keydown="handleMenuKeydown"
     >
       <div v-if="searchable" class="kima-menu__search-wrap">
-        <HugeiconsIcon class="kima-menu__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
+        <KimaIcon class="kima-menu__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
         <input
           ref="searchInput"
           v-model="query"
@@ -302,7 +302,7 @@ onBeforeUnmount(() => {
             <span class="kima-menu__item-label">{{ item.label }}</span>
             <span v-if="item.description" class="kima-menu__item-description">{{ item.description }}</span>
           </span>
-          <HugeiconsIcon
+          <KimaIcon
             v-if="Object.is(item.value, localValue)"
             class="kima-menu__item-check"
             :icon="Tick01Icon"

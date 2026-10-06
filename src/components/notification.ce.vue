@@ -12,7 +12,7 @@ position 支持 top/bottom 和 top-left/top-center/top-right/bottom-left/bottom-
 -->
 <script setup>
 import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch, useAttrs, useHost, useId } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
       title="关闭通知"
       @click="close('button')"
     >
-      <HugeiconsIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
+      <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
     </button>
   </div>
 </template>

@@ -9,7 +9,7 @@
 -->
 <script setup>
 import { computed, getCurrentInstance, ref, useAttrs } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { Settings01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -82,7 +82,7 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
   >
     <span v-if="loading" class="kima-icon-button__spinner" aria-hidden="true"></span>
     <span v-else class="kima-icon-button__icon" aria-hidden="true">
-      <slot><HugeiconsIcon :icon="buttonIcon" :size="iconSize" /></slot>
+      <slot><KimaIcon :icon="buttonIcon" :size="iconSize" /></slot>
     </span>
   </button>
 </template>

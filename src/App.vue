@@ -9,7 +9,6 @@ KIMA 全览预览页：把全部组件集中在一个页面里展示样式和交
 -->
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   Add01Icon,
   FavouriteIcon,
@@ -36,6 +35,7 @@ import {
   KimaDialog,
   KimaDivider,
   KimaEmptyState,
+  KimaIcon,
   KimaIconButton,
   KimaLayout,
   KimaMenu,
@@ -224,7 +224,7 @@ onMounted(() => {
   document.documentElement.dataset.kimaTheme = theme.value;
 });
 
-const componentCount = 27;
+const componentCount = 28;
 const isFiltering = computed(() => query.value.trim().length > 0);
 </script>
 
@@ -232,7 +232,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
   <div class="kima-gallery">
     <header class="kima-gallery__top">
       <div class="kima-gallery__brand">
-        <HugeiconsIcon :icon="SparklesIcon" :size="22" />
+        <KimaIcon :icon="SparklesIcon" :size="22" />
         <div>
           <strong>KIMA</strong>
           <span>Kinetic · Interaction · Motion · Alive</span>
@@ -241,7 +241,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
 
       <div class="kima-gallery__tools">
         <label class="kima-gallery__search">
-          <HugeiconsIcon :icon="Search01Icon" :size="18" aria-hidden="true" />
+          <KimaIcon :icon="Search01Icon" :size="18" aria-hidden="true" />
           <input v-model="query" type="search" placeholder="搜索组件，例如 text / 表" aria-label="搜索组件" />
         </label>
         <kima-icon-button
@@ -324,7 +324,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
               <kima-button loading>加载中</kima-button>
               <kima-button disabled>禁用</kima-button>
               <kima-button round @click="countClick">
-                <template #leading><HugeiconsIcon :icon="Add01Icon" :size="18" /></template>
+                <template #leading><KimaIcon :icon="Add01Icon" :size="18" /></template>
                 新建
               </kima-button>
             </div>
@@ -525,7 +525,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
           <article v-show="visible('empty-state', '空状态')" class="kima-gallery__demo">
             <header><h3>EmptyState 空状态</h3><p>没有内容时的占位。</p></header>
             <kima-empty-state heading="还没有项目" description="创建第一个项目后，它会显示在这里。">
-              <template #icon><HugeiconsIcon :icon="Folder01Icon" :size="40" /></template>
+              <template #icon><KimaIcon :icon="Folder01Icon" :size="40" /></template>
               <template #action><kima-button variant="tonal">创建项目</kima-button></template>
             </kima-empty-state>
           </article>

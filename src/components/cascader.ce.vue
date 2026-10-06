@@ -9,7 +9,7 @@ Vue 用 v-model 和 v-model:open 同步状态；调用示例：
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useHost, useId, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { ArrowDown01Icon, ArrowRight01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -328,7 +328,7 @@ onBeforeUnmount(() => {
         <span class="kima-cascader__trigger-label" :class="{ 'kima-cascader__trigger-label--placeholder': !displayLabel }">
           {{ displayLabel || placeholder }}
         </span>
-        <HugeiconsIcon class="kima-cascader__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
+        <KimaIcon class="kima-cascader__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
       </button>
       <button
         v-if="clearable && localPath.length"
@@ -339,7 +339,7 @@ onBeforeUnmount(() => {
         :disabled="disabled"
         @click.stop="clearValue"
       >
-        <HugeiconsIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
+        <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
       </button>
     </div>
 
@@ -379,7 +379,7 @@ onBeforeUnmount(() => {
           @click="selectItem(item, column)"
         >
           <span class="kima-cascader__option-label">{{ item.label }}</span>
-          <HugeiconsIcon v-if="Array.isArray(item.children) && item.children.length" :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
+          <KimaIcon v-if="Array.isArray(item.children) && item.children.length" :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
         </div>
         <div v-if="items.length === 0" class="kima-cascader__empty" role="status">暂无选项</div>
       </div>

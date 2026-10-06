@@ -9,7 +9,7 @@ Vue 用 v-model 和 v-model:open 同步状态；调用示例：
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useHost, useId, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { ArrowDown01Icon, Cancel01Icon, Search01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -293,7 +293,7 @@ onBeforeUnmount(() => {
     </label>
 
     <div class="kima-combobox__control" :class="{ 'kima-combobox__control--clearable': canClear }">
-      <HugeiconsIcon v-if="searchable" class="kima-combobox__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
+      <KimaIcon v-if="searchable" class="kima-combobox__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
       <input
         :id="inputId"
         ref="input"
@@ -326,10 +326,10 @@ onBeforeUnmount(() => {
         :disabled="disabled"
         @click="clearValue"
       >
-        <HugeiconsIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
+        <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
       </button>
       <button class="kima-combobox__toggle" type="button" :disabled="disabled" aria-label="显示选项" @mousedown.prevent @click="localOpen ? closeCombobox(true) : openCombobox()">
-        <HugeiconsIcon class="kima-combobox__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
+        <KimaIcon class="kima-combobox__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
       </button>
     </div>
 
@@ -368,7 +368,7 @@ onBeforeUnmount(() => {
             <span class="kima-combobox__option-label">{{ item.label }}</span>
             <span v-if="item.description" class="kima-combobox__option-description">{{ item.description }}</span>
           </span>
-          <HugeiconsIcon v-if="Object.is(item.value, localValue)" class="kima-combobox__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
+          <KimaIcon v-if="Object.is(item.value, localValue)" class="kima-combobox__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
         </div>
         <div v-if="visibleItems.length === 0" class="kima-combobox__empty" role="status">没有匹配选项</div>
       </div>

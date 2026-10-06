@@ -21,7 +21,7 @@
     background: currentColor;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--kima-duration-effects) var(--kima-curve-effects);
+    transition: opacity var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
   /* 内容压到状态层之上，否则文字会被半透明色盖住。 */

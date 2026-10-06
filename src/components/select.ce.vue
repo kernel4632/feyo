@@ -11,7 +11,7 @@ form.reset() 恢复挂载时的 modelValue；清除选择返回 null，必填时
 -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useHost, useId, getCurrentInstance, watch } from "vue";
-import { HugeiconsIcon } from "@hugeicons/vue";
+import KimaIcon from "./icon.ce.vue";
 import { ArrowDown01Icon, Cancel01Icon, Search01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
@@ -252,7 +252,7 @@ onBeforeUnmount(() => {
         <span class="kima-select__trigger-label" :class="{ 'kima-select__trigger-label--placeholder': !selectedItem }">
           {{ selectedItem ? selectedItem.label : placeholder }}
         </span>
-        <HugeiconsIcon class="kima-select__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
+        <KimaIcon class="kima-select__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
       </button>
       <button
         v-if="clearable && selectedItem"
@@ -263,7 +263,7 @@ onBeforeUnmount(() => {
         :disabled="disabled"
         @click.stop="clearValue"
       >
-        <HugeiconsIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
+        <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
       </button>
     </div>
 
@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
       class="kima-select__popup"
     >
       <div v-if="searchable" class="kima-select__search-wrap">
-        <HugeiconsIcon class="kima-select__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
+        <KimaIcon class="kima-select__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
         <input
           ref="searchInput"
           v-model="query"
@@ -334,7 +334,7 @@ onBeforeUnmount(() => {
             <span class="kima-select__option-label">{{ item.label }}</span>
             <span v-if="item.description" class="kima-select__option-description">{{ item.description }}</span>
           </span>
-          <HugeiconsIcon v-if="Object.is(item.value, localValue)" class="kima-select__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
+          <KimaIcon v-if="Object.is(item.value, localValue)" class="kima-select__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
         </div>
       </div>
       <div v-if="visibleItems.length === 0" class="kima-select__empty" role="status">没有匹配选项</div>
