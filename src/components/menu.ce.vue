@@ -334,18 +334,17 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: var(--kima-space-3);
   padding: 0 var(--kima-space-4);
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-md);
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   font: inherit;
   cursor: pointer;
   transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:hover:not(:disabled),
   .kima-menu--open & {
-    border-color: var(--kima-color-primary);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {
@@ -384,9 +383,9 @@ onBeforeUnmount(() => {
   max-height: 360px;
   overflow: auto;
   padding: var(--kima-space-2);
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-md);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   box-shadow: 0 12px 28px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
   animation: kima-menu-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 
@@ -430,14 +429,13 @@ onBeforeUnmount(() => {
   width: 100%;
   min-height: 40px;
   padding: 0 var(--kima-space-3) 0 40px;
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-sm);
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-surface);
+  background: var(--kima-color-transparent);
   font: inherit;
 
   &:focus {
-    border-color: var(--kima-color-primary);
     outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
@@ -467,7 +465,7 @@ onBeforeUnmount(() => {
 
   &:hover:not(:disabled),
   &:focus-visible {
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {

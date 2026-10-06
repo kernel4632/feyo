@@ -108,9 +108,9 @@ const layoutStyle = computed(() => ({
 
 .kima-layout--panel {
   padding: var(--kima-layout-padding, 24px);
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: 16px;
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
 }
 
 @media (max-width: 720px) {

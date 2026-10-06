@@ -325,7 +325,7 @@ watch([visibleNodes, () => props.modelValue], () => {
 
   &:hover:not(.kima-tree__item--disabled),
   &:focus-visible {
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {
@@ -367,7 +367,7 @@ watch([visibleNodes, () => props.modelValue], () => {
 
   &:hover:not(:disabled),
   &:focus-visible {
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {

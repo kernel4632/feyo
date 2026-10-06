@@ -263,7 +263,7 @@ td {
 
 th {
   color: var(--kima-color-on-surface-variant);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   font-size: var(--kima-font-size-sm);
   font-weight: var(--kima-font-weight-bold);
 }
@@ -278,11 +278,11 @@ tbody tr {
 }
 
 .kima-table--striped tbody tr:nth-child(even) {
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
 }
 
 .kima-table--hoverable tbody tr:hover {
-  background: var(--kima-color-surface-container-high);
+  background: var(--kima-color-layer-3);
 }
 
 .kima-table tbody tr.kima-table__row--selected {

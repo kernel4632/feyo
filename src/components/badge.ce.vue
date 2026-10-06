@@ -90,7 +90,7 @@ const accessibleLabel = computed(() => attrs["aria-label"] || displayValue.value
   justify-content: center;
   gap: var(--kima-space-xs);
   padding: 0 var(--kima-space-s);
-  border: 1px solid var(--kima-color-transparent);
+  border: 0;
   border-radius: var(--kima-radius-full);
   box-sizing: border-box;
   font-family: var(--kima-font-family);
@@ -103,7 +103,7 @@ const accessibleLabel = computed(() => attrs["aria-label"] || displayValue.value
 
   &--neutral {
     color: var(--kima-color-on-surface);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &--danger {

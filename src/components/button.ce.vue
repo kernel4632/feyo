@@ -81,7 +81,7 @@ const isRound = computed(() => props.round || props.shape !== "square");
   justify-content: center;
   gap: var(--kima-space-s);
   padding: 0 var(--kima-space-l);
-  border: 1px solid var(--kima-color-transparent);
+  border: 0;
   /* square 用 M 12；round 用整高药丸。 */
   border-radius: var(--kima-radius-m);
   box-sizing: border-box;
@@ -95,7 +95,6 @@ const isRound = computed(() => props.round || props.shape !== "square");
   user-select: none;
   transition:
     background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    border-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
     color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
     border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
@@ -122,19 +121,22 @@ const isRound = computed(() => props.round || props.shape !== "square");
     background: var(--kima-color-on-surface-12);
   }
 
+  /* 柔和按钮：主色染过的浅底，比主操作弱一档，但一眼看得出是主色系。 */
   &--tonal {
-    color: var(--kima-color-on-secondary-container);
-    background: var(--kima-color-secondary-container);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-primary-soft);
   }
 
-  &--outlined,
+  /* 描边按钮改成浅底一档：KIMA 不用边框，靠底色深浅分层。 */
+  &--outlined {
+    color: var(--kima-color-primary);
+    background: var(--kima-color-layer-2);
+  }
+
+  /* 文字按钮：完全不上底，只靠文字色，最弱的一档。 */
   &--text {
     color: var(--kima-color-primary);
     background: var(--kima-color-transparent);
-  }
-
-  &--outlined {
-    border-color: var(--kima-color-outline-variant);
   }
 
   &--outlined:disabled,

@@ -193,7 +193,7 @@ watch(pageCount, (count) => {
   align-items: center;
   justify-content: center;
   padding: 0 var(--kima-space-2);
-  border: 1px solid var(--kima-color-transparent);
+  border: 0;
   border-radius: var(--kima-radius-sm);
   box-sizing: border-box;
   color: var(--kima-color-on-surface);
@@ -204,7 +204,7 @@ watch(pageCount, (count) => {
 
   &:hover:not(:disabled),
   &:focus-visible {
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {
@@ -213,7 +213,6 @@ watch(pageCount, (count) => {
   }
 
   &[aria-current="page"] {
-    border-color: var(--kima-color-primary);
     color: var(--kima-color-on-primary-container);
     background: var(--kima-color-primary-container);
     font-weight: var(--kima-font-weight-bold);

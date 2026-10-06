@@ -176,9 +176,9 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   max-height: 100%;
   overflow: auto;
   padding: 24px;
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: 28px;
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   box-shadow: 0 16px 40px color-mix(in srgb, var(--kima-color-surface) 60%, var(--kima-color-transparent));
   outline: none;
   pointer-events: auto;
@@ -241,7 +241,7 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
 
 .kima-dialog__close:hover {
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-surface-container-high);
+  background: var(--kima-color-layer-3);
 }
 
 .kima-dialog__close:focus-visible,

@@ -578,10 +578,10 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: var(--kima-space-3);
   padding: 0 var(--kima-space-4);
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-sm);
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -589,8 +589,7 @@ onBeforeUnmount(() => {
 
   &:hover:not(:disabled),
   .kima-time-picker--open & {
-    border-color: var(--kima-color-primary);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {
@@ -655,7 +654,7 @@ onBeforeUnmount(() => {
   &:hover:not(:disabled),
   &:focus-visible {
     color: var(--kima-color-primary);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {
@@ -684,9 +683,9 @@ onBeforeUnmount(() => {
   left: 0;
   width: max(100%, 248px);
   padding: var(--kima-space-3);
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-md);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   box-shadow: 0 12px 28px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
   animation: kima-time-picker-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
@@ -738,7 +737,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   padding: 0 var(--kima-space-2);
-  border: 1px solid var(--kima-color-transparent);
+  border: 0;
   border-radius: var(--kima-radius-sm);
   color: var(--kima-color-on-surface);
   background: var(--kima-color-transparent);
@@ -748,7 +747,7 @@ onBeforeUnmount(() => {
 
   &:hover:not(:disabled),
   &--active {
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {
@@ -757,7 +756,6 @@ onBeforeUnmount(() => {
   }
 
   &--selected {
-    border-color: var(--kima-color-primary);
     color: var(--kima-color-on-primary-container);
     background: var(--kima-color-primary-container);
   }

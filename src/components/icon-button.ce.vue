@@ -99,7 +99,7 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
   justify-content: center;
   flex: 0 0 auto;
   padding: 0;
-  border: 1px solid var(--kima-color-transparent);
+  border: 0;
   border-radius: var(--kima-radius-full);
   box-sizing: border-box;
   font-family: var(--kima-font-family);
@@ -110,7 +110,6 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
   user-select: none;
   transition:
     background-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
-    border-color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
     color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
     border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
@@ -149,9 +148,10 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     background: var(--kima-color-on-surface-12);
   }
 
+  /* 柔和档：主色染过的浅底，跟描边档的灰底区分开。 */
   &--tonal {
-    color: var(--kima-color-on-secondary-container);
-    background: var(--kima-color-secondary-container);
+    color: var(--kima-color-primary);
+    background: var(--kima-color-primary-soft);
   }
 
   &--tonal:disabled {
@@ -159,9 +159,10 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     background: var(--kima-color-on-surface-12);
   }
 
+  /* 描边档改成浅底一档，跟纯文字档拉开层次。 */
   &--outlined {
-    color: var(--kima-color-on-surface-variant);
-    border-color: var(--kima-color-outline-variant);
+    color: var(--kima-color-on-surface);
+    background: var(--kima-color-layer-2);
   }
 
   &__icon,

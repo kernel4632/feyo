@@ -82,6 +82,22 @@
   --kima-state-drag: 0.16;
   --kima-opacity-disabled: 0.38;
 
+  /* ---- 层次（用透明度，不用边框）----
+   * KIMA 不用边框分割层次，而是在当前底色上叠一层半透明的文字色：
+   * 铺在什么底色上就跟着什么底色走，后面加背景模糊时下面的内容也能透出来。
+   * 数字越大越"浮起来"，1 是轻轻托一下，3 是明显浮起（弹层）。
+   * 具体用法见 _mixins.scss 的 kima-layer。 */
+  --kima-color-layer-1: color-mix(in srgb, var(--kima-color-on-surface) 5%, transparent);
+  --kima-color-layer-2: color-mix(in srgb, var(--kima-color-on-surface) 10%, transparent);
+  --kima-color-layer-3: color-mix(in srgb, var(--kima-color-on-surface) 15%, transparent);
+  /* 主色系的浅底：柔和按钮用它，一眼看出"属于主色系但不用那么强"。
+   * 同样用透明度写成，铺在模糊背景上也不会糊。 */
+  --kima-color-primary-soft: color-mix(in srgb, var(--kima-color-primary) 20%, transparent);
+  --kima-color-danger-soft: color-mix(in srgb, var(--kima-color-error) 20%, transparent);
+  /* 未选中的控件底（开关轨道、复选框方框）：比 layer-3 淡一档，
+   * 因为它要长期留在界面上，太实会跟选中态抢注意力。 */
+  --kima-color-track: color-mix(in srgb, var(--kima-color-on-surface) 22%, transparent);
+
   /* ---- 层级 ----
    * M3 elevation：数字越大越浮起来。抽屉和弹层用 3 以上。 */
   --kima-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);

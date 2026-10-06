@@ -400,15 +400,14 @@ onBeforeUnmount(() => {
   display: flex;
   min-height: 42px;
   align-items: center;
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-sm);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
   &:focus-within,
   .kima-combobox--open & {
-    border-color: var(--kima-color-primary);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 }
 
@@ -469,7 +468,7 @@ onBeforeUnmount(() => {
   &:hover:not(:disabled),
   &:focus-visible {
     color: var(--kima-color-primary);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {
@@ -521,9 +520,9 @@ onBeforeUnmount(() => {
   max-height: min(360px, 50vh);
   overflow: auto;
   padding: var(--kima-space-2);
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-md);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   box-shadow: 0 12px 28px var(--kima-color-surface);
   animation: kima-combobox-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
@@ -546,7 +545,7 @@ onBeforeUnmount(() => {
 
   &:hover,
   &--active {
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {

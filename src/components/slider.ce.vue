@@ -142,7 +142,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   &__input {
     /* DMS size s：轨道 24，滑块 36，圆角 8，控件高 = 滑块 36 + spacingXS 4。 */
     --kima-slider-fill-color: var(--kima-color-primary);
-    --kima-slider-track-color: var(--kima-color-secondary-container);
+    --kima-slider-track-color: var(--kima-color-track);
 
     display: block;
     width: 100%;

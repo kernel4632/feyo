@@ -126,19 +126,17 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     line-height: 1.35;
   }
 
-  /* DMS：轨道 52×32，未选中 2px outline 描边、chipSurface 底。 */
+  /* 轨道：未选中用一档淡底，选中由下面的规则切成主色。 */
   &__track {
     box-sizing: border-box;
     position: relative;
     flex: 0 0 var(--kima-switch-track-width);
     width: var(--kima-switch-track-width);
     height: var(--kima-switch-track-height);
-    border: var(--kima-switch-outline-width) solid var(--kima-color-outline);
+    border: 0;
     border-radius: var(--kima-radius-full);
-    background: var(--kima-color-surface-container-high);
-    transition:
-      background-color var(--kima-duration-effects) var(--kima-ease-effects),
-      border-color var(--kima-duration-effects) var(--kima-ease-effects);
+    background: var(--kima-color-track);
+    transition: background-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
   /* 滑块：未选中 16，选中 24，按下 28；位置用 DMS 的 4px 内边距推算。 */
@@ -153,7 +151,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     width: 16px;
     height: 16px;
     border-radius: var(--kima-radius-full);
-    background: var(--kima-color-outline);
+    background: var(--kima-color-on-surface-variant);
     transform: translateY(-50%);
     transition:
       left var(--kima-duration-long) var(--kima-ease-emphasized),
@@ -170,7 +168,6 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
   &__input:checked ~ .kima-switch__track {
     /* 选中：轨道 primary 无描边，滑块 onPrimary 带对勾。 */
-    border-color: var(--kima-color-primary);
     background: var(--kima-color-primary);
 
     .kima-switch__thumb {
@@ -212,11 +209,10 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   }
 
   &--disabled &__input:not(:checked) ~ .kima-switch__track {
-    background: color-mix(in srgb, var(--kima-color-surface-container-high) 12%, transparent);
+    background: var(--kima-color-on-surface-12);
   }
 
   &--disabled &__input:checked ~ .kima-switch__track {
-    border-color: var(--kima-color-on-surface-12);
     background: var(--kima-color-on-surface-12);
   }
 
@@ -225,7 +221,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   }
 
   &--disabled &__input:checked ~ .kima-switch__track .kima-switch__thumb {
-    background: var(--kima-color-surface);
+    background: var(--kima-color-layer-2);
   }
 }
 </style>

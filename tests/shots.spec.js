@@ -19,6 +19,12 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
   await page.waitForTimeout(400);
   await buttonGroup.screenshot({ path: "shots/button-group-dark.png" });
 
+  // 表单输入区：输入框、复选框、开关改成"透明度分层"后最值得看的地方
+  const form = page.locator("#form");
+  await form.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+  await form.screenshot({ path: "shots/form-dark.png" });
+
   // 切浅色再拍一遍，确认两套主题都正常
   await page.evaluate(() => {
     document.documentElement.dataset.kimaTheme = "light";

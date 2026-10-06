@@ -128,15 +128,16 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     cursor: inherit;
   }
 
+  /* 方框：未选中用一档淡底，选中由下面的规则切成主色。 */
   &__box {
     box-sizing: border-box;
     position: relative;
     flex: 0 0 20px;
     width: 20px;
     height: 20px;
-    border: 2px solid var(--kima-color-outline);
+    border: 0;
     border-radius: var(--kima-radius-sm);
-    background: var(--kima-color-transparent);
+    background: var(--kima-color-track);
     transition:
       background var(--kima-duration-fast) var(--kima-ease-standard),
       border-color var(--kima-duration-fast) var(--kima-ease-standard);
@@ -159,10 +160,10 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     line-height: 1.35;
   }
 
+  /* 勾选时整块换成主色，不靠描边加粗表示状态。 */
   &--checked,
   &--indeterminate {
     .kima-checkbox__box {
-      border-color: var(--kima-color-primary);
       background: var(--kima-color-primary);
     }
   }

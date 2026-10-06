@@ -266,36 +266,28 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
   &__control {
     position: relative;
-    /* DMS：高度 fieldHeight 42，圆角 cornerRadiusXS 4，描边 1。 */
-    height: 42px;
+    /* 输入区域用一层浅色底圈出来，不用描边。 */
+    height: var(--kima-field-height);
     box-sizing: border-box;
-    border: 1px solid var(--kima-color-outline);
-    border-radius: var(--kima-radius-xs);
-    background: var(--kima-color-transparent);
-    transition:
-      border-color var(--kima-duration-effects) var(--kima-ease-effects),
-      border-width var(--kima-duration-effects) var(--kima-ease-effects),
-      background-color var(--kima-duration-effects) var(--kima-ease-effects);
+    border: 0;
+    border-radius: var(--kima-radius-m);
+    background: var(--kima-color-layer-2);
+    transition: background-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
   &--large &__control {
-    height: 48px;
+    height: var(--kima-button-height-l);
   }
 
-  /* DMS 填充态：底色 chipSurface（surfaceContainerHigh），未聚焦描边用 outlineVariant。 */
-  &--filled &__control {
-    background: var(--kima-color-surface-container-high);
-    border-color: var(--kima-color-outline-variant);
-  }
-
+  /* 聚焦时底色加深一档，配合光标的出现，注意力就落到这个框上。 */
   &__control:focus-within {
-    border-width: 2px;
-    border-color: var(--kima-color-primary);
+    background: var(--kima-color-layer-3);
   }
 
+  /* 出错时叠一层危险色的浅底：用透明度叠在原来的底上，所以不会比别的框亮出一截。 */
   &--error &__control,
   &--error &__control:focus-within {
-    border-color: var(--kima-color-danger);
+    background: var(--kima-color-danger-soft);
   }
 
   &--disabled {
@@ -312,7 +304,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     padding: 0 4px;
     overflow: hidden;
     color: var(--kima-color-on-surface-variant);
-    background: var(--kima-color-surface);
+    background: var(--kima-color-transparent);
     font-size: var(--kima-font-size-medium);
     line-height: 1.2;
     text-overflow: ellipsis;
@@ -339,7 +331,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   &--filled &__label {
     left: 12px;
     max-width: calc(100% - 24px);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &--error &__label,

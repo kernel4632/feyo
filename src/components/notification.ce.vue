@@ -191,10 +191,10 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: var(--kima-space-4);
   padding: var(--kima-space-4);
-  border: 1px solid var(--kima-color-outline);
+  border: 0;
   border-radius: var(--kima-radius-lg);
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   box-shadow: 0 12px 32px color-mix(in srgb, var(--kima-color-surface) 55%, var(--kima-color-transparent));
   font-family: var(--kima-font-family);
   animation: kima-notification-enter var(--kima-duration-normal) var(--kima-ease-emphasized);
@@ -237,25 +237,21 @@ onBeforeUnmount(() => {
 }
 
 .kima-notification--info {
-  border-color: var(--kima-color-primary);
   color: var(--kima-color-on-primary-container);
   background: var(--kima-color-primary-container);
 }
 
 .kima-notification--warning {
-  border-color: var(--kima-color-danger);
   color: var(--kima-color-on-surface);
-  background: color-mix(in srgb, var(--kima-color-danger) 12%, var(--kima-color-surface-container));
+  background: color-mix(in srgb, var(--kima-color-danger) 12%, var(--kima-color-layer-2));
 }
 
 .kima-notification--success {
-  border-color: var(--kima-color-success);
   color: var(--kima-color-on-success);
   background: var(--kima-color-success);
 }
 
 .kima-notification--danger {
-  border-color: var(--kima-color-danger);
   color: var(--kima-color-on-danger);
   background: var(--kima-color-danger);
 }

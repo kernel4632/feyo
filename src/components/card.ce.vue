@@ -95,10 +95,10 @@ function handleKeyup(event) {
   /* DMS DankCard：内边距 spacingM 12，圆角 cornerRadiusM 12，默认无边框。 */
   gap: var(--kima-space-s);
   padding: var(--kima-space-m);
-  border: 1px solid var(--kima-color-transparent);
+  border: 0;
   border-radius: var(--kima-radius-m);
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-surface-container);
+  background: var(--kima-color-layer-2);
   font-family: var(--kima-font-family);
   transition:
     background-color var(--kima-duration-effects) var(--kima-ease-effects),
@@ -109,12 +109,11 @@ function handleKeyup(event) {
 }
 
 .kima-card--outlined {
-  border-color: var(--kima-color-outline-variant);
   background: var(--kima-color-transparent);
 }
 
 .kima-card--elevated {
-  background: var(--kima-color-surface-container-high);
+  background: var(--kima-color-layer-3);
   box-shadow: var(--kima-shadow-2);
 }
 

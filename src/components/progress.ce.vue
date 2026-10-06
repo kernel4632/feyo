@@ -60,12 +60,12 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
     appearance: none;
     border: 0;
     border-radius: var(--kima-radius-full);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &__bar::-webkit-progress-bar {
     border-radius: var(--kima-radius-full);
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &__bar::-webkit-progress-value {
@@ -90,7 +90,7 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
     position: absolute;
     inset: 0;
     overflow: hidden;
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
     pointer-events: none;
 
     > span {

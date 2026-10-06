@@ -253,7 +253,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
   overflow: auto;
   overscroll-behavior: contain;
   color: var(--kima-color-on-surface);
-  background: var(--kima-color-surface);
+  background: var(--kima-color-transparent);
   font-family: var(--kima-font-family);
   font-size: var(--kima-font-size-md);
   line-height: 1.4;
@@ -287,7 +287,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
 
   &:hover,
   &--active {
-    background: var(--kima-color-surface-container-high);
+    background: var(--kima-color-layer-3);
   }
 
   &:focus-visible {

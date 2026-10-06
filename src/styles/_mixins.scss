@@ -50,10 +50,27 @@
   }
 }
 
+/* 组件表面：KIMA 不用边框，靠一层半透明叠出层次。
+ * 组件默认不给自己上底色，所以铺在任何背景（包括模糊背景）上都透得出后面的内容。
+ * 用法：@include kima-layer(1) —— 1 轻托、2 浮起、3 弹层。 */
+@mixin kima-layer($level: 1) {
+  border: 0;
+  background: var(--kima-color-layer-#{$level});
+}
+
+/* 浮层：比 kima-layer 多一层阴影，让弹出来的东西跟背景分开。
+ * 用法：@include kima-popup(3) */
+@mixin kima-popup($level: 3) {
+  @include kima-layer($level);
+
+  box-shadow: var(--kima-elevation-3);
+}
+
 @mixin kima-surface {
   border-radius: var(--kima-radius-l);
-  background: var(--kima-color-surface-container);
   color: var(--kima-color-on-surface);
+
+  @include kima-layer(1);
 }
 
 /* 禁用的统一表现：降低不透明度，并让指针变成不可用。 */
