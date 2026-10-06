@@ -125,9 +125,17 @@ function measureIndicator() {
   const list = tabList.value;
   const bounds = button.getBoundingClientRect();
   const listBounds = list.getBoundingClientRect();
-  indicatorStyle.value = tabOrientation.value === "horizontal"
-    ? { left: `${bounds.left - listBounds.left + list.scrollLeft - list.clientLeft}px`, width: `${bounds.width}px` }
-    : { top: `${bounds.top - listBounds.top + list.scrollTop - list.clientTop}px`, height: `${bounds.height}px` };
+  // DMS：指示条宽度取 标签宽 - 内缩 2×2，最小 24，并在标签内居中。
+  const inset = 2;
+  if (tabOrientation.value === "horizontal") {
+    const width = Math.max(24, bounds.width - inset * 2);
+    const left = bounds.left - listBounds.left + list.scrollLeft - list.clientLeft + (bounds.width - width) / 2;
+    indicatorStyle.value = { left: `${left}px`, width: `${width}px` };
+  } else {
+    const height = Math.max(24, bounds.height - inset * 2);
+    const top = bounds.top - listBounds.top + list.scrollTop - list.clientTop + (bounds.height - height) / 2;
+    indicatorStyle.value = { top: `${top}px`, height: `${height}px` };
+  }
 }
 
 function observeTabs() {
@@ -221,13 +229,13 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
   display: flex;
   min-width: 0;
   gap: var(--feyo-tabs-gap);
-  border-bottom: 1px solid var(--feyo-color-outline);
+  border-bottom: 1px solid var(--feyo-color-outline-variant);
 
   .feyo-tabs--vertical & {
     flex-direction: column;
     width: 180px;
     flex: 0 0 180px;
-    border-right: 1px solid var(--feyo-color-outline);
+    border-right: 1px solid var(--feyo-color-outline-variant);
     border-bottom: 0;
   }
 }
@@ -236,30 +244,37 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
   box-sizing: border-box;
   position: relative;
   display: inline-flex;
-  min-width: 0;
-  min-height: var(--feyo-tabs-height);
+  min-width: 64px;
+  /* DMS：标签高度 = 标签栏高 56 - 指示条高 3。 */
+  min-height: calc(var(--feyo-tabs-height) - var(--feyo-tabs-indicator-height));
   flex: 1 1 0;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--feyo-space-4);
+  padding: 0 var(--feyo-space-3);
   border: 0;
-  border-radius: var(--feyo-radius-sm) var(--feyo-radius-sm) 0 0;
+  border-radius: var(--feyo-radius-m);
   color: var(--feyo-color-on-surface-variant);
   background: var(--feyo-color-transparent);
   font: inherit;
+  font-size: var(--feyo-font-size-medium);
   font-weight: var(--feyo-font-weight-medium);
   cursor: pointer;
-  transition: color var(--feyo-duration-fast) var(--feyo-ease-standard), background-color var(--feyo-duration-fast) var(--feyo-ease-standard);
+  transition:
+    color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    background-color var(--feyo-duration-effects) var(--feyo-ease-effects);
 
-  &:hover:not(:disabled),
-  &:focus-visible {
-    color: var(--feyo-color-on-surface);
-    background: var(--feyo-color-surface-container-high);
+  /* DMS 状态层：primary 悬停 8%、按下 12%。 */
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-primary) 8%, var(--feyo-color-transparent));
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-primary) 12%, var(--feyo-color-transparent));
   }
 
   &:focus-visible {
-    outline: 2px solid var(--feyo-color-primary);
-    outline-offset: -2px;
+    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
+    outline-offset: var(--feyo-focus-ring-offset);
   }
 
   &[aria-selected="true"] {
@@ -268,14 +283,14 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--feyo-opacity-disabled);
+    color: var(--feyo-color-on-surface-38);
   }
 
   .feyo-tabs--vertical & {
     flex: 0 0 auto;
     min-height: 48px;
     justify-content: flex-start;
-    border-radius: var(--feyo-radius-sm) 0 0 var(--feyo-radius-sm);
+    border-radius: var(--feyo-radius-m);
   }
 }
 
@@ -283,8 +298,10 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
   position: absolute;
   bottom: 0;
   left: 0;
+  min-width: 24px;
   height: var(--feyo-tabs-indicator-height);
-  border-radius: var(--feyo-radius-full) var(--feyo-radius-full) 0 0;
+  /* DMS：指示条上圆角 cornerRadiusS 8。 */
+  border-radius: var(--feyo-radius-s) var(--feyo-radius-s) 0 0;
   background: var(--feyo-color-primary);
   pointer-events: none;
 }
@@ -311,7 +328,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
   bottom: auto;
   left: auto;
   width: var(--feyo-tabs-indicator-height);
-  border-radius: 0 var(--feyo-radius-full) var(--feyo-radius-full) 0;
+  border-radius: 0 var(--feyo-radius-s) var(--feyo-radius-s) 0;
   transform: none;
 }
 
