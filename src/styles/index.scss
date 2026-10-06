@@ -30,21 +30,22 @@ body {
 }
 
 /* ---- 亚克力壁纸（预览用）----
- * 模仿 Windows 11 终端的亚克力：一张壁纸先放大再模糊、提饱和、压暗，
- * 组件就浮在这层之上。组件本身不带底色，所以能看出它们在真实壁纸上的可读性。
- * 这是预览页自己的事，组件库入口不引这个文件，宿主页面自己决定用什么背景。
- */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  /* 放大到 110% 是为了让模糊后的边缘不露白，同时保持铺满。 */
-  background: url("/th.jpg") center / cover no-repeat;
-  transform: scale(1.1);
-  filter: blur(28px) saturate(140%) brightness(0.55);
-}
-
+ /* ---- 亚克力壁纸（预览用）----
+  * 模仿 Windows 11 终端的亚克力：一张壁纸先放大再模糊、去色、压暗，
+  * 组件就浮在这层之上。组件本身不带底色，所以能看出它们在真实壁纸上的可读性。
+  * 这是预览页自己的事，组件库入口不引这个文件，宿主页面自己决定用什么背景。
+  */
+ body::before {
+   content: "";
+   position: fixed;
+   inset: 0;
+   z-index: -2;
+   /* 放大到 110% 是为了让模糊后的边缘不露白，同时保持铺满。 */
+   background: url("/th.jpg") center / cover no-repeat;
+   transform: scale(1.1);
+   /* grayscale 让壁纸只留下明暗，主题是纯灰度时整体才统一。 */
+   filter: blur(28px) grayscale(100%) brightness(0.7);
+ }
 /* 压暗那层单独拿出来：调它一个值就能控制壁纸整体明暗，不用重算模糊。 */
 body::after {
   content: "";
