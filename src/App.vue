@@ -335,7 +335,10 @@ const isFiltering = computed(() => query.value.trim().length > 0);
           <article class="kima-gallery__demo">
             <header>
               <h3>主题色板</h3>
-              <p>全部由种子色 <code>#61afef</code> 生成，改 <code>scripts/palette.js</code> 里的 seed 即可整体换色。</p>
+              <p>
+                当前种子色 <code>{{ seed }}</code>，风格 <code>{{ variant }}</code>。
+                整套色板由它生成，换色用 <code>applyPalette()</code>，不用重新构建。
+              </p>
             </header>
             <div class="kima-gallery__swatches">
               <div v-for="swatch in palette" :key="swatch.name" class="kima-gallery__swatch">
