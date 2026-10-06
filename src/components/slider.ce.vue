@@ -140,66 +140,75 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   }
 
   &__input {
+    /* DMS size s：轨道 24，滑块 36，圆角 8，控件高 = 滑块 36 + spacingXS 4。 */
+    --feyo-slider-fill-color: var(--feyo-color-primary);
+    --feyo-slider-track-color: var(--feyo-color-secondary-container);
+
     display: block;
     width: 100%;
-    height: 28px;
+    height: 40px;
     margin: 0;
     appearance: none;
     background: var(--feyo-color-transparent);
     cursor: pointer;
 
     &::-webkit-slider-runnable-track {
-      height: 16px;
-      border-radius: var(--feyo-radius-full);
+      height: 24px;
+      border-radius: var(--feyo-radius-s);
       background: linear-gradient(
         to right,
-        var(--feyo-color-primary) 0 var(--feyo-slider-fill),
-        var(--feyo-color-surface-container-high) var(--feyo-slider-fill) 100%
+        var(--feyo-slider-fill-color) 0 var(--feyo-slider-fill),
+        var(--feyo-slider-track-color) var(--feyo-slider-fill) 100%
       );
     }
 
+    /* DMS 滑块是 4px 宽的细竖条，高度 36。 */
     &::-webkit-slider-thumb {
       width: 4px;
-      height: 28px;
+      height: 36px;
       margin-top: -6px;
       appearance: none;
       border: 0;
       border-radius: var(--feyo-radius-full);
-      background: var(--feyo-color-primary);
+      background: var(--feyo-slider-fill-color);
     }
 
     &::-moz-range-track {
-      height: 16px;
-      border-radius: var(--feyo-radius-full);
-      background: var(--feyo-color-surface-container-high);
+      height: 24px;
+      border-radius: var(--feyo-radius-s);
+      background: var(--feyo-slider-track-color);
     }
 
     &::-moz-range-progress {
-      height: 16px;
-      border-radius: var(--feyo-radius-full);
-      background: var(--feyo-color-primary);
+      height: 24px;
+      border-radius: var(--feyo-radius-s);
+      background: var(--feyo-slider-fill-color);
     }
 
     &::-moz-range-thumb {
       width: 4px;
-      height: 28px;
+      height: 36px;
       border: 0;
       border-radius: var(--feyo-radius-full);
-      background: var(--feyo-color-primary);
+      background: var(--feyo-slider-fill-color);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--feyo-color-primary);
-      outline-offset: 3px;
+      outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
+      outline-offset: var(--feyo-focus-ring-offset);
     }
 
+    /* DMS 禁用：已填充 onSurface_38，未填充 onSurface_12。 */
     &:disabled {
+      --feyo-slider-fill-color: var(--feyo-color-on-surface-38);
+      --feyo-slider-track-color: var(--feyo-color-on-surface-12);
+
       cursor: not-allowed;
     }
   }
 
-  &--disabled {
-    opacity: var(--feyo-opacity-disabled);
+  &--disabled &__label {
+    color: var(--feyo-color-on-surface-38);
   }
 }
 </style>

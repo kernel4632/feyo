@@ -7,6 +7,8 @@
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, ref, shallowRef, useAttrs, watch } from "vue";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import { Tick02Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
 
@@ -160,6 +162,9 @@ function moveFocus(index, event) {
       @focus="focusedIndex = index"
       @keydown="moveFocus(index, $event)"
     >
+      <span v-if="isSelected(item)" class="feyo-button-group__check" aria-hidden="true">
+        <HugeiconsIcon :icon="Tick02Icon" :size="16" />
+      </span>
       <slot :item="item" :index="index" :selected="isSelected(item)">{{ item.label }}</slot>
     </button>
   </div>
@@ -167,8 +172,10 @@ function moveFocus(index, event) {
 
 <style scoped lang="scss">
 .feyo-button-group {
+  /* DMS：段与段之间间隙 groupedListGap = spacingXXS 2。 */
   display: inline-flex;
   align-items: stretch;
+  gap: var(--feyo-space-xxs);
   color: var(--feyo-color-on-surface);
   font-family: var(--feyo-font-family);
 
@@ -179,79 +186,101 @@ function moveFocus(index, event) {
 
 .feyo-button-group__item {
   box-sizing: border-box;
+  /* DMS 中等档：高 40，最小宽 64，内边距 16，圆角 S 8。 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--feyo-space-s);
   min-width: 64px;
   min-height: 40px;
-  padding: 0 var(--feyo-space-4);
-  border: 1px solid var(--feyo-color-outline);
-  color: var(--feyo-color-on-surface);
-  background: var(--feyo-color-transparent);
+  padding: 0 var(--feyo-space-l);
+  border: 0;
+  border-radius: var(--feyo-radius-s);
+  color: var(--feyo-color-on-secondary-container);
+  background: var(--feyo-color-secondary-container);
   font: inherit;
-  font-size: var(--feyo-font-size-md);
+  font-size: var(--feyo-font-size-medium);
+  font-weight: var(--feyo-font-weight-medium);
   cursor: pointer;
   transition:
-    background-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    border-color var(--feyo-duration-fast) var(--feyo-ease-standard),
-    opacity var(--feyo-duration-fast) var(--feyo-ease-standard);
+    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    color var(--feyo-duration-effects) var(--feyo-ease-effects),
+    border-radius var(--feyo-duration-effects) var(--feyo-ease-standard-curve);
 
+  /* DMS 首末段外侧取整圆，内侧取 S 8。 */
   &:first-child {
-    border-radius: var(--feyo-radius-full) 0 0 var(--feyo-radius-full);
+    border-radius: var(--feyo-radius-full) var(--feyo-radius-s) var(--feyo-radius-s) var(--feyo-radius-full);
   }
 
   &:last-child {
-    border-radius: 0 var(--feyo-radius-full) var(--feyo-radius-full) 0;
-  }
-
-  & + & {
-    margin-left: -1px;
+    border-radius: var(--feyo-radius-s) var(--feyo-radius-full) var(--feyo-radius-full) var(--feyo-radius-s);
   }
 
   &:hover:not(:disabled) {
-    background: var(--feyo-color-surface-container-high);
+    background: color-mix(in srgb, var(--feyo-color-secondary-container) 92%, var(--feyo-color-on-secondary-container));
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--feyo-color-secondary-container) 88%, var(--feyo-color-on-secondary-container));
+    border-radius: var(--feyo-radius-xs);
   }
 
   &:focus-visible {
     position: relative;
     z-index: 1;
-    outline: 2px solid var(--feyo-color-primary);
-    outline-offset: 2px;
+    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
+    outline-offset: var(--feyo-focus-ring-offset);
   }
 
+  /* DMS 禁用：底色 onSurface_12，文字 onSurface_38。 */
   &:disabled {
-    opacity: var(--feyo-opacity-disabled);
+    color: var(--feyo-color-on-surface-38);
+    background: var(--feyo-color-on-surface-12);
     cursor: not-allowed;
   }
-
-  &--selected {
-    border-color: var(--feyo-color-primary);
-    color: var(--feyo-color-on-primary-container);
-    background: var(--feyo-color-primary-container);
-  }
 }
 
-.feyo-button-group--vertical .feyo-button-group__item {
-  &:first-child {
-    border-radius: var(--feyo-radius-full) var(--feyo-radius-full) 0 0;
-  }
-
-  &:last-child {
-    border-radius: 0 0 var(--feyo-radius-full) var(--feyo-radius-full);
-  }
-
-  & + & {
-    margin-top: -1px;
-    margin-left: 0;
-  }
+/* DMS 选中段：变整圆 primary 药丸；两段类名确保压过首末段圆角。 */
+.feyo-button-group__item.feyo-button-group__item--selected {
+  border-radius: var(--feyo-radius-full);
+  color: var(--feyo-color-on-primary);
+  background: var(--feyo-color-primary);
 }
 
+.feyo-button-group__item.feyo-button-group__item--selected:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--feyo-color-primary) 92%, var(--feyo-color-on-primary));
+}
+
+.feyo-button-group__item.feyo-button-group__item--selected:active:not(:disabled) {
+  background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
+  border-radius: var(--feyo-radius-xs);
+}
+
+.feyo-button-group__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 纵向：首段圆上角，末段圆下角。 */
+.feyo-button-group--vertical .feyo-button-group__item:first-child {
+  border-radius: var(--feyo-radius-full) var(--feyo-radius-full) var(--feyo-radius-s) var(--feyo-radius-s);
+}
+
+.feyo-button-group--vertical .feyo-button-group__item:last-child {
+  border-radius: var(--feyo-radius-s) var(--feyo-radius-s) var(--feyo-radius-full) var(--feyo-radius-full);
+}
+
+/* DMS small 档：高 32，最小宽 56，内边距 12，字号 Small 12。 */
 .feyo-button-group--small .feyo-button-group__item {
   min-width: 56px;
   min-height: 32px;
-  padding-inline: var(--feyo-space-3);
-  font-size: var(--feyo-font-size-sm);
+  padding-inline: var(--feyo-space-m);
+  font-size: var(--feyo-font-size-small);
 }
 
 .feyo-button-group--large .feyo-button-group__item {
   min-height: 48px;
-  padding-inline: var(--feyo-space-5);
+  padding-inline: var(--feyo-space-xl);
 }
 </style>
