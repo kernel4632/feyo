@@ -11,6 +11,7 @@
 import { computed, getCurrentInstance, ref, useAttrs } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { Settings01Icon } from "@hugeicons/core-free-icons";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -43,6 +44,8 @@ const attrs = useAttrs();
 const root = ref(null);
 const isCustomElement = Boolean(getCurrentInstance()?.ce);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
+
+useRipple(root);
 
 // standard 是 DMS 的默认外观，text 作为等价别名保留。
 const buttonVariant = computed(() => {
@@ -88,8 +91,10 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .feyo-icon-button {
-  /* DMS DankIconButton：s 档 40×40，图标 24，横向留白 8，整圆。 */
+  /* DMS DankIconButton：s 档 40×40、图标 24、横向留白 8、整圆。 */
   width: var(--feyo-button-height-s);
   height: var(--feyo-button-height-s);
   display: inline-flex;
@@ -107,24 +112,18 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
   cursor: pointer;
   user-select: none;
   transition:
-    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    border-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    border-radius var(--feyo-duration-effects) var(--feyo-ease-standard-curve),
-    color var(--feyo-duration-effects) var(--feyo-ease-effects);
+    background-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    border-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    border-radius var(--feyo-duration-expressive-effects) var(--feyo-curve-standard);
 
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-on-surface-variant) 8%, var(--feyo-color-transparent));
-  }
+  @include feyo-ripple-host;
+  @include feyo-state-layer;
+  @include feyo-focus-ring;
 
+  /* DMS：按下时圆角收成 S 8。 */
   &:active:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-on-surface-variant) 12%, var(--feyo-color-transparent));
-    /* DMS 按下时圆角收成 S（8）。 */
     border-radius: var(--feyo-radius-s);
-  }
-
-  &:focus-visible {
-    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
-    outline-offset: var(--feyo-focus-ring-offset);
   }
 
   /* DMS 禁用：图标降到 onSurface_38。 */
@@ -149,14 +148,6 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     background: var(--feyo-color-primary);
   }
 
-  &--filled:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 92%, var(--feyo-color-on-primary));
-  }
-
-  &--filled:active:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
-  }
-
   &--filled:disabled {
     color: var(--feyo-color-on-surface-38);
     background: var(--feyo-color-on-surface-12);
@@ -167,12 +158,9 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     background: var(--feyo-color-secondary-container);
   }
 
-  &--tonal:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-secondary-container) 92%, var(--feyo-color-on-secondary-container));
-  }
-
-  &--tonal:active:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-secondary-container) 88%, var(--feyo-color-on-secondary-container));
+  &--tonal:disabled {
+    color: var(--feyo-color-on-surface-38);
+    background: var(--feyo-color-on-surface-12);
   }
 
   &--outlined {

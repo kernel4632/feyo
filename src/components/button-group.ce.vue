@@ -171,6 +171,8 @@ function moveFocus(index, event) {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .feyo-button-group {
   /* DMS：段与段之间间隙 groupedListGap = spacingXXS 2。 */
   display: inline-flex;
@@ -186,7 +188,7 @@ function moveFocus(index, event) {
 
 .feyo-button-group__item {
   box-sizing: border-box;
-  /* DMS 中等档：高 40，最小宽 64，内边距 16，圆角 S 8。 */
+  /* DMS 中等档：高 40、最小宽 64、内边距 16、圆角 S 8。 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -203,9 +205,12 @@ function moveFocus(index, event) {
   font-weight: var(--feyo-font-weight-medium);
   cursor: pointer;
   transition:
-    background-color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    color var(--feyo-duration-effects) var(--feyo-ease-effects),
-    border-radius var(--feyo-duration-effects) var(--feyo-ease-standard-curve);
+    background-color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    color var(--feyo-duration-expressive-effects) var(--feyo-curve-expressive-effects),
+    border-radius var(--feyo-duration-expressive-fast-spatial) var(--feyo-curve-standard);
+
+  @include feyo-state-layer;
+  @include feyo-focus-ring;
 
   /* DMS 首末段外侧取整圆，内侧取 S 8。 */
   &:first-child {
@@ -216,20 +221,9 @@ function moveFocus(index, event) {
     border-radius: var(--feyo-radius-s) var(--feyo-radius-full) var(--feyo-radius-full) var(--feyo-radius-s);
   }
 
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-secondary-container) 92%, var(--feyo-color-on-secondary-container));
-  }
-
+  /* DMS 按下时内侧圆角收成 XS 4。 */
   &:active:not(:disabled) {
-    background: color-mix(in srgb, var(--feyo-color-secondary-container) 88%, var(--feyo-color-on-secondary-container));
     border-radius: var(--feyo-radius-xs);
-  }
-
-  &:focus-visible {
-    position: relative;
-    z-index: 1;
-    outline: var(--feyo-focus-ring-width) solid var(--feyo-color-primary);
-    outline-offset: var(--feyo-focus-ring-offset);
   }
 
   /* DMS 禁用：底色 onSurface_12，文字 onSurface_38。 */
@@ -247,12 +241,7 @@ function moveFocus(index, event) {
   background: var(--feyo-color-primary);
 }
 
-.feyo-button-group__item.feyo-button-group__item--selected:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--feyo-color-primary) 92%, var(--feyo-color-on-primary));
-}
-
 .feyo-button-group__item.feyo-button-group__item--selected:active:not(:disabled) {
-  background: color-mix(in srgb, var(--feyo-color-primary) 88%, var(--feyo-color-on-primary));
   border-radius: var(--feyo-radius-xs);
 }
 
@@ -271,7 +260,7 @@ function moveFocus(index, event) {
   border-radius: var(--feyo-radius-s) var(--feyo-radius-s) var(--feyo-radius-full) var(--feyo-radius-full);
 }
 
-/* DMS small 档：高 32，最小宽 56，内边距 12，字号 Small 12。 */
+/* DMS small 档：高 32、最小宽 56、内边距 12、字号 Small 12。 */
 .feyo-button-group--small .feyo-button-group__item {
   min-width: 56px;
   min-height: 32px;
