@@ -654,9 +654,10 @@ const isFiltering = computed(() => query.value.trim().length > 0);
 </template>
 
 <style scoped lang="scss">
+/* 预览页不带自己的底色：亚克力壁纸铺在 body 上，
+ * 组件直接浮在壁纸上，才看得出它们在真实背景上的可读性。 */
 .kima-gallery {
   min-height: 100vh;
-  background: var(--kima-color-surface);
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
 
@@ -670,7 +671,9 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     justify-content: space-between;
     gap: var(--kima-space-3);
     padding: var(--kima-space-3) var(--kima-space-5);
+    /* 顶栏也做成磨砂，滚动时下面的内容从它后面掠过，跟壁纸是一体的。 */
     background: var(--kima-color-layer-2);
+    backdrop-filter: blur(20px);
   }
 
   &__brand {
@@ -707,7 +710,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     border: 0;
     border-radius: var(--kima-radius-sm);
     color: var(--kima-color-on-surface-variant);
-    background: var(--kima-color-surface);
+    background: var(--kima-color-layer-3);
 
     input {
       width: 200px;
@@ -825,14 +828,12 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     font-size: var(--kima-font-size-label-small);
   }
 
+  /* 展示块不上容器样式：给组件一个干净的立足处，
+   * 看到的就是组件在壁纸上的真实样子，而不是被卡片衬出来的样子。 */
   &__demo {
     display: flex;
     flex-direction: column;
     gap: var(--kima-space-4);
-    padding: var(--kima-space-4);
-    border: 0;
-    border-radius: var(--kima-radius-m);
-    background: var(--kima-color-layer-1);
 
     > header {
       h3 {
