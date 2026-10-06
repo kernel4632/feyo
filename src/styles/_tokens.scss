@@ -119,26 +119,35 @@
   --feyo-shadow-3: 0 6px 12px rgba(0, 0, 0, 0.3);
   --feyo-press-scale: 0.98;
 
-  /* ---- Color: dark (default) ---- */
-  --feyo-color-surface: #14121b;
-  --feyo-color-surface-container: #1d1a28;
-  --feyo-color-surface-container-high: #272334;
-  --feyo-color-on-surface: #f4f2fb;
-  --feyo-color-on-surface-variant: #b6b1c7;
-  --feyo-color-outline: #46415a;
-  --feyo-color-primary: #a487ff;
-  --feyo-color-on-primary: #1b1230;
-  --feyo-color-primary-container: #352b59;
-  --feyo-color-on-primary-container: #e8ddff;
+  /* ---- Color: dark (default) ----
+   * Values are DMS's own Material You palette (StockThemes.js "purple" +
+   * Style.qml role defaults), so FEYS matches DMS's real appearance. */
+  --feyo-color-surface: #141218;
+  --feyo-color-surface-container: #211f24;
+  --feyo-color-surface-container-high: #2b292f;
+  --feyo-color-on-surface: #e6e0e9;
+  --feyo-color-on-surface-variant: #cac4cf;
+  --feyo-color-outline: #948f99;
+  --feyo-color-outline-variant: #49454f;
+  --feyo-color-primary: #d0bcff;
+  --feyo-color-on-primary: #381e72;
+  --feyo-color-primary-container: #4f378b;
+  --feyo-color-on-primary-container: #eaddff;
+  --feyo-color-secondary-container: #4a4458;
+  --feyo-color-on-secondary-container: #e8def8;
+  --feyo-color-tertiary-container: #633b48;
+  --feyo-color-on-tertiary-container: #ffd8e4;
+  --feyo-color-error-container: #8c1d18;
+  --feyo-color-on-error-container: #f9dedc;
+  --feyo-color-inverse-surface: #e6e0e9;
+  --feyo-color-inverse-on-surface: #322f35;
   --feyo-color-transparent: transparent;
-  --feyo-color-danger: #ff6b81;
-  --feyo-color-on-danger: #2a0d13;
-  --feyo-color-success: #5fd39b;
-  --feyo-color-on-success: #082116;
-  /* Role colors DMS components reference; FEYO owns these values. */
-  --feyo-color-secondary-container: #2b2740;
-  --feyo-color-on-secondary-container: #ded7f5;
-  --feyo-color-outline-variant: #3a3650;
+  --feyo-color-danger: #f2b8b5;
+  --feyo-color-on-danger: #601410;
+  --feyo-color-success: #4caf50;
+  --feyo-color-on-success: #07130a;
+  --feyo-color-warning: #ff9800;
+  --feyo-color-on-warning: #3e2400;
   /* Alpha roles derive from the base surface color, so themes stay in sync. */
   --feyo-color-on-surface-12: color-mix(in srgb, var(--feyo-color-on-surface) 12%, transparent);
   --feyo-color-on-surface-38: color-mix(in srgb, var(--feyo-color-on-surface) 38%, transparent);
@@ -167,23 +176,31 @@
 }
 
 :root[data-feyo-theme="light"] {
-  /* FEYO's own light palette. Structure follows DMS roles; values are FEYO's. */
-  --feyo-color-surface: #f7f5fb;
-  --feyo-color-surface-container: #ffffff;
-  --feyo-color-surface-container-high: #efecf6;
-  --feyo-color-on-surface: #1b1826;
-  --feyo-color-on-surface-variant: #5b5570;
-  --feyo-color-outline: #cfc9e0;
-  --feyo-color-primary: #6f4fd6;
+  /* DMS light "purple" palette (StockThemes.js), with Material on-container roles. */
+  --feyo-color-surface: #fef7ff;
+  --feyo-color-surface-container: #f2ecf4;
+  --feyo-color-surface-container-high: #ece6ee;
+  --feyo-color-on-surface: #1d1b20;
+  --feyo-color-on-surface-variant: #49454e;
+  --feyo-color-outline: #7a757f;
+  --feyo-color-outline-variant: #cac4d0;
+  --feyo-color-primary: #6750a4;
   --feyo-color-on-primary: #ffffff;
   --feyo-color-primary-container: #eaddff;
-  --feyo-color-on-primary-container: #25134b;
+  --feyo-color-on-primary-container: #21005d;
+  --feyo-color-secondary-container: #e8def8;
+  --feyo-color-on-secondary-container: #1d192b;
+  --feyo-color-tertiary-container: #ffd8e4;
+  --feyo-color-on-tertiary-container: #31111d;
+  --feyo-color-error-container: #f9dedc;
+  --feyo-color-on-error-container: #410e0b;
+  --feyo-color-inverse-surface: #322f35;
+  --feyo-color-inverse-on-surface: #f5eff7;
   --feyo-color-transparent: transparent;
-  --feyo-color-danger: #d83a54;
+  --feyo-color-danger: #b3261e;
   --feyo-color-on-danger: #ffffff;
-  --feyo-color-success: #218653;
+  --feyo-color-success: #2e7d32;
   --feyo-color-on-success: #ffffff;
-  --feyo-color-secondary-container: #e9e3f7;
-  --feyo-color-on-secondary-container: #241b3d;
-  --feyo-color-outline-variant: #ddd8ea;
+  --feyo-color-warning: #f57c00;
+  --feyo-color-on-warning: #ffffff;
 }
