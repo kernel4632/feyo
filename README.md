@@ -16,6 +16,10 @@ pnpm install
 pnpm dev
 ```
 
+主题色来自 `scripts/palette.js` 里的单个种子色（默认 `#61afef`）。换色只改这个种子，
+再运行 `node scripts/palette.js`，整套深浅色板会重新生成到 `src/styles/_palette.scss`。
+预览页顶部有主题开关，基础层那一段直接展示色板、字体阶梯和圆角。
+
 ## 构建
 
 ```bash
@@ -29,6 +33,7 @@ pnpm preview
 pnpm build:lib
 pnpm test
 pnpm test:ssr
+pnpm shots      # 给预览页出深色/浅色截图到 shots/
 ```
 
 Vue 组件从 `@kernel4632/kima` 导入；原生元素从 `@kernel4632/kima/elements` 导入，样式从 `@kernel4632/kima/style.css` 导入：

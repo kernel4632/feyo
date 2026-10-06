@@ -1,6 +1,7 @@
-/* Preview app styles only; main.js imports this file for the KIMA demo page.
- * Library entries import _tokens.scss directly so host pages keep their own layout.
- * App usage: import "./styles/index.scss".
+/* 开发预览页专用样式；main.js 引它，组件库入口只引 _tokens.scss。
+ * 用法：import "./styles/index.scss"。
+ *
+ * 这里只做页面级基础：字体、底色、文字色。组件自己不带这些，方便放进任何宿主页面。
  */
 @use "tokens";
 
@@ -21,6 +22,9 @@ body {
   background: var(--kima-color-surface);
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
-  font-size: var(--kima-font-size-md);
+  /* 全站 semi-bold，字重只有这一处设定，组件不再各自指定。 */
+  font-weight: var(--kima-font-weight-semi-bold);
+  font-size: var(--kima-font-size-body-medium);
+  line-height: var(--kima-line-height-normal);
   -webkit-font-smoothing: antialiased;
 }

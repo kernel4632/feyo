@@ -1,5 +1,5 @@
 <!--
-按钮：照 DMS 的 DankButton 整套搬过来。默认药丸形，按下圆角收成 8，带状态层和涟漪。
+按钮：KIMA 的主操作控件。默认药丸形，按下圆角收成 8，带状态层和焦点环。
 调用示例：
   <kima-button variant="filled" type="submit">保存</kima-button>
   <kima-button variant="tonal" :loading="saving">继续</kima-button>
@@ -8,7 +8,6 @@
 <script setup>
 import { computed, ref, useAttrs } from "vue";
 import { useNativeSlots } from "../utils/native-slots.js";
-import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -36,8 +35,6 @@ const attrs = useAttrs();
 const root = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
-
-useRipple(root);
 
 const buttonVariant = computed(() => {
   const variants = ["filled", "tonal", "outlined", "text"];
@@ -102,7 +99,6 @@ const isRound = computed(() => props.round || props.shape !== "square");
     color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
     border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
-  @include kima-ripple-host;
   @include kima-state-layer;
   @include kima-focus-ring;
 

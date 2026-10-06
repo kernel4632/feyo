@@ -1,227 +1,183 @@
-/* KIMA design tokens
- * All theming is driven by CSS custom properties with the `--kima-` prefix.
- * Never hard-code colors in components; always reference a token.
+/* KIMA 设计 token：全局外观的唯一来源，所有组件只用这里的变量，不写死颜色和尺寸。
  *
- * Values below are taken from the DMS reference sources, not invented:
- *   - Shape scale: DankCommon/Common/Shape.js `corners`
- *   - Component baselines: SHAPES.md "Component baselines" table
- *   - Spacing / font size / motion: Common/Theme.qml and Common/Style.qml
- * Each token cites the matching DMS token so a later diff stays honest.
+ * 方向：Material 3（Material You），但尺寸比官方默认放大一号，密度更松，像桌面版的手机界面。
+ * 颜色不在这里定义，由 scripts/palette.js 从种子色生成到 _palette.scss，再从这里 @use 进来。
+ *
+ * 变量一共六组：字体、间距、形状、层级与状态、动效、尺寸。前缀统一 --kima-。
  */
+@use "palette";
 
 :root {
-  /* ---- Typography ---- */
-  /* DMS Fonts.qml + Theme.qml: sans "Google Sans Flex", mono "Fira Code". */
-  --kima-font-family: "Google Sans Flex", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --kima-font-mono: "Fira Code", "SFMono-Regular", Consolas, monospace;
-  /* DMS Theme.qml fontSize*: Small 12, Medium 14, Large 16, XLarge 20, XXLarge 28, Display 36. */
-  --kima-font-size-small: 12px;
-  --kima-font-size-medium: 14px;
-  --kima-font-size-large: 16px;
-  --kima-font-size-x-large: 20px;
-  --kima-font-size-xx-large: 28px;
-  --kima-font-size-display: 36px;
+  /* ---- 字体 ----
+   * 全站等宽 Maple Mono NF CN，字重 semi-bold。
+   * 中文字形不内联，交给系统字体回退；装了字体就用，没装也不会变形。 */
+  --kima-font-family: "Maple Mono NF CN", "Maple Mono", "Maple Mono NF", ui-monospace, "Cascadia Mono", Consolas, monospace;
   --kima-font-weight-regular: 400;
-  --kima-font-weight-medium: 500;
+  --kima-font-weight-semi-bold: 600;
   --kima-font-weight-bold: 700;
 
-  /* ---- Spacing ---- */
-  /* DMS Style.qml spacing*: XXS 2, XS 4, S 8, M 12, L 16, XL 24. */
-  --kima-space-xxs: 2px;
-  --kima-space-xs: 4px;
-  --kima-space-s: 8px;
-  --kima-space-m: 12px;
-  --kima-space-l: 16px;
-  --kima-space-xl: 24px;
+  /* ---- 字号 ----
+   * M3 的字体阶梯整体放大一号，保证桌面上远看也清楚。 */
+  --kima-font-size-display-large: 64px;
+  --kima-font-size-display-medium: 52px;
+  --kima-font-size-display-small: 44px;
+  --kima-font-size-headline-large: 40px;
+  --kima-font-size-headline-medium: 32px;
+  --kima-font-size-headline-small: 28px;
+  --kima-font-size-title-large: 26px;
+  --kima-font-size-title-medium: 20px;
+  --kima-font-size-title-small: 16px;
+  --kima-font-size-body-large: 18px;
+  --kima-font-size-body-medium: 16px;
+  --kima-font-size-body-small: 14px;
+  --kima-font-size-label-large: 16px;
+  --kima-font-size-label-medium: 14px;
+  --kima-font-size-label-small: 12px;
 
-  /* ---- Shape ---- */
-  /* DMS Shape.js corners: XXS 2, XS 4, S 8, M 12, L 16, L+ 20, XL 28, XL+ 32, XXL 48.
-   * Full radius is half the shorter side (Style.fullRadius). */
-  --kima-radius-xxs: 2px;
+  /* ---- 行高 ---- */
+  --kima-line-height-tight: 1.25;
+  --kima-line-height-normal: 1.5;
+  --kima-line-height-loose: 1.7;
+
+  /* ---- 字距 ---- */
+  --kima-letter-spacing-tight: -0.01em;
+  --kima-letter-spacing-normal: 0;
+  --kima-letter-spacing-wide: 0.02em;
+
+  /* ---- 间距 ----
+   * 4 的倍数。密度松，组件里优先取 3 以上的档。 */
+  --kima-space-0: 0;
+  --kima-space-1: 4px;
+  --kima-space-2: 8px;
+  --kima-space-3: 12px;
+  --kima-space-4: 16px;
+  --kima-space-5: 20px;
+  --kima-space-6: 24px;
+  --kima-space-8: 32px;
+  --kima-space-10: 40px;
+  --kima-space-12: 48px;
+  --kima-space-16: 64px;
+
+  /* ---- 形状 ----
+   * M3 圆角刻度。按钮、芯片、明确提示下一步的东西才用 full 满圆，
+   * 卡片用 m，抽屉用 xl。 */
   --kima-radius-xs: 4px;
   --kima-radius-s: 8px;
   --kima-radius-m: 12px;
   --kima-radius-l: 16px;
-  --kima-radius-l-increased: 20px;
   --kima-radius-xl: 28px;
-  --kima-radius-xl-increased: 32px;
-  --kima-radius-xxl: 48px;
   --kima-radius-full: 999px;
 
-  /* ---- Motion ----
-   * DMS Theme.qml with base duration 250ms.
-   * Durations: expressiveDurations.* ; curves: expressiveCurves.* verbatim. */
-  --kima-duration-fast: 100ms;
-  --kima-duration-normal: 200ms;
-  --kima-duration-large: 300ms;
-  --kima-duration-extra-large: 500ms;
-  --kima-duration-shorter: 50ms;
-  --kima-duration-expressive-fast-spatial: 175ms;
-  --kima-duration-expressive-default-spatial: 250ms;
-  --kima-duration-expressive-slow-spatial: 325ms;
-  --kima-duration-expressive-fast-effects: 75ms;
-  --kima-duration-expressive-effects: 100ms;
-  --kima-duration-expressive-slow-effects: 150ms;
-  --kima-curve-standard: cubic-bezier(0.2, 0, 0, 1);
-  --kima-curve-standard-decel: cubic-bezier(0, 0, 0, 1);
-  --kima-curve-standard-accel: cubic-bezier(0.3, 0, 1, 1);
-  --kima-curve-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
-  --kima-curve-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --kima-curve-expressive-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
-  --kima-curve-expressive-default-spatial: cubic-bezier(0.38, 1.21, 0.22, 1);
-  --kima-curve-expressive-slow-spatial: cubic-bezier(0.39, 1.29, 0.35, 0.98);
-  --kima-curve-expressive-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
-  --kima-curve-expressive-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
-  --kima-curve-expressive-slow-effects: cubic-bezier(0.34, 0.88, 0.34, 1);
-  /* Legacy names kept so untouched components keep working during the port. */
-  --kima-duration-short: var(--kima-duration-fast);
-  --kima-duration-medium: var(--kima-duration-normal);
-  --kima-duration-slow: var(--kima-duration-large);
-  --kima-duration-effects: var(--kima-duration-expressive-effects);
-  --kima-ease-standard: var(--kima-curve-standard);
-  --kima-ease-emphasized: var(--kima-curve-emphasized-decel);
-  --kima-ease-standard-curve: var(--kima-curve-standard);
-  --kima-ease-effects: var(--kima-curve-expressive-effects);
-
-  /* ---- Component sizes ---- */
-  /* DMS Style.qml component metrics. */
+  /* ---- 描边 ---- */
   --kima-outline-width: 1px;
   --kima-outline-width-focused: 2px;
-  /* DMS SettingsSpec focusRingWidth 1.5, Topic ring offset 3. */
-  --kima-focus-ring-width: 1.5px;
+  --kima-focus-ring-width: 2px;
   --kima-focus-ring-offset: 3px;
-  --kima-spinner-duration: 1568ms;
-  /* DMS Style.qml buttonHeight*: XXS 28, XS 32, S 40 (DankButton default), M 56. */
-  --kima-button-height-xxs: 28px;
-  --kima-button-height-xs: 32px;
-  --kima-button-height-s: 40px;
-  --kima-button-height-m: 56px;
-  --kima-button-min-width: 58px;
-  --kima-icon-button-size: 40px;
-  --kima-icon-size: 24px;
-  --kima-icon-size-small: 16px;
-  --kima-icon-size-medium: 20px;
-  --kima-icon-size-large: 32px;
-  --kima-field-height: 42px;
-  --kima-field-height-large: 48px;
-  --kima-list-item-height: 56px;
-  --kima-menu-item-height: 40px;
-  --kima-menu-max-height: 400px;
-  --kima-tab-min-width: 64px;
-  --kima-tab-indicator-height: 3px;
-  --kima-tab-indicator-min-width: 24px;
-  --kima-dialog-max-width: 560px;
-  --kima-switch-track-width: 52px;
-  --kima-switch-track-height: 32px;
-  --kima-switch-outline-width: 2px;
-  --kima-switch-thumb-unselected: 16px;
-  --kima-switch-thumb-selected: 24px;
-  --kima-switch-thumb-pressed: 28px;
-  --kima-slider-track-height: 16px;
-  --kima-slider-handle-width: 4px;
-  --kima-slider-handle-height: 28px;
-  --kima-slider-handle-gap: 6px;
-  --kima-slider-track-radius: 8px;
-  --kima-slider-track-inside-radius: 2px;
-  --kima-scrollbar-thickness: 6px;
-  --kima-tooltip-max-width: 500px;
-  --kima-tooltip-delay: 400ms;
 
-  /* ---- State layers ---- */
-  /* DMS Style.qml stateLayer*: hover 0.08, focus 0.12, pressed 0.12, drag 0.16. */
+  /* ---- 状态层 ----
+   * M3 的透明度：悬停 8%、聚焦 10%、按下 10%、拖拽 16%。 */
   --kima-state-hover: 0.08;
-  --kima-state-focus: 0.12;
-  --kima-state-pressed: 0.12;
+  --kima-state-focus: 0.1;
+  --kima-state-pressed: 0.1;
   --kima-state-drag: 0.16;
-  --kima-opacity-disabled: 0.6;
-  /* DMS Style.qml elevationLevel1/2/3（blur / offsetY / alpha）。 */
-  --kima-shadow-1: 0 1px 4px rgba(0, 0, 0, 0.2);
-  --kima-shadow-2: 0 4px 8px rgba(0, 0, 0, 0.25);
-  --kima-shadow-3: 0 6px 12px rgba(0, 0, 0, 0.3);
-  --kima-press-scale: 0.98;
+  --kima-opacity-disabled: 0.38;
 
-  /* ---- Color: dark (default) ----
-   * Values are DMS's own Material You palette (StockThemes.js "purple" +
-   * Style.qml role defaults), so KIMA matches DMS's real appearance. */
-  --kima-color-surface: #141218;
-  --kima-color-surface-container: #211f24;
-  --kima-color-surface-container-high: #2b292f;
-  --kima-color-on-surface: #e6e0e9;
-  --kima-color-on-surface-variant: #cac4cf;
-  --kima-color-outline: #948f99;
-  --kima-color-outline-variant: #49454f;
-  --kima-color-primary: #d0bcff;
-  --kima-color-on-primary: #381e72;
-  --kima-color-primary-container: #4f378b;
-  --kima-color-on-primary-container: #eaddff;
-  --kima-color-secondary-container: #4a4458;
-  --kima-color-on-secondary-container: #e8def8;
-  --kima-color-tertiary-container: #633b48;
-  --kima-color-on-tertiary-container: #ffd8e4;
-  --kima-color-error-container: #8c1d18;
-  --kima-color-on-error-container: #f9dedc;
-  --kima-color-inverse-surface: #e6e0e9;
-  --kima-color-inverse-on-surface: #322f35;
+  /* ---- 层级 ----
+   * M3 elevation：数字越大越浮起来。抽屉和弹层用 3 以上。 */
+  --kima-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --kima-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --kima-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --kima-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.3);
+  --kima-elevation-5: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.3);
+  --kima-scrim-opacity: 0.5;
+  --kima-backdrop-blur: 8px;
+
+  /* ---- 动效 ----
+   * 时长按 M3 分三档，曲线用 M3 的标准与 emphasized。
+   * 动效的职责是引导注意力，所以只在“东西出现、消失、换位置”时用长档。 */
+  --kima-duration-fast: 100ms;
+  --kima-duration-medium: 200ms;
+  --kima-duration-slow: 300ms;
+  --kima-duration-slower: 500ms;
+  --kima-duration-effects: 150ms;
+  --kima-curve-standard: cubic-bezier(0.2, 0, 0, 1);
+  --kima-curve-decelerate: cubic-bezier(0, 0, 0, 1);
+  --kima-curve-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --kima-curve-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  /* 弹簧：按下回弹和抽屉吸附用，写成缓动是为了能在 CSS 里直接用。 */
+  --kima-spring-snappy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --kima-spring-gentle: cubic-bezier(0.22, 1.2, 0.36, 1);
+  --kima-press-scale: 0.97;
+
+  /* ---- 控件尺寸 ----
+   * 比 M3 官方默认大一号：按钮最小档 48，图标按钮 48，输入框 64。
+   * 触摸和鼠标都好点。 */
+  --kima-touch-target: 48px;
+  --kima-button-height-s: 48px;
+  --kima-button-height-m: 56px;
+  --kima-button-height-l: 64px;
+  --kima-button-padding: 24px;
+  --kima-icon-size-small: 20px;
+  --kima-icon-size: 24px;
+  --kima-icon-size-large: 32px;
+  --kima-icon-button-size: 48px;
+  --kima-field-height: 64px;
+  --kima-field-padding: 20px;
+  --kima-list-item-height: 64px;
+  --kima-menu-item-height: 52px;
+  --kima-tab-height: 56px;
+  --kima-tab-indicator-height: 4px;
+  --kima-switch-track-width: 60px;
+  --kima-switch-track-height: 36px;
+  --kima-switch-thumb-size: 28px;
+  --kima-switch-thumb-selected: 32px;
+  --kima-slider-track-height: 20px;
+  --kima-slider-handle-width: 6px;
+  --kima-slider-handle-height: 36px;
+  --kima-scrollbar-thickness: 8px;
+  --kima-dialog-max-width: 640px;
+  --kima-drawer-max-width: 420px;
+  --kima-tooltip-max-width: 480px;
+
+  /* ---- 兼容别名：旧的占位组件还在用这些名字 ----
+   * 值都指向上面某一档，逐个组件重做后这些名字会消失，新组件不要再引。 */
   --kima-color-transparent: transparent;
-  --kima-color-danger: #f2b8b5;
-  --kima-color-on-danger: #601410;
-  --kima-color-success: #4caf50;
-  --kima-color-on-success: #07130a;
-  --kima-color-warning: #ff9800;
-  --kima-color-on-warning: #3e2400;
-  /* Alpha roles derive from the base surface color, so themes stay in sync. */
+  --kima-color-danger: var(--kima-color-error);
+  --kima-color-on-danger: var(--kima-color-on-error);
+  --kima-color-success: var(--kima-color-tertiary-container);
+  --kima-color-on-success: var(--kima-color-on-tertiary-container);
+  /* M3 用这个透明度做禁用态的文字，所以按主文字色派生，跟随主题变化。 */
   --kima-color-on-surface-12: color-mix(in srgb, var(--kima-color-on-surface) 12%, transparent);
   --kima-color-on-surface-38: color-mix(in srgb, var(--kima-color-on-surface) 38%, transparent);
-  --kima-color-on-surface-variant-30: color-mix(in srgb, var(--kima-color-on-surface-variant) 30%, transparent);
-
-  /* ---- Aliases kept for existing components ----
-   * These names predate the DMS alignment pass. Each maps to the nearest
-   * DMS token above; the per-component pass will replace the usages. */
-  --kima-font-size-xs: var(--kima-font-size-small);
-  --kima-font-size-sm: var(--kima-font-size-small);
-  --kima-font-size-md: var(--kima-font-size-medium);
-  --kima-font-size-lg: var(--kima-font-size-large);
-  --kima-font-size-xl: var(--kima-font-size-x-large);
-  --kima-space-1: var(--kima-space-xs);
-  --kima-space-2: var(--kima-space-s);
-  --kima-space-3: var(--kima-space-m);
-  --kima-space-4: var(--kima-space-l);
-  --kima-space-5: var(--kima-space-xl);
-  --kima-space-6: var(--kima-space-xl);
+  --kima-font-size-xs: var(--kima-font-size-label-small);
+  --kima-font-size-sm: var(--kima-font-size-label-medium);
+  --kima-font-size-md: var(--kima-font-size-body-medium);
+  --kima-font-size-lg: var(--kima-font-size-title-small);
+  --kima-font-size-xl: var(--kima-font-size-title-medium);
+  --kima-font-size-small: var(--kima-font-size-label-small);
+  --kima-font-size-medium: var(--kima-font-size-body-medium);
+  --kima-space-xxs: 2px;
+  --kima-space-xs: var(--kima-space-1);
+  --kima-space-s: var(--kima-space-2);
+  --kima-space-m: var(--kima-space-3);
+  --kima-space-l: var(--kima-space-4);
+  --kima-space-xl: var(--kima-space-6);
   --kima-radius-sm: var(--kima-radius-s);
   --kima-radius-md: var(--kima-radius-m);
   --kima-radius-lg: var(--kima-radius-l);
-  --kima-duration-fast: var(--kima-duration-short);
+  --kima-shadow-2: var(--kima-elevation-2);
   --kima-duration-normal: var(--kima-duration-medium);
-  --kima-duration-slow: var(--kima-duration-long);
-}
-
-:root[data-kima-theme="light"] {
-  /* DMS light "purple" palette (StockThemes.js), with Material on-container roles. */
-  --kima-color-surface: #fef7ff;
-  --kima-color-surface-container: #f2ecf4;
-  --kima-color-surface-container-high: #ece6ee;
-  --kima-color-on-surface: #1d1b20;
-  --kima-color-on-surface-variant: #49454e;
-  --kima-color-outline: #7a757f;
-  --kima-color-outline-variant: #cac4d0;
-  --kima-color-primary: #6750a4;
-  --kima-color-on-primary: #ffffff;
-  --kima-color-primary-container: #eaddff;
-  --kima-color-on-primary-container: #21005d;
-  --kima-color-secondary-container: #e8def8;
-  --kima-color-on-secondary-container: #1d192b;
-  --kima-color-tertiary-container: #ffd8e4;
-  --kima-color-on-tertiary-container: #31111d;
-  --kima-color-error-container: #f9dedc;
-  --kima-color-on-error-container: #410e0b;
-  --kima-color-inverse-surface: #322f35;
-  --kima-color-inverse-on-surface: #f5eff7;
-  --kima-color-transparent: transparent;
-  --kima-color-danger: #b3261e;
-  --kima-color-on-danger: #ffffff;
-  --kima-color-success: #2e7d32;
-  --kima-color-on-success: #ffffff;
-  --kima-color-warning: #f57c00;
-  --kima-color-on-warning: #ffffff;
+  --kima-duration-long: var(--kima-duration-slower);
+  --kima-duration-expressive-effects: var(--kima-duration-effects);
+  --kima-duration-expressive-fast-spatial: var(--kima-duration-medium);
+  --kima-curve-expressive-effects: var(--kima-curve-standard);
+  --kima-curve-expressive-fast-spatial: var(--kima-spring-snappy);
+  --kima-ease-standard: var(--kima-curve-standard);
+  --kima-ease-emphasized: var(--kima-curve-emphasized);
+  --kima-ease-effects: var(--kima-curve-standard);
+  --kima-button-height-xs: 40px;
+  --kima-button-min-width: 64px;
+  --kima-spinner-duration: 1568ms;
+  --kima-switch-outline-width: 2px;
+  --kima-switch-thumb-pressed: 32px;
 }

@@ -11,7 +11,6 @@
 import { computed, getCurrentInstance, ref, useAttrs } from "vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { Settings01Icon } from "@hugeicons/core-free-icons";
-import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -44,8 +43,6 @@ const attrs = useAttrs();
 const root = ref(null);
 const isCustomElement = Boolean(getCurrentInstance()?.ce);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
-
-useRipple(root);
 
 // standard 是 DMS 的默认外观，text 作为等价别名保留。
 const buttonVariant = computed(() => {
@@ -117,7 +114,6 @@ const iconSize = computed(() => ({ small: 20, default: 24, large: 24 })[buttonSi
     color var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects),
     border-radius var(--kima-duration-expressive-effects) var(--kima-curve-standard);
 
-  @include kima-ripple-host;
   @include kima-state-layer;
   @include kima-focus-ring;
 

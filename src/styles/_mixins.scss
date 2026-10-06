@@ -1,15 +1,17 @@
-/* KIMA 共用交互 mixin，照 DMS 部件搬过来。
- * 每样只定义一次，所有组件共用，避免每个组件各写一套补丁式的悬停/按压规则。
+/* KIMA 共用交互 mixin：每个组件都从这里取同一套悬停、聚焦、按下、禁用表现。
+ * 组件自己的样式里只写几何和颜色，交互反馈一律 @include 这几个 mixin，不各写一套。
  *
- * - kima-state-layer：DMS StateLayer，用内容色叠加（悬停 0.08、聚焦 0.12、按下 0.12），
- *   时长和曲线取 expressiveEffects。
- * - kima-focus-ring：DMS FocusRing，1.5px、偏移 3、颜色 primary。
- * - kima-ripple-host：DMS DankRipple，裁剪容器加从指针扩散的圆。
+ * - kima-state-layer：内容色按透明度叠一层，悬停 8%、聚焦 10%、按下 10%。
+ * - kima-focus-ring：键盘聚焦时的 2px 主色描边，偏移 3px，鼠标点击不出现。
+ * - kima-surface：容器表面，底色取容器色，圆角取 L（16）。
+ *
+ * 注意：KIMA 明确不用涟漪，按下反馈只靠状态层。
  */
 
 @mixin kima-state-layer {
   position: relative;
 
+  /* 状态层用 ::after 铺满，颜色取 currentColor，所以任何底色的控件都能直接套。 */
   &::after {
     content: "";
     position: absolute;
@@ -19,16 +21,16 @@
     background: currentColor;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--kima-duration-expressive-effects) var(--kima-curve-expressive-effects);
+    transition: opacity var(--kima-duration-effects) var(--kima-curve-effects);
   }
 
-  /* 内容压到状态层之上，和 DMS 把 StateLayer 放在内容下方一致。 */
-  > *:not(.kima-ripple) {
+  /* 内容压到状态层之上，否则文字会被半透明色盖住。 */
+  > * {
     position: relative;
     z-index: 2;
   }
 
-  &:hover:not(:disabled)::after {
+  &:hover:not(:disabled):not([aria-disabled="true"])::after {
     opacity: var(--kima-state-hover);
   }
 
@@ -36,7 +38,7 @@
     opacity: var(--kima-state-focus);
   }
 
-  &:active:not(:disabled)::after {
+  &:active:not(:disabled):not([aria-disabled="true"])::after {
     opacity: var(--kima-state-pressed);
   }
 }
@@ -48,26 +50,17 @@
   }
 }
 
-@mixin kima-ripple-host {
-  position: relative;
-  overflow: hidden;
-
-  /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有该标记。 */
-  :deep(.kima-ripple) {
-    position: absolute;
-    z-index: 1;
-    border-radius: var(--kima-radius-full);
-    background: currentColor;
-    opacity: 0.18;
-    pointer-events: none;
-    transform: scale(0);
-    animation: kima-ripple-expand var(--kima-duration-expressive-default-spatial) var(--kima-curve-expressive-fast-effects) forwards;
-  }
+@mixin kima-surface {
+  border-radius: var(--kima-radius-l);
+  background: var(--kima-color-surface-container);
+  color: var(--kima-color-on-surface);
 }
 
-@keyframes kima-ripple-expand {
-  to {
-    transform: scale(1);
-    opacity: 0;
+/* 禁用的统一表现：降低不透明度，并让指针变成不可用。 */
+@mixin kima-disabled {
+  &:disabled,
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: var(--kima-opacity-disabled);
   }
 }

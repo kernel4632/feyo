@@ -61,6 +61,36 @@ function toggleTheme() {
   document.documentElement.dataset.kimaTheme = theme.value;
 }
 
+// --- 基础层展示 ---
+// 色板只列角色名和用途，颜色值从 CSS 变量取，不在这里再抄一份。
+const palette = [
+  { name: "surface", use: "页面底色" },
+  { name: "surface-container", use: "卡片、侧栏" },
+  { name: "surface-container-high", use: "菜单、悬停面" },
+  { name: "surface-container-highest", use: "抽屉、弹层" },
+  { name: "on-surface", use: "主文字" },
+  { name: "on-surface-variant", use: "次要文字" },
+  { name: "outline", use: "强描边" },
+  { name: "outline-variant", use: "弱描边" },
+  { name: "primary", use: "主操作" },
+  { name: "primary-container", use: "柔和主操作" },
+  { name: "secondary-container", use: "次操作" },
+  { name: "tertiary-container", use: "强调色" },
+  { name: "error", use: "危险操作" },
+  { name: "error-container", use: "危险柔和" },
+  { name: "scrim", use: "抽屉遮罩" },
+];
+const typeScale = [
+  { token: "display-small", label: "display 44" },
+  { token: "headline-small", label: "headline 28" },
+  { token: "title-large", label: "title 26" },
+  { token: "title-medium", label: "title 20" },
+  { token: "body-large", label: "body 18" },
+  { token: "body-medium", label: "body 16" },
+  { token: "label-medium", label: "label 14" },
+];
+const radii = ["xs", "s", "m", "l", "xl", "full"];
+
 const query = ref("");
 // 搜索词匹配组件英文名或本节标题时就显示这个展示块。
 function visible(...keywords) {
@@ -232,6 +262,54 @@ const isFiltering = computed(() => query.value.trim().length > 0);
       </nav>
 
       <main class="kima-gallery__main">
+        <!-- 基础层：色板、字体、圆角、状态层，改主题色或尺寸先看这里 -->
+        <section v-show="visible('基础层', 'token', 'color', 'type', '基础')" id="tokens" class="kima-gallery__section">
+          <h2>基础层</h2>
+
+          <article class="kima-gallery__demo">
+            <header>
+              <h3>主题色板</h3>
+              <p>全部由种子色 <code>#61afef</code> 生成，改 <code>scripts/palette.js</code> 里的 seed 即可整体换色。</p>
+            </header>
+            <div class="kima-gallery__swatches">
+              <div v-for="swatch in palette" :key="swatch.name" class="kima-gallery__swatch">
+                <span class="kima-gallery__swatch-chip" :style="{ background: `var(--kima-color-${swatch.name})` }" />
+                <code>{{ swatch.name }}</code>
+                <small>{{ swatch.use }}</small>
+              </div>
+            </div>
+          </article>
+
+          <article class="kima-gallery__demo">
+            <header>
+              <h3>字体阶梯</h3>
+              <p>Maple Mono NF CN，semi-bold。比 M3 官方默认整体放大一号，中文走系统回退。</p>
+            </header>
+            <div class="kima-gallery__stack">
+              <p v-for="step in typeScale" :key="step.token" class="kima-gallery__type" :style="{ fontSize: `var(--kima-font-size-${step.token})` }">
+                {{ step.label }} 永远不要放弃探索
+              </p>
+            </div>
+          </article>
+
+          <article class="kima-gallery__demo">
+            <header>
+              <h3>圆角与层级</h3>
+              <p>M3 圆角刻度。层级只用在浮起来的表面上。</p>
+            </header>
+            <div class="kima-gallery__row kima-gallery__row--tall">
+              <span v-for="radius in radii" :key="radius" class="kima-gallery__radius" :style="{ borderRadius: `var(--kima-radius-${radius})` }">
+                {{ radius }}
+              </span>
+            </div>
+            <div class="kima-gallery__row kima-gallery__row--tall">
+              <span v-for="level in [1, 2, 3, 4, 5]" :key="level" class="kima-gallery__elevation" :style="{ boxShadow: `var(--kima-elevation-${level})` }">
+                {{ level }}
+              </span>
+            </div>
+          </article>
+        </section>
+
         <!-- 按钮与动作 -->
         <section v-show="visible('按钮与动作', 'button', 'badge', 'divider', 'card')" id="actions" class="kima-gallery__section">
           <h2>按钮与动作</h2>
@@ -702,6 +780,52 @@ const isFiltering = computed(() => query.value.trim().length > 0);
       border-bottom: 2px solid var(--kima-color-primary);
       font-size: var(--kima-font-size-xl);
     }
+  }
+
+  /* --- 基础层展示：色板、字体阶梯、圆角、层级 --- */
+
+  &__swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--kima-space-3);
+  }
+
+  &__swatch {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kima-space-1);
+
+    code {
+      font-size: var(--kima-font-size-label-medium);
+    }
+
+    small {
+      color: var(--kima-color-on-surface-variant);
+      font-size: var(--kima-font-size-label-small);
+    }
+  }
+
+  &__swatch-chip {
+    display: block;
+    height: 56px;
+    border: 1px solid var(--kima-color-outline-variant);
+    border-radius: var(--kima-radius-m);
+  }
+
+  &__type {
+    margin: 0;
+    line-height: var(--kima-line-height-tight);
+  }
+
+  &__radius,
+  &__elevation {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    background: var(--kima-color-surface-container-high);
+    color: var(--kima-color-on-surface-variant);
+    font-size: var(--kima-font-size-label-small);
   }
 
   &__demo {

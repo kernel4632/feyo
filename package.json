@@ -33,6 +33,7 @@
     "build": "vite build",
     "build:lib": "node scripts/build-lib.js",
     "verify:lib": "node scripts/verify-package.js",
+    "shots": "playwright test tests/shots.spec.js --project=desktop",
     "prepack": "pnpm build:lib",
     "preview": "vite preview --outDir site-dist",
     "test": "playwright test",
@@ -40,7 +41,9 @@
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.3.5",
-    "@hugeicons/vue": "^1.0.8"
+    "@hugeicons/vue": "^1.0.8",
+    "@material/material-color-utilities": "^0.3.0",
+    "reka-ui": "^2.11.0"
   },
   "peerDependencies": {
     "vue": "^3.5.42"

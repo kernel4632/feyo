@@ -73,11 +73,12 @@ token 定义在 `src/styles/_tokens.scss`；动态色板由 `material-color-util
 ```
 src/
   styles/
-    _tokens.scss    设计 token（字体、间距、圆角、动画、颜色）
-    _mixins.scss    共用交互 mixin（状态层、焦点环、表面）
-    index.scss      全局样式入口
+    _tokens.scss    设计 token（字体、间距、形状、层级、动效、控件尺寸）
+    _palette.scss   由 scripts/palette.js 生成的颜色角色，不要手改
+    _mixins.scss    共用交互 mixin（状态层、焦点环、表面、禁用）
+    index.scss      开发预览页的基础样式
   components/       组件，一个组件一个 xxx.ce.vue 文件，直接平铺，放进来就自动登记
-  utils/            不属于单个组件的共用小工具
+  utils/            不属于单个组件的共用小工具，两个以上才建这个目录（现在只有 native-slots.js）
   App.vue           开发预览页
   main.js           开发入口
 ```
@@ -98,9 +99,11 @@ pnpm test:ssr    # SSR 测试
 
 - 修改前先看项目现有写法，保持风格一致，优先最小改动。
 - 组件用 SCSS，`<style scoped lang="scss">`，颜色一律走 token。
+- 换主题色只改 `scripts/palette.js` 里的 `seed`，再运行 `node scripts/palette.js`；不要手改 `_palette.scss`。
 - 不凭空增加框架或抽象层。
 - 完成一个可用改动后运行 `pnpm build`；组件库改动还要跑 `pnpm build:lib` 和 `pnpm verify:lib`。
 - 改完一点且处于能用状态（构建和测试通过）就立刻提交并推送，不要攒着。
+- 看完效果用 `pnpm shots` 出截图（`shots/` 已在 .gitignore 里，不入库）。
 - commit 信息用中文描述，遵循 Conventional Commits 格式：
   `type(scope): 中文描述`，type 用英文（feat/fix/refactor/docs/test/build/chore），
   例如 `feat(按钮): 按 Material 3 重做按钮`。改动只涉及一个组件时 scope 写组件名。
@@ -117,7 +120,9 @@ pnpm test:ssr    # SSR 测试
 
 1. ✅ **改名**：FEYO → KIMA（包名、CSS 变量、标签、class、导出、样式注入 id、脚本、测试、
    README、docs、构建产物名）。
-2. **重做基础层**（下一步）：M3 token（色/字/形状/层级/状态层/动效）+ 放大尺寸 + mixins + 字体接入。
+2. ✅ **重做基础层**：M3 token（色/字/形状/层级/状态层/动效）+ 放大尺寸 + mixins + 字体接入。
+   色板由 `scripts/palette.js` 从种子 `#61afef` 生成到 `src/styles/_palette.scss`，改种子只动一处。
+   按 M3 曲目不用涟漪，按下反馈只靠状态层。
 3. **逐组件重做**：现有 27 个组件是占位实现，要按新方向逐个重写（交互优先）。
 4. **弹层**：bottom sheet / 侧抽屉 + dialog。
 5. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。

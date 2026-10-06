@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 site-dist
+shots
 test-results
 .playwright-mcp
 playwright-report
