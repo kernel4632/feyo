@@ -1,9 +1,15 @@
-# FEYO
+# KIMA
 
-FEYO 是一个面向高专注、高体验感 Web 应用的 UI 设计系统与组件库。
-全称：**F**low、**E**ase、**Y**ield、**O**rientation。
+KIMA 是一个面向高专注、高体验 Web 应用的 UI 设计系统与组件库。
+全称：**K**inetic、**I**nteraction、**M**otion、**A**live。
+
+一句话定位：**Material 3（Material You）风，把手机界面放大到电脑**——大控件、大卡片、
+低密度、简洁展示；用动效引导注意力；弹层用抽屉聚光；**交互体验第一，好看第二**。
 
 本文件是本仓库的最高协作约束。任何会话在改代码前先读本文件。
+
+> 仓库正从旧的 FEYO 改名到 KIMA。**改名和重构尚未开始**，现在源码里还是 `feyo`
+> 与一批占位组件。下一步第一件事就是改名（见下方「迁移状态」）。
 
 ## 技术栈（固定，不要替换）
 
@@ -11,66 +17,56 @@ FEYO 是一个面向高专注、高体验感 Web 应用的 UI 设计系统与组
 - JavaScript（不是 TypeScript）
 - Vite
 - SCSS
+- pnpm
 - Hugeicons 图标：`@hugeicons/vue` + `@hugeicons/core-free-icons`
-- 包管理器：pnpm
+- **Reka UI**：交互与无障碍行为底座（无样式，`reka-ui`）
+- **@material/material-color-utilities**：从种子色生成 Material You 动态配色
 
 ## 交付目标
 
 最终打包成 **Web Components**，能用在任何 Web 项目里，标签形如：
 
 ```html
-<feyo-button variant="filled">保存</feyo-button>
+<kima-button variant="filled">保存</kima-button>
 ```
 
 组件既要在 Vue 项目里可用，也要能在原生 HTML 里直接使用。
 
 ## 命名规则
 
-- npm 包名、源码目录、CSS 变量统一用 `feyo`。
-- 包名：`@kernel4632/feyo`。
-- CSS 变量前缀：`--feyo-*`。
-- 自定义元素标签前缀：`<feyo-*>`。
-- class 前缀：`feyo-`。
-- **禁止**使用 `DMS`、`Dank`、`Material`、`MUI` 作为项目名、组件名或 class 前缀。
+- npm 包名、源码目录、CSS 变量统一用 `kima`。
+- 包名：`@kernel4632/kima`。
+- CSS 变量前缀：`--kima-*`。
+- 自定义元素标签前缀：`<kima-*>`。
+- class 前缀：`kima-`。
+- **禁止**把 `DMS`、`Dank`、`MUI`、`Material` 用作项目名、组件名或 class 前缀。
+  （Material 3 只是**设计语言参考**，不是我们的品牌名。）
 
-## 设计来源（参考结构，不抄品牌）
+## 设计方向（已锁定，不要自行改回）
 
-FEYO 参考 DankMaterialShell（DMS）的组件结构、信息层级、空间比例、字体、圆角、
-状态动画和交互反馈，并采用 DMS 的 Material You 配色（StockThemes.js 与 Style.qml
-里的真实色值），让 FEYO 组件看起来和 DMS 一致。**不复刻**其品牌名称、Logo 和图标。
-
-以源码实际实现为准，不要凭印象猜。参考资料：
-
-1. DMS 主仓库
-   `https://github.com/AvengeMedia/DankMaterialShell`
-2. DMS 共用组件源码
-   `https://github.com/AvengeMedia/dank-qml-common`
-3. 组件目录
-   `https://github.com/AvengeMedia/dank-qml-common/tree/master/DankCommon/Widgets`
-4. 形状、圆角与组件基线
-   `https://github.com/AvengeMedia/dank-qml-common/blob/master/SHAPES.md`
-5. 主题、尺寸、字体、动画 token
-   `https://github.com/AvengeMedia/DankMaterialShell/blob/master/quickshell/Common/Theme.qml`
-6. 组件 token contract
-   `https://github.com/AvengeMedia/dank-qml-common#the-contract`
-7. 输入框结构与状态逻辑
-   `https://github.com/AvengeMedia/dank-qml-common/blob/master/DankCommon/Widgets/DankTextField.qml`
-8. 设置页与控制中心布局
-   `https://github.com/AvengeMedia/DankMaterialShell/tree/master/quickshell/Modules/Settings`
-   `https://github.com/AvengeMedia/DankMaterialShell/tree/master/quickshell/Modules/ControlCenter`
-
-需要时先把对应源码拉下来读，再动手。
+- **全局**：Material 3（Material You）。尺寸比官方默认**再放大一号**，像桌面版的手机 UI。
+- **密度**：松。大按钮、大卡片、信息不密、简洁展示。
+- **颜色**：从**单一青蓝种子**（默认 `#61afef`）用 material-color-utilities 生成整套
+  Material You 色板；种子可整体替换。**深浅两套都做**。
+- **字体**：全站等宽 **Maple Mono NF CN**，semi-bold。中文按需分片或系统回退，不要整包内联。
+- **形状**：M3 圆角刻度（XS 4 / S 8 / M 12 / L 16 / XL 28）；按钮、芯片满圆；
+  卡片 M（12）；抽屉大圆角。只有「明确提示下一步交互」的元素才用满圆胶囊。
+- **弹层**：bottom sheet / 侧抽屉（Vaul 式）——背景 dim + 模糊 + 抽屉滑入，**只聚焦当前内容**，
+  不展示背后内容。拖拽关闭、吸附点。
+- **动效**：承担**引导注意力**的职责，不只是装饰。用 M3 的时长/缓动 + 弹簧。
+- **交互**：状态层（轻）+ 焦点环 + 键盘可达。**不用涟漪**。
+- **优先级**：交互与体验第一，好看第二。
 
 ## 禁止使用的依赖
 
-不要引入带视觉意见的组件库：Material UI、Material Web、MUI、Ant Design 等。
-图标只允许 Hugeicons。
+不要引入带视觉意见的组件库（Material UI、Material Web、MUI、Ant Design、Vuetify 等）。
+**Reka UI 允许**（它无样式）。图标只允许 Hugeicons。
 
 ## 主题与颜色
 
-颜色只能由 FEYO 自己的 CSS variables 控制，全部以 `--feyo-` 开头，
-方便整体替换主题。组件里**不允许**硬编码颜色值（hex、rgb 等），
-只能引用 token。token 定义在 `src/styles/_tokens.scss`。
+颜色只能由 KIMA 自己的 CSS variables 控制，全部以 `--kima-` 开头，方便整体换主题。
+组件里**不允许**硬编码颜色值（hex、rgb 等），只能引用 token。
+token 定义在 `src/styles/_tokens.scss`；动态色板由 `material-color-utilities` 生成。
 
 ## 目录结构（随开发扩展）
 
@@ -78,8 +74,10 @@ FEYO 参考 DankMaterialShell（DMS）的组件结构、信息层级、空间比
 src/
   styles/
     _tokens.scss    设计 token（字体、间距、圆角、动画、颜色）
+    _mixins.scss    共用交互 mixin（状态层、焦点环、表面）
     index.scss      全局样式入口
   components/       组件，一个组件一个 xxx.ce.vue 文件，直接平铺，放进来就自动登记
+  utils/            不属于单个组件的共用小工具
   App.vue           开发预览页
   main.js           开发入口
 ```
@@ -90,7 +88,10 @@ src/
 pnpm install     # 安装依赖
 pnpm dev         # 本地开发
 pnpm build       # 生产构建
-pnpm preview     # 预览构建产物
+pnpm build:lib   # 组件库构建（两个 dist 入口）
+pnpm verify:lib  # 校验打包产物
+pnpm test        # 浏览器交互测试
+pnpm test:ssr    # SSR 测试
 ```
 
 ## 开发约定
@@ -98,28 +99,39 @@ pnpm preview     # 预览构建产物
 - 修改前先看项目现有写法，保持风格一致，优先最小改动。
 - 组件用 SCSS，`<style scoped lang="scss">`，颜色一律走 token。
 - 不凭空增加框架或抽象层。
-- 完成一个可用改动后运行 `pnpm build`，确认能通过。
-- 组件库改动还要运行 `pnpm build:lib`，确认 `dist/feyo.js`、`dist/feyo-elements.js` 和 `dist/style.css` 都能生成。
+- 完成一个可用改动后运行 `pnpm build`；组件库改动还要跑 `pnpm build:lib` 和 `pnpm verify:lib`。
 - 改完一点且处于能用状态（构建和测试通过）就立刻提交并推送，不要攒着。
-  这样改错了能回退，也留下完整的开发过程。
 - commit 信息用中文描述，遵循 Conventional Commits 格式：
   `type(scope): 中文描述`，type 用英文（feat/fix/refactor/docs/test/build/chore），
-  例如 `feat(按钮): 按 DMS 源码对齐高度和内边距`。
-  改动只涉及一个组件时 scope 写组件名，涉及整体时可省略。
-- 提交前先跑对应的检查：普通改动跑 `pnpm build`；组件库改动还要跑
-  `pnpm build:lib` 和 `pnpm verify:lib`。
+  例如 `feat(按钮): 按 Material 3 重做按钮`。改动只涉及一个组件时 scope 写组件名。
 - 推送目标为 `origin main`。
 
-## 当前状态
+## 协作方式（重要）
 
-- 已完成：Vite + Vue 3 + SCSS + pnpm 项目骨架，Hugeicons 接入，token 雏形，
-  开发预览页，六个基础组件，Vue 导出入口，Web Components 注册入口，
-  `pnpm build` 与 `pnpm build:lib` 可跑通。
-- 已完成：读取固定版本的参考源码，研究记录见 `docs/reference.md`。
-- 已完成：实现菜单、对话框、标签页、按钮组和布局容器，并接入 Web Components 注册入口。
-- 已完成：补充卡片、提示、分割线、图标按钮和徽章等基础组件，并接入 Web Components 注册入口。
-- 已完成：补充通知、选择器、数据表和空状态等数据展示组件，并接入自动发现与导出。
-- 已完成：补充浏览器交互测试、SSR 测试、独立原生入口校验和 Vue 入口样式校验。
-- 已完成：继续实现日期选择、树和分页等高阶组件，并补充边界测试。
-- 已完成：实现虚拟滚动、时间选择、级联选择和组合框等高阶组件，并补充边界测试。
-- 当前状态：27 个组件已自动发现、导出、注册为 Web Components，并通过 88 项桌面/移动端浏览器测试。
+- 用户要**逐个组件地指导**，不要一次把整套写完。
+- 流程：一次只做一小步（一个组件或一小块基础）→ 做完停下来给用户看（截图 + 说明）
+  → 用户给意见 → 改 → 用户点头 → 提交 → 再下一步。
+- 用户较难用文字描述想要的感觉；**多用图/可见效果沟通**，少让用户凭空描述。
+
+## 迁移状态（下一步要做）
+
+1. **改名**：`feyo` → `kima`（包名、CSS 变量、标签、class、导出、样式注入 id、脚本、测试、
+   README、docs、目录与压缩产物名）。
+2. **重做基础层**：M3 token（色/字/形状/层级/状态层/动效）+ 放大尺寸 + mixins + 字体接入。
+3. **逐组件重做**：现有 27 个组件是占位实现，要按新方向逐个重写（交互优先）。
+4. **弹层**：bottom sheet / 侧抽屉 + dialog。
+5. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
+
+### 复用旧资产时的注意
+
+- 旧组件已实现自动发现、Vue 导出、Web Components 注册、浏览器/SSR 测试这套**工程骨架可以直接留用**，
+  只改名即可。
+- `docs/reference.md` 是旧的 DMS 研究笔记，**已过时**，仅作历史参考，不再作为设计依据。
+
+## 设计参考
+
+- Material 3（Material You）—— 全局外观、交互与布局、动效：`https://m3.material.io`
+- Vaul —— 抽屉式弹层行为与聚焦：`https://vaul.emilkowal.ski`
+- Reka UI —— 交互与无障碍行为底座：`https://reka-ui.com`
+- Apple HIG —— 优雅感与决策突出（主操作填色 / 危险红 / 次要弱化）
+- Maple Mono —— 字体：`https://github.com/subframe7536/maple-font`（OFL 1.1）
