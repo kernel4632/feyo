@@ -58,7 +58,6 @@ const localValue = shallowRef(props.modelValue);
 const committedValue = shallowRef(props.modelValue);
 const localOpen = ref(props.open && !props.disabled);
 const baseId = `kima-combobox-${useId()}`;
-const labelId = `${baseId}-label`;
 const inputId = `${baseId}-input`;
 const listboxId = `${baseId}-listbox`;
 let ownerDocument;
@@ -288,10 +287,6 @@ onBeforeUnmount(() => {
     class="kima-combobox"
     :class="{ 'kima-combobox--open': localOpen, 'kima-combobox--disabled': disabled }"
   >
-    <label v-if="label" class="kima-combobox__label" :id="labelId" :for="inputId">
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </label>
-
     <div class="kima-combobox__control" :class="{ 'kima-combobox__control--clearable': canClear }">
       <KimaIcon v-if="searchable" class="kima-combobox__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
       <input
@@ -308,7 +303,7 @@ onBeforeUnmount(() => {
         :aria-controls="listboxId"
         aria-haspopup="listbox"
         aria-autocomplete="list"
-        :aria-labelledby="label ? labelId : undefined"
+        :aria-label="attrs['aria-label'] || attrs.ariaLabel || label || undefined"
         :aria-required="required || undefined"
         :aria-activedescendant="activeId"
         @focus="openCombobox"
@@ -349,7 +344,7 @@ onBeforeUnmount(() => {
     >
 
     <div v-if="localOpen" class="kima-combobox__popup">
-      <div :id="listboxId" class="kima-combobox__options" role="listbox" :aria-labelledby="label ? labelId : inputId">
+      <div :id="listboxId" class="kima-combobox__options" role="listbox" :aria-labelledby="inputId">
         <div
           v-for="(item, index) in visibleItems"
           :id="`${listboxId}-option-${index}`"
@@ -389,33 +384,37 @@ onBeforeUnmount(() => {
   font-family: var(--kima-font-family);
 }
 
-.kima-combobox__label {
-  color: var(--kima-color-on-surface-variant);
-  font-size: var(--kima-font-size-sm);
-  font-weight: var(--kima-font-weight-medium);
-}
-
+/* 控件是一档高度、圆角 M、半透明底，和文本框、选择器触发器完全一致，
+ * 这样并排摆放时几个输入控件顶边和底边都在同一条线上。 */
 .kima-combobox__control {
   position: relative;
   display: flex;
-  min-height: 42px;
+  height: var(--kima-field-height);
   align-items: center;
   border: 0;
-  border-radius: var(--kima-radius-sm);
+  border-radius: var(--kima-radius-m);
   background: var(--kima-color-layer-2);
-  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
 
+  /* 聚焦时底色升一档，再叠一圈主色。和文本框用同一种提示。 */
   &:focus-within,
   .kima-combobox--open & {
     background: var(--kima-color-layer-3);
+  }
+
+  &:focus-within {
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 }
 
 .kima-combobox__input {
   box-sizing: border-box;
   width: 100%;
-  min-height: 40px;
-  padding: 0 var(--kima-space-4);
+  height: 100%;
+  padding: 0 var(--kima-field-padding);
+  font-size: var(--kima-font-size-body-large);
   border: 0;
   border-radius: inherit;
   color: var(--kima-color-on-surface);
