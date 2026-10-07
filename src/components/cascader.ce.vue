@@ -400,9 +400,8 @@ onBeforeUnmount(() => {
   font-family: var(--kima-font-family);
 }
 /* 触发器和清除按钮在同一个容器里，清除按钮用绝对定位浮在触发器上方。
- * 不能用 flex 并排：kima-press 的弹簧回弹会让触发器的视觉盒子过冲，
- * 超出布局盒子几个像素，盖住旁边的清除按钮——移动端命中判定特别严格。
- * 绝对定位 + z-index 3 能保证清除按钮始终在触发器之上（跟 select 一致）。 */
+ * 跟 select / date-picker / time-picker 一样：z-index 3 保证它在状态层
+ * （触发器的子元素会被提到 z-index 2）之上，点得到。 */
 .kima-cascader__control {
   position: relative;
 }
@@ -429,11 +428,12 @@ onBeforeUnmount(() => {
     background-color var(--kima-duration-effects) var(--kima-curve-standard),
     box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
 
-  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪、按下回弹，四样齐。 */
+  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪，选择器只给这三样。
+   * 不接按下回弹：点它是"展开面板"，触发器要一直停在打开状态，
+   * 弹簧缩小再弹回的动势跟面板展开方向拧着，反而像点歪了。 */
   @include kima-state-layer;
   @include kima-focus-ring;
   @include kima-ripple-host;
-  @include kima-press;
 
   &:hover:not(:disabled),
   .kima-cascader--open & {
@@ -490,7 +490,7 @@ onBeforeUnmount(() => {
   position: absolute;
   z-index: 3;
   top: 50%;
-  right: 44px;
+  right: 52px;
   display: inline-flex;
   width: 28px;
   height: 28px;

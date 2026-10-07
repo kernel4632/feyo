@@ -387,11 +387,12 @@ onBeforeUnmount(() => {
     box-shadow var(--kima-duration-effects) var(--kima-curve-standard),
     opacity var(--kima-duration-effects) var(--kima-curve-standard);
 
-  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪、按下回弹，四样齐。 */
+  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪，选择器只给这三样。
+   * 不接按下回弹：点它是"展开面板"，触发器要一直停在打开状态，
+   * 弹簧缩小再弹回的动势跟面板展开方向拧着，反而像点歪了。 */
   @include kima-state-layer;
   @include kima-focus-ring;
   @include kima-ripple-host;
-  @include kima-press;
 
   &:hover:not(:disabled),
   .kima-select--open & {
