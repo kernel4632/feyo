@@ -7,7 +7,7 @@
 调用示例：
   <kima-text-field label="邮箱" name="email" required></kima-text-field>
   <kima-text-field v-model="password" type="password" clearable></kima-text-field>
-  <kima-text-field label="备注" size="large"></kima-text-field>
+  <kima-text-field label="备注" hint="最多 200 字"></kima-text-field>
 -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
@@ -51,10 +51,6 @@ const props = defineProps({
     default: "",
   },
   clearable: Boolean,
-  size: {
-    type: String,
-    default: "default",
-  },
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -71,7 +67,6 @@ let ownerDocument;
 const hintId = `kima-text-field-${baseId}-hint`;
 const errorId = `kima-text-field-${baseId}-error`;
 const hasError = computed(() => props.error.length > 0);
-const isLarge = computed(() => props.size === "large");
 const canClear = computed(
   () => props.clearable && localValue.value.length > 0 && !props.readonly,
 );
@@ -162,7 +157,6 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     class="kima-text-field"
     :class="[
       {
-        'kima-text-field--large': isLarge,
         'kima-text-field--error': hasError,
         'kima-text-field--disabled': disabled,
         'kima-text-field--readonly': readonly,
@@ -257,10 +251,6 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     transition:
       background-color var(--kima-duration-effects) var(--kima-curve-standard),
       box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
-  }
-
-  &--large &__control {
-    height: var(--kima-button-height-l);
   }
 
   &__control:focus-within {

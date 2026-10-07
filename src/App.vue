@@ -474,7 +474,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
               <kima-text-field v-model="email" type="email" placeholder="请输入邮箱" hint="用于接收通知" />
               <kima-text-field :model-value="'错误示例'" error="这个值不符合要求" />
               <kima-text-field v-model="password" type="password" placeholder="请输入密码" clearable />
-              <kima-text-field :model-value="''" size="large" placeholder="大号" />
+              <kima-text-field :model-value="''" hint="这段是说明文字" />
               <kima-text-field :model-value="'只读'" readonly />
             </div>
           </article>
