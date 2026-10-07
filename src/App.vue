@@ -468,32 +468,14 @@ const isFiltering = computed(() => query.value.trim().length > 0);
           <h2>表单输入</h2>
 
           <article v-show="visible('text-field', '文本框')" class="kima-gallery__demo">
-            <header><h3>TextField 文本框</h3><p>标签由页面自己排版（这里用原生 label 包住组件），组件只管输入。当前值：{{ textValue || "空" }}</p></header>
+            <header><h3>TextField 文本框</h3><p>组件只画输入区域本身。当前值：{{ textValue || "空" }}</p></header>
             <div class="kima-gallery__grid">
-              <label class="kima-gallery__field">
-                <span>昵称</span>
-                <kima-text-field v-model="textValue" placeholder="请输入昵称" clearable />
-              </label>
-              <label class="kima-gallery__field">
-                <span>邮箱</span>
-                <kima-text-field v-model="email" type="email" hint="用于接收通知" />
-              </label>
-              <label class="kima-gallery__field">
-                <span>错误状态</span>
-                <kima-text-field :model-value="'错误示例'" error="这个值不符合要求" />
-              </label>
-              <label class="kima-gallery__field">
-                <span>密码</span>
-                <kima-text-field v-model="password" type="password" placeholder="请输入密码" clearable />
-              </label>
-              <label class="kima-gallery__field">
-                <span>大号</span>
-                <kima-text-field :model-value="''" size="large" />
-              </label>
-              <label class="kima-gallery__field">
-                <span>只读</span>
-                <kima-text-field :model-value="'只读'" readonly />
-              </label>
+              <kima-text-field v-model="textValue" placeholder="请输入昵称" clearable />
+              <kima-text-field v-model="email" type="email" placeholder="请输入邮箱" hint="用于接收通知" />
+              <kima-text-field :model-value="'错误示例'" error="这个值不符合要求" />
+              <kima-text-field v-model="password" type="password" placeholder="请输入密码" clearable />
+              <kima-text-field :model-value="''" size="large" placeholder="大号" />
+              <kima-text-field :model-value="'只读'" readonly />
             </div>
           </article>
 
@@ -993,19 +975,6 @@ const isFiltering = computed(() => query.value.trim().length > 0);
     gap: var(--kima-space-4);
   }
 
-  /* 文本框不带标签，这里演示"页面自己组合"：一行普通文字配一个输入框。
-   * 文字的缩进和输入框内边距用同一个变量，两行就自动落在同一条竖线上。 */
-  &__field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--kima-space-1);
-    color: var(--kima-color-on-surface-variant);
-    font-size: var(--kima-font-size-label-medium);
-
-    > span {
-      padding-inline: var(--kima-field-padding);
-    }
-  }
 
   &__row-index {
     display: inline-block;
