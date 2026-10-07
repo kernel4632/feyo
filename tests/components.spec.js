@@ -706,7 +706,8 @@ test("IDs stay unique across elements, updates and disconnect/reconnect", async 
   });
   const after = await page.locator("[id]").evaluateAll((nodes) => nodes.map((node) => node.id));
   expect([...after].sort()).toEqual([...before].sort());
-  expect(await page.locator("#one .kima-select__trigger").getAttribute("aria-labelledby")).toBe(await page.locator("#one .kima-select__label").getAttribute("id"));
+  // 选择器不画可见标签（跟文本框一致）：label 属性只作可访问名，落在触发器的 aria-label 上。
+  expect(await page.locator("#one .kima-select__trigger").getAttribute("aria-label")).toBe("Changed");
 });
 
 test("virtual scroll renders a window, scrolls rows and selects with Home End Enter", async ({ page }) => {

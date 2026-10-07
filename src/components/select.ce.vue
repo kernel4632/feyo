@@ -13,6 +13,7 @@ form.reset() 恢复挂载时的 modelValue；清除选择返回 null，必填时
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useHost, useId, getCurrentInstance, watch } from "vue";
 import KimaIcon from "./icon.ce.vue";
 import { ArrowDown01Icon, Cancel01Icon, Search01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 const attrs = useAttrs();
@@ -47,6 +48,8 @@ const emit = defineEmits(["update:modelValue", "change", "update:open"]);
 
 const root = ref(null);
 const trigger = ref(null);
+// 触发器跟按钮一样是"点得动的东西"，按下时从指针位置长出涟漪。
+useRipple(trigger);
 const searchInput = ref(null);
 const nativeSelect = ref(null);
 const optionElements = ref([]);
@@ -61,11 +64,13 @@ let initialValue;
 let resetTimer;
 let restoreFocus = true;
 const baseId = useId();
-const labelId = `kima-select-${baseId}-label`;
 const triggerId = `kima-select-${baseId}-trigger`;
 const listboxId = `kima-select-${baseId}-listbox`;
 const hiddenSelectId = `kima-select-${baseId}-native`;
 
+// 跟文本框同一套做法：组件不画标签，可访问名取调用方的 aria-label，其次 label 属性。
+// 可见的「国家」两个字由使用者自己用普通排版文字写在自己的布局里。
+const ariaLabel = computed(() => attrs["aria-label"] || attrs.ariaLabel || props.label || undefined);
 const visibleItems = computed(() => {
   const text = query.value.trim().toLocaleLowerCase();
   if (!text) return props.items;
@@ -228,10 +233,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="kima-select" :class="{ 'kima-select--open': localOpen, 'kima-select--disabled': disabled }">
-    <span v-if="label" :id="labelId" class="kima-select__label">
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </span>
-
     <div class="kima-select__control" :class="{ 'kima-select__control--clearable': clearable && selectedItem }">
       <button
         :id="triggerId"
@@ -243,7 +244,7 @@ onBeforeUnmount(() => {
         :aria-expanded="localOpen"
         :aria-controls="listboxId"
         aria-haspopup="listbox"
-        :aria-labelledby="label ? labelId : undefined"
+        :aria-label="ariaLabel"
         :aria-required="required || undefined"
         :aria-activedescendant="searchable ? undefined : activeId"
         @click="toggleSelect"
@@ -316,7 +317,7 @@ onBeforeUnmount(() => {
         >
       </div>
 
-      <div :id="listboxId" class="kima-select__options" role="listbox" :aria-labelledby="label ? labelId : triggerId">
+      <div :id="listboxId" class="kima-select__options" role="listbox" :aria-labelledby="triggerId">
         <div
           v-for="(item, index) in visibleItems"
           :id="`${listboxId}-option-${index}`"
@@ -343,6 +344,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .kima-select {
   position: relative;
   display: inline-flex;
@@ -355,44 +358,55 @@ onBeforeUnmount(() => {
   font-family: var(--kima-font-family);
 }
 
-.kima-select__label {
-  color: var(--kima-color-on-surface-variant);
-  font-size: var(--kima-font-size-sm);
-  font-weight: var(--kima-font-weight-medium);
-}
-
 .kima-select__control {
   position: relative;
   display: flex;
-  min-height: 42px;
 }
 
+/* 触发器跟文本框是同一类东西，就长成同一个样子：
+ * 一档高度、圆角 M、半透明底，聚焦时叠一圈主色。这样并列摆放时不会一高一矮。 */
 .kima-select__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
-  min-height: 42px;
+  height: var(--kima-field-height);
   align-items: center;
   justify-content: space-between;
   gap: var(--kima-space-3);
-  padding: 0 var(--kima-space-4);
+  padding: 0 var(--kima-field-padding);
   border: 0;
-  border-radius: var(--kima-radius-sm);
+  border-radius: var(--kima-radius-m);
   color: var(--kima-color-on-surface);
   background: var(--kima-color-layer-2);
   font: inherit;
+  font-size: var(--kima-font-size-body-large);
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard),
+    opacity var(--kima-duration-effects) var(--kima-curve-standard);
+
+  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪、按下回弹，四样齐。 */
+  @include kima-state-layer;
+  @include kima-focus-ring;
+  @include kima-ripple-host;
+  @include kima-press;
 
   &:hover:not(:disabled),
   .kima-select--open & {
     background: var(--kima-color-layer-3);
   }
 
+  /* 打开的下拉仍要有"我停在这个框上"的提示，但不用第二圈线：
+   * 底色已经升了一档，这就够了。 */
   &:focus-visible {
-    outline: 2px solid var(--kima-color-primary);
-    outline-offset: 2px;
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
+  }
+
+  /* 弹出面板打开时焦点在搜索框里，触发器的焦点环要留给键盘操作本身。 */
+  .kima-select--open &:focus-visible {
+    box-shadow: none;
   }
 
   &:disabled {
@@ -402,12 +416,14 @@ onBeforeUnmount(() => {
 }
 
 .kima-select__control--clearable .kima-select__trigger {
-  padding-right: 72px;
+  padding-right: 84px;
 }
 
+/* 有清除按钮时，箭头钉在右内边距上（和没有清除按钮时同一个位置），
+ * 清除按钮再往左让开一档，两个图标之间才不会贴在一起。 */
 .kima-select__control--clearable .kima-select__arrow {
   position: absolute;
-  right: var(--kima-space-4);
+  right: var(--kima-field-padding);
 }
 
 .kima-select__trigger-label {
@@ -435,7 +451,7 @@ onBeforeUnmount(() => {
 .kima-select__clear {
   position: absolute;
   top: 50%;
-  right: 36px;
+  right: 52px;
   display: inline-flex;
   width: 28px;
   height: 28px;
@@ -512,20 +528,20 @@ onBeforeUnmount(() => {
 .kima-select__search {
   box-sizing: border-box;
   width: 100%;
-  min-height: 40px;
+  min-height: var(--kima-touch-target);
   padding: 0 var(--kima-space-3) 0 40px;
   border: 0;
-  border-radius: var(--kima-radius-sm);
+  border-radius: var(--kima-radius-m);
   color: var(--kima-color-on-surface);
-  /* 搜索框在弹层里，弹层已经是 alpha 层，这里不再叠底色。 */
-  background: var(--kima-color-transparent);
+  /* 搜索框跟页面里的输入框同一个做法：靠底色认出来，聚焦时叠一圈主色，
+   * 不画描边。弹层是实色底，叠一层半透明的 on-surface 就看得出来。 */
+  background: var(--kima-color-layer-2);
   font: inherit;
-  outline: none;
   outline: none;
 
   &:focus {
-    outline: 2px solid var(--kima-color-primary);
-    outline-offset: 1px;
+    background: var(--kima-color-layer-3);
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 }
 
