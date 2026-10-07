@@ -13,6 +13,7 @@ Vue 用 v-model 和 v-model:open 同步状态；原生 HTML 直接写属性即�
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useHost, useId, watch } from "vue";
 import KimaIcon from "./icon.ce.vue";
 import { ArrowLeft01Icon, ArrowRight01Icon, Calendar01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 const attrs = useAttrs();
@@ -76,6 +77,8 @@ const emit = defineEmits(["update:modelValue", "change", "update:open"]);
 const root = ref(null);
 const trigger = ref(null);
 const nativeInput = ref(null);
+// 触发器是"点得动的东西"，按下时从指针位置长出涟漪。
+useRipple(trigger);
 const localValue = ref(props.modelValue);
 const localOpen = ref(false);
 const viewYear = ref(new Date().getFullYear());
@@ -86,7 +89,6 @@ let ownerDocument;
 let initialValue;
 
 const baseId = `kima-date-picker-${useId()}`;
-const labelId = `${baseId}-label`;
 const triggerId = `${baseId}-trigger`;
 const gridId = `${baseId}-grid`;
 const titleId = `${baseId}-title`;
@@ -352,10 +354,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="kima-date-picker" :class="{ 'kima-date-picker--open': localOpen, 'kima-date-picker--disabled': disabled }">
-    <span v-if="label" :id="labelId" class="kima-date-picker__label">
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </span>
-
     <div class="kima-date-picker__control" :class="{ 'kima-date-picker__control--clearable': clearable && localValue }">
       <button
         :id="triggerId"
@@ -366,8 +364,7 @@ onBeforeUnmount(() => {
         aria-haspopup="grid"
         :aria-expanded="localOpen"
         :aria-controls="gridId"
-        :aria-labelledby="label ? labelId : undefined"
-        :aria-label="label ? undefined : placeholder"
+        :aria-label="attrs['aria-label'] || attrs.ariaLabel || label || placeholder"
         :aria-required="required || undefined"
         :disabled="disabled"
         @click="toggleCalendar"
@@ -472,6 +469,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .kima-date-picker {
   position: relative;
   display: inline-flex;
@@ -484,44 +483,48 @@ onBeforeUnmount(() => {
   font-family: var(--kima-font-family);
 }
 
-.kima-date-picker__label {
-  color: var(--kima-color-on-surface-variant);
-  font-size: var(--kima-font-size-sm);
-  font-weight: var(--kima-font-weight-medium);
-}
-
 .kima-date-picker__control {
   position: relative;
   display: flex;
-  min-height: 42px;
 }
 
+/* 触发器跟文本框、选择器、组合框是同一类东西，就长成同一个样子：
+ * 一档高度、圆角 M、半透明底，聚焦时叠一圈主色。 */
 .kima-date-picker__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
-  min-height: 42px;
+  height: var(--kima-field-height);
   align-items: center;
   justify-content: space-between;
   gap: var(--kima-space-3);
-  padding: 0 var(--kima-space-4);
+  padding: 0 var(--kima-field-padding);
   border: 0;
-  border-radius: var(--kima-radius-sm);
+  border-radius: var(--kima-radius-m);
   color: var(--kima-color-on-surface);
   background: var(--kima-color-layer-2);
   font: inherit;
+  font-size: var(--kima-font-size-body-large);
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
+
+  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪、按下回弹，四样齐。 */
+  @include kima-state-layer;
+  @include kima-focus-ring;
+  @include kima-ripple-host;
+  @include kima-press;
 
   &:hover:not(:disabled),
   .kima-date-picker--open & {
     background: var(--kima-color-layer-3);
   }
 
+  /* 打开日历时焦点在网格里，触发器不用再画第二圈线。 */
   &:focus-visible {
-    outline: 2px solid var(--kima-color-primary);
-    outline-offset: 2px;
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 
   &:disabled {

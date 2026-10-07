@@ -9,6 +9,7 @@ modelValue 是 HH:mm 或 null；min、max 是同样格式，step 是分钟间隔
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useHost, useId, watch } from "vue";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -64,6 +65,8 @@ const forwardedAttrs = computed(() => host ? { ...attrs, id: undefined } : attrs
 const root = ref(null);
 const trigger = ref(null);
 const nativeInput = ref(null);
+// 触发器是"点得动的东西"，按下时从指针位置长出涟漪。
+useRipple(trigger);
 const optionElements = ref({ hour: [], minute: [], period: [] });
 const localValue = ref(props.modelValue);
 const localOpen = ref(false);
@@ -78,7 +81,6 @@ let initialValue;
 let resetTimer;
 
 const baseId = `kima-time-picker-${useId()}`;
-const labelId = `${baseId}-label`;
 const triggerId = `${baseId}-trigger`;
 const popupId = `${baseId}-popup`;
 const hourListId = `${baseId}-hours`;
@@ -414,10 +416,6 @@ onBeforeUnmount(() => {
     class="kima-time-picker"
     :class="{ 'kima-time-picker--open': localOpen, 'kima-time-picker--disabled': disabled }"
   >
-    <span v-if="label" :id="labelId" class="kima-time-picker__label">
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </span>
-
     <div class="kima-time-picker__control" :class="{ 'kima-time-picker__control--clearable': clearable && localValue }">
       <button
         :id="triggerId"
@@ -428,8 +426,7 @@ onBeforeUnmount(() => {
         aria-haspopup="dialog"
         :aria-expanded="localOpen"
         :aria-controls="popupId"
-        :aria-labelledby="label ? labelId : undefined"
-        :aria-label="label ? undefined : placeholder"
+        :aria-label="attrs['aria-label'] || attrs.ariaLabel || label || placeholder"
         :aria-required="required || undefined"
         :disabled="disabled"
         @click="togglePicker"
@@ -543,6 +540,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .kima-time-picker {
   position: relative;
   display: inline-flex;
@@ -556,7 +555,7 @@ onBeforeUnmount(() => {
   font-size: var(--kima-font-size-md);
 }
 
-.kima-time-picker__label,
+/* 弹层里每一列的标题（时/分）：它标注的是下面那列数字，属于控件造型，留着。 */
 .kima-time-picker__column-label {
   color: var(--kima-color-on-surface-variant);
   font-size: var(--kima-font-size-sm);
@@ -566,26 +565,35 @@ onBeforeUnmount(() => {
 .kima-time-picker__control {
   position: relative;
   display: flex;
-  min-height: 42px;
 }
 
+/* 触发器跟文本框、选择器、组合框、日期选择器统一：一档高度、圆角 M、半透明底。 */
 .kima-time-picker__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
-  min-height: 42px;
+  height: var(--kima-field-height);
   align-items: center;
   justify-content: space-between;
   gap: var(--kima-space-3);
-  padding: 0 var(--kima-space-4);
+  padding: 0 var(--kima-field-padding);
   border: 0;
-  border-radius: var(--kima-radius-sm);
+  border-radius: var(--kima-radius-m);
   color: var(--kima-color-on-surface);
   background: var(--kima-color-layer-2);
   font: inherit;
+  font-size: var(--kima-font-size-body-large);
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
+
+  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪、按下回弹，四样齐。 */
+  @include kima-state-layer;
+  @include kima-focus-ring;
+  @include kima-ripple-host;
+  @include kima-press;
 
   &:hover:not(:disabled),
   .kima-time-picker--open & {
@@ -593,8 +601,7 @@ onBeforeUnmount(() => {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--kima-color-primary);
-    outline-offset: 2px;
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 
   &:disabled {
