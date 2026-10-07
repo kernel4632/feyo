@@ -89,18 +89,15 @@
  *
  * 两段速度刻意不一样：
  *   按下去 —— 60ms，几乎瞬时，手感和手指同步（长了会觉得"软"）。
- *   弹回来 —— 320ms + spring-snappy，过冲看得见，才有"弹"的感觉。
- * 回弹时长不能短：过冲需要时间展开，太快就被压平成一个普通的恢复动画了。
+ *   弹回来 —— 320ms + spring-gentle，平滑收回，末尾几乎没有过冲。
  *
- * 缩放幅度要按元素大小给，不能用同一个值：
- * 比例相同，大元素的边缘移动的绝对距离更大。按钮 48 高缩 6% 是 3px，
- * 卡片 200 高缩 6% 就是 12px——同样一个数字，卡片看起来会"猛"得多。
- * 所以默认给按钮那档，大块元素传自己的值：@include kima-press($scale: 0.98) */
+ * 幅度刻意做得小：默认缩 2%，48 高的按钮整体只缩不到 1px。
+ * 需要别的幅度时自己传：@include kima-press($scale: 0.99) */
 @mixin kima-press($scale: var(--kima-press-scale)) {
   --kima-press-here: #{$scale};
 
   transition:
-    transform 320ms var(--kima-spring-snappy),
+    transform 320ms var(--kima-spring-gentle),
     background-color var(--kima-duration-effects) var(--kima-curve-standard),
     color var(--kima-duration-effects) var(--kima-curve-standard);
 

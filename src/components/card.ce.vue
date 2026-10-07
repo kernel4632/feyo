@@ -113,7 +113,7 @@ function handleKeyup(event) {
     border-color var(--kima-duration-effects) var(--kima-curve-standard),
     box-shadow var(--kima-duration-effects) var(--kima-curve-standard),
     opacity var(--kima-duration-effects) var(--kima-curve-standard),
-    transform 320ms var(--kima-spring-snappy);
+    transform 320ms var(--kima-spring-gentle);
 }
 
 /* 描边卡片：透明底 + 一圈描边。线是这个变体的造型，不是用来分层次的。 */
@@ -135,9 +135,7 @@ function handleKeyup(event) {
   @include kima-state-layer;
   @include kima-focus-ring;
   @include kima-ripple-host;
-  /* 卡片比按钮大得多，用按钮那档幅度边缘会移动十几像素，看起来太猛。
-   * 缩 2% 在卡片上已经够表达"按下去了"。 */
-  @include kima-press(0.98);
+  @include kima-press;
 }
 
 /* 不可点击的卡片只是降低了存在感，不缩放（那会让人以为能点）。 */
