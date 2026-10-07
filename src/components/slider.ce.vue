@@ -1,7 +1,12 @@
 <!--
-滑块：保留原生 range 的键盘、拖动和表单能力，并采用 KIMA 参考结构的 16px 轨道与 4×28px 滑块。
+滑块：保留原生 range 的键盘、拖动和表单能力，轨道和手柄用 KIMA 的 token 画。
+组件不画标签（和文本框、选择器一致）：可见的「音量」由使用者自己排版，
+label 属性只落到内部 range 的 aria-label 上。
+show-value 显示的当前值属于控件自身状态，不是标签，仍然由组件画——
+它要跟着滑块一起动，交给外部排版就同步不上了。
 调用示例：
-  <kima-slider v-model="volume" label="音量" :show-value="true" name="volume" />
+  <kima-slider v-model="volume" label="音量" show-value name="volume"></kima-slider>
+  <kima-slider :model-value="25" :min="0" :max="50" label="范围"></kima-slider>
 -->
 <script setup>
 import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
@@ -91,22 +96,22 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     class="kima-slider"
     :class="{ 'kima-slider--disabled': disabled }"
   >
-    <span v-if="label || showValue" class="kima-slider__header">
-      <span v-if="label" class="kima-slider__label">{{ label }}</span>
-      <output v-if="showValue" class="kima-slider__value">{{ localValue }}</output>
+    <span v-if="showValue" class="kima-slider__header">
+      <output class="kima-slider__value">{{ localValue }}</output>
     </span>
-     <input
-       ref="input"
-       v-bind="forwardedAttrs"
+    <input
+      ref="input"
+      v-bind="forwardedAttrs"
       class="kima-slider__input"
       type="range"
       :value="localValue"
-       :min="sliderMin"
-       :max="sliderMax"
+      :min="sliderMin"
+      :max="sliderMax"
       :step="step"
       :disabled="disabled"
       :required="required"
       :name="name"
+      :aria-label="label || undefined"
       :style="{ '--kima-slider-fill': fill }"
       @input.stop="handleInput"
       @change.stop="handleChange"
@@ -120,40 +125,40 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   width: 100%;
   color: var(--kima-color-on-surface);
 
+  /* 当前值只在 show-value 时出现，贴在右上方。
+   * 它跟着滑块动，所以由组件画；左边留给使用者自己排的标签。 */
   &__header {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--kima-space-3);
-    margin-bottom: var(--kima-space-2);
-  }
-
-  &__label,
-  &__value {
-    color: var(--kima-color-on-surface);
-    line-height: 1.35;
+    justify-content: flex-end;
+    margin-bottom: var(--kima-space-1);
   }
 
   &__value {
     color: var(--kima-color-on-surface-variant);
+    font-size: var(--kima-font-size-label-large);
     font-variant-numeric: tabular-nums;
+    line-height: 1.35;
   }
 
   &__input {
-    /* DMS size s：轨道 24，滑块 36，圆角 8，控件高 = 滑块 36 + spacingXS 4。 */
+    /* 每一档颜色只在这里定义一次，轨道和手柄都引它，
+     * 禁用时只改这两个变量，不用给每一条伪元素各写一遍。 */
     --kima-slider-fill-color: var(--kima-color-primary);
     --kima-slider-track-color: var(--kima-color-track);
 
     display: block;
     width: 100%;
-    height: 40px;
+    /* 控件高 = 手柄 36 + 上下各留 2，保证手柄不贴到别人的边。 */
+    height: calc(var(--kima-slider-handle-height) + 4px);
     margin: 0;
     appearance: none;
     background: var(--kima-color-transparent);
     cursor: pointer;
 
+    /* 轨道是线：填充部分用主色，未填充部分是一层中性色。
+     * 这条线是滑块的造型本身，删了就看不出"能拖到哪"。 */
     &::-webkit-slider-runnable-track {
-      height: 24px;
+      height: var(--kima-slider-track-height);
       border-radius: var(--kima-radius-s);
       background: linear-gradient(
         to right,
@@ -162,11 +167,11 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       );
     }
 
-    /* DMS 滑块是 4px 宽的细竖条，高度 36。 */
+    /* 手柄是一根竖条，比轨道高，两端露出来才好抓。 */
     &::-webkit-slider-thumb {
-      width: 4px;
-      height: 36px;
-      margin-top: -6px;
+      width: var(--kima-slider-handle-width);
+      height: var(--kima-slider-handle-height);
+      margin-top: calc((var(--kima-slider-track-height) - var(--kima-slider-handle-height)) / 2);
       appearance: none;
       border: 0;
       border-radius: var(--kima-radius-full);
@@ -174,31 +179,32 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     }
 
     &::-moz-range-track {
-      height: 24px;
+      height: var(--kima-slider-track-height);
       border-radius: var(--kima-radius-s);
       background: var(--kima-slider-track-color);
     }
 
     &::-moz-range-progress {
-      height: 24px;
+      height: var(--kima-slider-track-height);
       border-radius: var(--kima-radius-s);
       background: var(--kima-slider-fill-color);
     }
 
     &::-moz-range-thumb {
-      width: 4px;
-      height: 36px;
+      width: var(--kima-slider-handle-width);
+      height: var(--kima-slider-handle-height);
       border: 0;
       border-radius: var(--kima-radius-full);
       background: var(--kima-slider-fill-color);
     }
 
+    /* 焦点环套在整个控件上，比只套 20px 高的轨道更容易被看见。 */
     &:focus-visible {
       outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
       outline-offset: var(--kima-focus-ring-offset);
     }
 
-    /* DMS 禁用：已填充 onSurface_38，未填充 onSurface_12。 */
+    /* 禁用：填充和未填充都降成中性灰，看起来像"这条现在不能动"。 */
     &:disabled {
       --kima-slider-fill-color: var(--kima-color-on-surface-38);
       --kima-slider-track-color: var(--kima-color-on-surface-12);
@@ -207,7 +213,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     }
   }
 
-  &--disabled &__label {
+  &--disabled &__value {
     color: var(--kima-color-on-surface-38);
   }
 }

@@ -502,6 +502,7 @@ const isFiltering = computed(() => query.value.trim().length > 0);
             <div class="kima-gallery__stack">
               <kima-slider v-model="volume" label="音量" show-value />
               <kima-slider :model-value="25" :min="0" :max="50" label="范围 0-50" show-value />
+              <kima-slider :model-value="60" label="禁用" disabled />
             </div>
           </article>
 
