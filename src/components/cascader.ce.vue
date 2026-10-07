@@ -11,6 +11,7 @@ Vue 用 v-model 和 v-model:open 同步状态；调用示例：
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useHost, useId, watch } from "vue";
 import KimaIcon from "./icon.ce.vue";
 import { ArrowDown01Icon, ArrowRight01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -46,13 +47,14 @@ const forwardedAttrs = computed(() => host ? { ...attrs, id: undefined } : attrs
 const root = ref(null);
 const trigger = ref(null);
 const nativeInput = ref(null);
+// 触发器是"点得动的东西"，按下时从指针位置长出涟漪。
+useRipple(trigger);
 const optionElements = ref([]);
 const localPath = shallowRef(Array.isArray(props.modelValue) ? [...props.modelValue] : []);
 const localOpen = ref(props.open && !props.disabled);
 const activeColumn = ref(0);
 const activeIndexes = ref([]);
 const baseId = `kima-cascader-${useId()}`;
-const labelId = `${baseId}-label`;
 const triggerId = `${baseId}-trigger`;
 const listboxId = `${baseId}-listbox`;
 const inputId = `${baseId}-native`;
@@ -304,10 +306,6 @@ onBeforeUnmount(() => {
     class="kima-cascader"
     :class="{ 'kima-cascader--open': localOpen, 'kima-cascader--disabled': disabled }"
   >
-    <span v-if="label" :id="labelId" class="kima-cascader__label">
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </span>
-
     <div class="kima-cascader__control" :class="{ 'kima-cascader__control--clearable': clearable && localPath.length }">
       <button
         :id="triggerId"
@@ -319,7 +317,7 @@ onBeforeUnmount(() => {
         :aria-expanded="localOpen"
         :aria-controls="listboxId"
         aria-haspopup="listbox"
-        :aria-labelledby="label ? labelId : undefined"
+        :aria-label="attrs['aria-label'] || attrs.ariaLabel || label || undefined"
         :aria-required="required || undefined"
         :aria-activedescendant="activeId"
         @click="toggleCascader"
@@ -359,7 +357,7 @@ onBeforeUnmount(() => {
       @invalid="handleInvalid"
     >
 
-    <div v-if="localOpen" :id="listboxId" class="kima-cascader__popup" role="group" :aria-labelledby="label ? labelId : triggerId" @keydown="handleKeydown">
+    <div v-if="localOpen" :id="listboxId" class="kima-cascader__popup" role="group" :aria-labelledby="triggerId" @keydown="handleKeydown">
       <div v-for="(items, column) in columns" :key="column" class="kima-cascader__column" role="listbox" :aria-label="`第 ${column + 1} 级`">
         <div
           v-for="(item, index) in items"
@@ -388,6 +386,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .kima-cascader {
   position: relative;
   display: inline-flex;
@@ -399,36 +399,41 @@ onBeforeUnmount(() => {
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
 }
-
-.kima-cascader__label {
-  color: var(--kima-color-on-surface-variant);
-  font-size: var(--kima-font-size-sm);
-  font-weight: var(--kima-font-weight-medium);
-}
-
+/* 触发器和清除按钮在同一个容器里，清除按钮用绝对定位浮在触发器上方。
+ * 不能用 flex 并排：kima-press 的弹簧回弹会让触发器的视觉盒子过冲，
+ * 超出布局盒子几个像素，盖住旁边的清除按钮——移动端命中判定特别严格。
+ * 绝对定位 + z-index 3 能保证清除按钮始终在触发器之上（跟 select 一致）。 */
 .kima-cascader__control {
   position: relative;
-  display: flex;
-  min-height: 42px;
 }
 
+/* 触发器跟文本框、选择器、组合框、日期与时间选择器统一：一档高度、圆角 M、半透明底。 */
 .kima-cascader__trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
-  min-height: 42px;
+  height: var(--kima-field-height);
   align-items: center;
   justify-content: space-between;
   gap: var(--kima-space-3);
-  padding: 0 var(--kima-space-4);
+  padding: 0 var(--kima-field-padding);
   border: 0;
-  border-radius: var(--kima-radius-sm);
+  border-radius: var(--kima-radius-m);
   color: var(--kima-color-on-surface);
   background: var(--kima-color-layer-2);
   font: inherit;
+  font-size: var(--kima-font-size-body-large);
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--kima-duration-fast) var(--kima-ease-standard), background-color var(--kima-duration-fast) var(--kima-ease-standard);
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
+
+  /* 点得动的东西都要有反馈：状态层、焦点环、涟漪、按下回弹，四样齐。 */
+  @include kima-state-layer;
+  @include kima-focus-ring;
+  @include kima-ripple-host;
+  @include kima-press;
 
   &:hover:not(:disabled),
   .kima-cascader--open & {
@@ -436,8 +441,7 @@ onBeforeUnmount(() => {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--kima-color-primary);
-    outline-offset: 2px;
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 
   &:disabled {
@@ -446,15 +450,12 @@ onBeforeUnmount(() => {
   }
 }
 
-.kima-cascader__control--clearable .kima-cascader__trigger {
-  padding-right: 72px;
-}
-
 .kima-cascader__trigger-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .kima-cascader__trigger-label--placeholder {
@@ -464,6 +465,7 @@ onBeforeUnmount(() => {
 .kima-cascader__arrow {
   flex: 0 0 auto;
   color: var(--kima-color-on-surface-variant);
+  pointer-events: none;
   transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
 }
 
@@ -471,10 +473,24 @@ onBeforeUnmount(() => {
   transform: rotate(180deg);
 }
 
+/* 有清除按钮时，触发器右侧让出空间：箭头 20 + clear 28 + 间距 ≈ 84px。 */
+.kima-cascader__control--clearable .kima-cascader__trigger {
+  padding-right: 84px;
+}
+
+/* 有清除按钮时，箭头钉在右侧固定位置，不被 padding-right 推走。 */
+.kima-cascader__control--clearable .kima-cascader__arrow {
+  position: absolute;
+  right: var(--kima-field-padding);
+}
+
+/* 清除按钮压在触发器之上：它俩是兄弟关系，但触发器里的文字和箭头
+ * 会被状态层提到 z-index 2，清除按钮不站出来就会被盖住点不到。 */
 .kima-cascader__clear {
   position: absolute;
+  z-index: 3;
   top: 50%;
-  right: 36px;
+  right: 44px;
   display: inline-flex;
   width: 28px;
   height: 28px;

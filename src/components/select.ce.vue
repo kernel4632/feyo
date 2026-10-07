@@ -448,8 +448,11 @@ onBeforeUnmount(() => {
   transform: rotate(180deg);
 }
 
+/* 清除按钮压在触发器之上：它俩是并列关系，但触发器里的文字和箭头
+ * 会被状态层提到 z-index 2，清除按钮不站出来就会被盖住点不到。 */
 .kima-select__clear {
   position: absolute;
+  z-index: 3;
   top: 50%;
   right: 52px;
   display: inline-flex;

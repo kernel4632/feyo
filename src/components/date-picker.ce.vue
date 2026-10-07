@@ -553,8 +553,11 @@ onBeforeUnmount(() => {
   color: var(--kima-color-on-surface-variant);
 }
 
+/* 清除按钮压在触发器之上：它俩是并列关系，但触发器里的文字和图标
+ * 会被状态层提到 z-index 2，清除按钮不站出来就会被盖住点不到。 */
 .kima-date-picker__clear {
   position: absolute;
+  z-index: 3;
   top: 50%;
   right: 36px;
   display: inline-flex;

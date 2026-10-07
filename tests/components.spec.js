@@ -820,7 +820,12 @@ test("cascader selects a path across columns, clears and resets its last form va
   expect(await page.evaluate(() => new FormData(document.getElementById("form")).get("category"))).toBe("android");
   expect(await idsAreUnique()).toBe(true);
 
-  await cascader.getByRole("button", { name: "清除选择", exact: true }).click();
+  // 清除按钮是选完最后一级才出现的：等弹层关掉、按钮稳定下来再点，
+  // 否则会在它刚插入、还在做过渡的时候去点，移动端命中判定会失败。
+  await expect(cascader.locator(".kima-cascader__popup")).toHaveCount(0);
+  const clearButton = cascader.getByRole("button", { name: "清除选择", exact: true });
+  await expect(clearButton).toBeVisible();
+  await clearButton.click();
   await expect(native).toHaveValue("");
   await expect(trigger).toContainText("请选择");
   expect(await native.evaluate((element) => element.validity.valueMissing)).toBe(true);
