@@ -284,6 +284,10 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
   color: var(--kima-color-on-surface);
   cursor: pointer;
   contain: layout paint;
+  /* 悬停/高亮是"亮起来"，得看得见过程：底色和文字色都过渡，不瞬切。 */
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:hover,
   &--active {
@@ -303,6 +307,10 @@ onBeforeUnmount(() => resizeObserver?.disconnect());
 @media (prefers-reduced-motion: reduce) {
   .kima-virtual-scroll {
     scroll-behavior: auto;
+  }
+
+  .kima-virtual-scroll__item {
+    transition: none;
   }
 }
 </style>

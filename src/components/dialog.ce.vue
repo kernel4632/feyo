@@ -152,11 +152,39 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   place-items: center;
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
+  /* 原生 dialog 的开关是 display 切换，普通 transition 追不到；
+   * 用 @starting-style + allow-discrete 才能让"打开"这一帧也有过渡。 */
+  transition:
+    opacity var(--kima-duration-medium) var(--kima-curve-emphasized),
+    display var(--kima-duration-medium) allow-discrete,
+    overlay var(--kima-duration-medium) allow-discrete;
 
   &[open] { display: grid; }
 
   &::backdrop {
     background: color-mix(in srgb, var(--kima-color-surface) 72%, var(--kima-color-transparent));
+    /* 遮罩也是"出现/消失"的一部分，根面板同一条曲线、同一时长。 */
+    transition:
+      background-color var(--kima-duration-medium) var(--kima-curve-emphasized),
+      opacity var(--kima-duration-medium) var(--kima-curve-emphasized);
+    opacity: 1;
+  }
+
+  /* 打开前的起点：面板和遮罩都从透明开始。 */
+  @starting-style {
+    &[open] {
+      opacity: 0;
+    }
+
+    &[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* 关闭（open 属性被移除）时，display 会立刻变 none；
+   * 这条把关闭也纳入离散过渡，面板有机会淡出。 */
+  &:not([open]) {
+    opacity: 0;
   }
 }
 
@@ -183,7 +211,15 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   box-shadow: var(--kima-elevation-4);
   outline: none;
   pointer-events: auto;
-  animation: kima-dialog-enter var(--kima-duration-normal) var(--kima-ease-emphasized);
+  /* 面板自己再给一点缩放：整层淡入 + 面板轻微放大，比只淡入更像"弹出来"。 */
+  transition:
+    opacity var(--kima-duration-medium) var(--kima-curve-emphasized),
+    scale var(--kima-duration-medium) var(--kima-curve-emphasized);
+
+  @starting-style {
+    opacity: 0;
+    scale: 0.96;
+  }
 
   &--small {
     max-width: 420px;
@@ -238,6 +274,10 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   color: var(--kima-color-on-surface-variant);
   background: var(--kima-color-transparent);
   cursor: pointer;
+  /* 关闭按钮是"亮起来"的反馈，要看得见过程。 */
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
 }
 
 .kima-dialog__close:hover {
@@ -270,14 +310,11 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   margin-top: var(--kima-space-6);
 }
 
-@keyframes kima-dialog-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+@media (prefers-reduced-motion: reduce) {
+  .kima-dialog,
+  .kima-dialog::backdrop,
+  .kima-dialog__panel {
+    transition-duration: 1ms;
   }
 }
 

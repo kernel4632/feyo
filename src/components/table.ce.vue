@@ -304,6 +304,8 @@ tbody tr {
   font: inherit;
   letter-spacing: 0;
   cursor: pointer;
+  /* 悬停是"亮起来"的反馈，要看得见过程。 */
+  transition: color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:hover:not(:disabled) {
     color: var(--kima-color-primary);

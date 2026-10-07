@@ -590,6 +590,9 @@ test("notification timeout, hover and focus use remaining time", async ({ page }
   await page.clock.runFor(699);
   await expect(notice).toBeVisible();
   await page.clock.runFor(1);
+  // 隐藏前要多推一段：离场过渡由 rAF 推进，时钟被 pausAt 冻结时不推它就不会播完，
+  // 元素要等过渡结束才真的 display: none。100ms 是退场时长。
+  await page.clock.runFor(200);
   await expect(notice).toBeHidden();
   expect((await events(page, "notice", "close"))[0].detail).toEqual(["timeout"]);
   await page.clock.runFor(2000);
@@ -609,6 +612,8 @@ test("notification duration changes, zero, reopen and unmount clean up timers", 
   await page.clock.runFor(499);
   await expect(page.locator("#notice .kima-notification")).toBeVisible();
   await page.clock.runFor(1);
+  // 同上：多推一段让离场过渡播完，元素才真的隐藏。
+  await page.clock.runFor(200);
   await expect(page.locator("#notice .kima-notification")).toBeHidden();
   await page.evaluate(() => { const notice = document.getElementById("notice"); notice.open = false; });
   await page.evaluate(() => { document.getElementById("notice").open = true; });

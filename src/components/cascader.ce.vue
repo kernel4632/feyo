@@ -357,32 +357,34 @@ onBeforeUnmount(() => {
       @change.stop
       @invalid="handleInvalid"
     >
-
-    <div v-if="localOpen" :id="listboxId" class="kima-cascader__popup" role="group" :aria-labelledby="triggerId" @keydown="handleKeydown">
-      <div v-for="(items, column) in columns" :key="column" class="kima-cascader__column" role="listbox" :aria-label="`第 ${column + 1} 级`">
-        <div
-          v-for="(item, index) in items"
-          :id="`${listboxId}-${column}-option-${index}`"
-          :key="index"
-          :ref="(element) => setOptionRef(element, column, index)"
-          class="kima-cascader__option"
-          :class="{
-            'kima-cascader__option--active': column === activeColumn && index === activeIndexes[column],
-            'kima-cascader__option--selected': Object.is(item.value, localPath[column]),
-          }"
-          role="option"
-          :aria-selected="Object.is(item.value, localPath[column])"
-          :aria-disabled="item.disabled || undefined"
-          tabindex="-1"
-          @pointerdown.prevent
-          @click="selectItem(item, column)"
-        >
-          <span class="kima-cascader__option-label">{{ item.label }}</span>
-          <KimaIcon v-if="Array.isArray(item.children) && item.children.length" :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
+    <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+    <Transition name="kima-popup">
+      <div v-if="localOpen" :id="listboxId" class="kima-cascader__popup" role="group" :aria-labelledby="triggerId" @keydown="handleKeydown">
+        <div v-for="(items, column) in columns" :key="column" class="kima-cascader__column" role="listbox" :aria-label="`第 ${column + 1} 级`">
+          <div
+            v-for="(item, index) in items"
+            :id="`${listboxId}-${column}-option-${index}`"
+            :key="index"
+            :ref="(element) => setOptionRef(element, column, index)"
+            class="kima-cascader__option"
+            :class="{
+              'kima-cascader__option--active': column === activeColumn && index === activeIndexes[column],
+              'kima-cascader__option--selected': Object.is(item.value, localPath[column]),
+            }"
+            role="option"
+            :aria-selected="Object.is(item.value, localPath[column])"
+            :aria-disabled="item.disabled || undefined"
+            tabindex="-1"
+            @pointerdown.prevent
+            @click="selectItem(item, column)"
+          >
+            <span class="kima-cascader__option-label">{{ item.label }}</span>
+            <KimaIcon v-if="Array.isArray(item.children) && item.children.length" :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
+          </div>
+          <div v-if="items.length === 0" class="kima-cascader__empty" role="status">暂无选项</div>
         </div>
-        <div v-if="items.length === 0" class="kima-cascader__empty" role="status">暂无选项</div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -556,7 +558,6 @@ onBeforeUnmount(() => {
   /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
   background: var(--kima-color-popup);
   box-shadow: var(--kima-elevation-3);
-  animation: kima-cascader-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
 .kima-cascader__column {
@@ -583,6 +584,10 @@ onBeforeUnmount(() => {
   border-radius: var(--kima-radius-sm);
   color: var(--kima-color-on-surface);
   cursor: pointer;
+  /* 悬停/高亮是"亮起来"，得看得见过程：底色和文字色都过渡，不瞬切。 */
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:hover,
   &--active {
@@ -642,23 +647,9 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kima-cascader__trigger,
   .kima-cascader__arrow,
-  .kima-cascader__popup {
+  .kima-cascader__option {
     transition: none;
-    animation: none;
-  }
-}
-
-@keyframes kima-cascader-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 </style>

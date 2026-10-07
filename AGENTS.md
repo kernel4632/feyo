@@ -146,14 +146,28 @@ pnpm test:ssr    # SSR 测试
 2. ✅ **重做基础层**：M3 token（色/字/形状/层级/状态层/动效）+ 放大尺寸 + mixins + 字体接入。
    色板由 `src/utils/theme.js` 定义（唯一来源），`scripts/palette.js` 用它生成
    `src/styles/_palette.scss` 作为首屏默认色；运行时换色用 `applyPalette()`，不用重新构建。
-   交互反馈：状态层 + 焦点环 + 涟漪 + 按下回弹，都在 `_mixins.scss` 里共用。
    图标统一走 `src/components/icon.ce.vue`（线宽 `iconStrokeWidth`，配 `absolute-stroke-width`）。
-3. **逐组件重做**：现有 28 个组件是占位实现，要按新方向逐个重写（交互优先）。
-   已接上完整交互反馈（状态层 + 涟漪 + 回弹）的只有 4 个：`button`、`icon-button`、
-   `button-group`（无回弹：多段一起缩放会破坏整条的连续性）、`card`。
-   **其余 24 个重做时都要补上这三种反馈**，别只做外观。
-4. **弹层**：bottom sheet / 侧抽屉 + dialog。
-5. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
+3. ✅ **逐组件重做**：28 个组件全部按新方向重写。交互反馈的分配规则：
+   - **按钮类**（`button`、`icon-button`）：状态层 + 焦点环 + 涟漪 + 按下回弹（幅度 2%，几乎看不出）。
+   - `button-group` / `card`：状态层 + 焦点环 + 涟漪；卡片回弹与按钮同档。
+   - **字段类**（`text-field`、`select`、`combobox`、`cascader`、`date-picker`、`time-picker`）：
+     控件是一整块"场地"，触发器 / 图标 / 清除按钮都是场地的排版项，flex 自动排位置，
+     **不用绝对定位**（`kima-press` 的过冲会把并排的清除按钮挤出可点范围）。
+     反馈只有状态层 + 焦点环 + 涟漪；不接按下回弹——点它是"展开面板"，弹回跟展开方向拧着。
+   - **选项行**（下拉、菜单、时间列、树、虚拟滚动、表格行）：悬停/高亮只变底色 + 文字色，
+     走 `--kima-duration-effects` 过渡，不瞬切；不做按下缩放（一行缩起来会把整列排布弄乱）。
+   - **选中态配色**：容器色底必须配 `on-*-container` 文字（`primary-container` +
+     `on-primary-container`），悬停时底色从容器色派生（`--kima-color-primary-container-hover`），
+     不能落回通用 `layer-3`——那会把配对拆开，深色主题下成黑字压深底。
+4. ✅ **弹层**：全部弹层（下拉 / 菜单 / 日期 / 时间 / 提示 / 通知 / 对话框 / 级联）共用同一套
+   进出场过渡 `.kima-popup-enter/leave-*`，定义在 `_tokens.scss`（唯一全库原样输出、
+   不被 scoped 加 data-v 的文件）。模板套 `<Transition name="kima-popup">` 即生效；
+   原生 dialog 用 `@starting-style` + `allow-discrete`。加新弹层不用写动画。
+5. ✅ **滚动条**：`_tokens.scss` 里按 `[class^="kima-"]` 前缀的一次全局规则 + 两个派生 token
+   （`--kima-color-scrollbar-thumb` / `-hover`）。任何 kima 容器自己会滚就是细圆棒样式，
+   新组件零配置，宿主页面的滚动条不动。
+6. **下一步**：bottom sheet / 侧抽屉（Vaul 式）。
+7. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
 
 ### 复用旧资产时的注意
 

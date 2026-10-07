@@ -256,63 +256,66 @@ onBeforeUnmount(() => {
       <KimaIcon class="kima-menu__trigger-icon" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
     </button>
 
-    <div
-      v-if="localOpen"
-      ref="menuPanel"
-      :id="menuId"
-      class="kima-menu__popup"
-      :class="`kima-menu__popup--${menuPlacement}`"
-      role="menu"
-      tabindex="-1"
-      :aria-labelledby="triggerId"
-      @keydown="handleMenuKeydown"
-    >
-      <div v-if="searchable" class="kima-menu__search-wrap">
-        <KimaIcon class="kima-menu__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
-        <input
-          ref="searchInput"
-          v-model="query"
-          class="kima-menu__search"
-          type="search"
-          role="searchbox"
-          aria-label="搜索菜单项"
-          :aria-controls="menuId"
-          @input.stop
-          @change.stop
-          @keydown.stop="handleMenuKeydown"
-        >
-      </div>
+    <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+    <Transition name="kima-popup">
+      <div
+        v-if="localOpen"
+        ref="menuPanel"
+        :id="menuId"
+        class="kima-menu__popup"
+        :class="`kima-menu__popup--${menuPlacement}`"
+        role="menu"
+        tabindex="-1"
+        :aria-labelledby="triggerId"
+        @keydown="handleMenuKeydown"
+      >
+        <div v-if="searchable" class="kima-menu__search-wrap">
+          <KimaIcon class="kima-menu__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
+          <input
+            ref="searchInput"
+            v-model="query"
+            class="kima-menu__search"
+            type="search"
+            role="searchbox"
+            aria-label="搜索菜单项"
+            :aria-controls="menuId"
+            @input.stop
+            @change.stop
+            @keydown.stop="handleMenuKeydown"
+          >
+        </div>
 
-      <div class="kima-menu__items">
-        <button
-          v-for="(item, index) in visibleItems"
-          :key="index"
-          :ref="(element) => setItemRef(element, index)"
-          class="kima-menu__item"
-          type="button"
-          role="menuitemradio"
-          :disabled="item.disabled"
-          :aria-disabled="item.disabled || undefined"
-          :aria-checked="Object.is(item.value, localValue)"
-          :tabindex="index === activeIndex ? 0 : -1"
-          @click="selectItem(item)"
-          @focus="activeIndex = index"
-        >
-          <span class="kima-menu__item-copy">
-            <span class="kima-menu__item-label">{{ item.label }}</span>
-            <span v-if="item.description" class="kima-menu__item-description">{{ item.description }}</span>
-          </span>
-          <KimaIcon
-            v-if="Object.is(item.value, localValue)"
-            class="kima-menu__item-check"
-            :icon="Tick01Icon"
-            :size="18"
-            aria-hidden="true"
-          />
-        </button>
-        <div v-if="visibleItems.length === 0" class="kima-menu__empty" role="status">没有匹配项目</div>
+        <div class="kima-menu__items">
+          <button
+            v-for="(item, index) in visibleItems"
+            :key="index"
+            :ref="(element) => setItemRef(element, index)"
+            class="kima-menu__item"
+            type="button"
+            role="menuitemradio"
+            :disabled="item.disabled"
+            :aria-disabled="item.disabled || undefined"
+            :aria-checked="Object.is(item.value, localValue)"
+            :tabindex="index === activeIndex ? 0 : -1"
+            @click="selectItem(item)"
+            @focus="activeIndex = index"
+          >
+            <span class="kima-menu__item-copy">
+              <span class="kima-menu__item-label">{{ item.label }}</span>
+              <span v-if="item.description" class="kima-menu__item-description">{{ item.description }}</span>
+            </span>
+            <KimaIcon
+              v-if="Object.is(item.value, localValue)"
+              class="kima-menu__item-check"
+              :icon="Tick01Icon"
+              :size="18"
+              aria-hidden="true"
+            />
+          </button>
+          <div v-if="visibleItems.length === 0" class="kima-menu__empty" role="status">没有匹配项目</div>
+        </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -388,7 +391,6 @@ onBeforeUnmount(() => {
   /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
   background: var(--kima-color-popup);
   box-shadow: var(--kima-elevation-3);
-  animation: kima-menu-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 
   &--bottom-start {
     top: calc(100% + var(--kima-space-2));
@@ -463,6 +465,10 @@ onBeforeUnmount(() => {
   font: inherit;
   text-align: left;
   cursor: pointer;
+  /* 悬停/聚焦是"亮起来"，得看得见过程：底色和文字色都过渡，不瞬切。 */
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:hover:not(:disabled),
   &:focus-visible {
@@ -511,15 +517,10 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-@keyframes kima-menu-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+@media (prefers-reduced-motion: reduce) {
+  .kima-menu__item,
+  .kima-menu__trigger-icon {
+    transition: none;
   }
 }
 </style>

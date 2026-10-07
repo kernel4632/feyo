@@ -167,7 +167,8 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       );
     }
 
-    /* 手柄是一根竖条，比轨道高，两端露出来才好抓。 */
+    /* 手柄是一根竖条，比轨道高，两端露出来才好抓。
+     * 悬停时加宽一点，是"抓住了"的反馈；宽度过渡要能看见。 */
     &::-webkit-slider-thumb {
       width: var(--kima-slider-handle-width);
       height: var(--kima-slider-handle-height);
@@ -176,6 +177,11 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       border: 0;
       border-radius: var(--kima-radius-full);
       background: var(--kima-slider-fill-color);
+      transition: width var(--kima-duration-effects) var(--kima-curve-standard);
+    }
+
+    &:hover:not(:disabled)::-webkit-slider-thumb {
+      width: calc(var(--kima-slider-handle-width) + 4px);
     }
 
     &::-moz-range-track {
@@ -196,6 +202,11 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       border: 0;
       border-radius: var(--kima-radius-full);
       background: var(--kima-slider-fill-color);
+      transition: width var(--kima-duration-effects) var(--kima-curve-standard);
+    }
+
+    &:hover:not(:disabled)::-moz-range-thumb {
+      width: calc(var(--kima-slider-handle-width) + 4px);
     }
 
     /* 焦点环套在整个控件上，比只套 20px 高的轨道更容易被看见。 */

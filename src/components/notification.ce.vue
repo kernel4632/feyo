@@ -145,37 +145,40 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    v-bind="{ ...attrs, id: host ? undefined : attrs.id, title: undefined }"
-    v-show="localOpen"
-    class="kima-notification"
-    :class="[`kima-notification--${notificationVariant}`, `kima-notification--${notificationPosition}`]"
-    :role="notificationRole"
-    :aria-live="notificationLive"
-    aria-atomic="true"
-    :aria-labelledby="heading || attrs.title ? titleId : undefined"
-    :aria-describedby="message ? messageId : undefined"
-    @mouseenter="handleHover(true)"
-    @mouseleave="handleHover(false)"
-    @focusin="handleFocus"
-    @focusout="handleFocus"
-  >
-    <div v-if="localOpen" class="kima-notification__copy">
-      <strong v-if="heading || attrs.title" :id="titleId" class="kima-notification__title">{{ heading || attrs.title }}</strong>
-      <span v-if="message" :id="messageId" class="kima-notification__message">{{ message }}</span>
-      <div v-if="$slots.action || host" class="kima-notification__action"><slot name="action" /></div>
-    </div>
-    <button
-      v-if="localOpen && closable"
-      class="kima-notification__close"
-      type="button"
-      aria-label="关闭通知"
-      title="关闭通知"
-      @click="close('button')"
+  <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+  <Transition name="kima-popup">
+    <div
+      v-show="localOpen"
+      v-bind="{ ...attrs, id: host ? undefined : attrs.id, title: undefined }"
+      class="kima-notification"
+      :class="[`kima-notification--${notificationVariant}`, `kima-notification--${notificationPosition}`]"
+      :role="notificationRole"
+      :aria-live="notificationLive"
+      aria-atomic="true"
+      :aria-labelledby="heading || attrs.title ? titleId : undefined"
+      :aria-describedby="message ? messageId : undefined"
+      @mouseenter="handleHover(true)"
+      @mouseleave="handleHover(false)"
+      @focusin="handleFocus"
+      @focusout="handleFocus"
     >
-      <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
-    </button>
-  </div>
+      <div v-if="localOpen" class="kima-notification__copy">
+        <strong v-if="heading || attrs.title" :id="titleId" class="kima-notification__title">{{ heading || attrs.title }}</strong>
+        <span v-if="message" :id="messageId" class="kima-notification__message">{{ message }}</span>
+        <div v-if="$slots.action || host" class="kima-notification__action"><slot name="action" /></div>
+      </div>
+      <button
+        v-if="localOpen && closable"
+        class="kima-notification__close"
+        type="button"
+        aria-label="关闭通知"
+        title="关闭通知"
+        @click="close('button')"
+      >
+        <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
+      </button>
+    </div>
+  </Transition>
 </template>
 
 <style scoped lang="scss">
@@ -198,7 +201,6 @@ onBeforeUnmount(() => {
   background: var(--kima-color-popup);
   box-shadow: var(--kima-elevation-3);
   font-family: var(--kima-font-family);
-  animation: kima-notification-enter var(--kima-duration-normal) var(--kima-ease-emphasized);
 }
 
 .kima-notification--top,
@@ -291,12 +293,6 @@ onBeforeUnmount(() => {
   outline-offset: 2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .kima-notification {
-    animation: none;
-  }
-}
-
 .kima-notification__close {
   display: inline-flex;
   flex: 0 0 32px;
@@ -310,21 +306,17 @@ onBeforeUnmount(() => {
   color: inherit;
   background: var(--kima-color-transparent);
   cursor: pointer;
+  /* 关闭按钮是"亮起来"的反馈，跟选项行一样要有过程。 */
+  transition: background-color var(--kima-duration-effects) var(--kima-curve-standard);
 }
 
 .kima-notification__close:hover {
   background: color-mix(in srgb, currentColor 12%, var(--kima-color-transparent));
 }
 
-@keyframes kima-notification-enter {
-  from {
-    opacity: 0;
-    scale: 0.98;
-  }
-
-  to {
-    opacity: 1;
-    scale: 1;
+@media (prefers-reduced-motion: reduce) {
+  .kima-notification__close {
+    transition: none;
   }
 }
 

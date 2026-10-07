@@ -296,52 +296,55 @@ onBeforeUnmount(() => {
       </option>
     </select>
 
-    <div
-      v-if="localOpen"
-      class="kima-select__popup"
-    >
-      <div v-if="searchable" class="kima-select__search-wrap">
-        <KimaIcon class="kima-select__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
-        <input
-          ref="searchInput"
-          v-model="query"
-          class="kima-select__search"
-          type="search"
-          role="combobox"
-          aria-label="搜索选项"
-          aria-expanded="true"
-          aria-autocomplete="list"
-          :aria-controls="listboxId"
-          :aria-activedescendant="activeId"
-          @input.stop
-          @change.stop
-          @keydown="handleKeydown"
-        >
-      </div>
-
-      <div :id="listboxId" class="kima-select__options" role="listbox" :aria-labelledby="triggerId">
-        <div
-          v-for="(item, index) in visibleItems"
-          :id="`${listboxId}-option-${index}`"
-          :key="index"
-          :ref="(element) => { optionElements[index] = element; }"
-          class="kima-select__option"
-          :class="{ 'kima-select__option--active': index === activeIndex, 'kima-select__option--selected': Object.is(item.value, localValue) }"
-          role="option"
-          :aria-selected="Object.is(item.value, localValue)"
-          :aria-disabled="item.disabled || undefined"
-          @pointerdown.prevent
-          @click="selectItem(item)"
-        >
-          <span class="kima-select__option-copy">
-            <span class="kima-select__option-label">{{ item.label }}</span>
-            <span v-if="item.description" class="kima-select__option-description">{{ item.description }}</span>
-          </span>
-          <KimaIcon v-if="Object.is(item.value, localValue)" class="kima-select__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
+    <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+    <Transition name="kima-popup">
+      <div
+        v-if="localOpen"
+        class="kima-select__popup"
+      >
+        <div v-if="searchable" class="kima-select__search-wrap">
+          <KimaIcon class="kima-select__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
+          <input
+            ref="searchInput"
+            v-model="query"
+            class="kima-select__search"
+            type="search"
+            role="combobox"
+            aria-label="搜索选项"
+            aria-expanded="true"
+            aria-autocomplete="list"
+            :aria-controls="listboxId"
+            :aria-activedescendant="activeId"
+            @input.stop
+            @change.stop
+            @keydown="handleKeydown"
+          >
         </div>
+
+        <div :id="listboxId" class="kima-select__options" role="listbox" :aria-labelledby="triggerId">
+          <div
+            v-for="(item, index) in visibleItems"
+            :id="`${listboxId}-option-${index}`"
+            :key="index"
+            :ref="(element) => { optionElements[index] = element; }"
+            class="kima-select__option"
+            :class="{ 'kima-select__option--active': index === activeIndex, 'kima-select__option--selected': Object.is(item.value, localValue) }"
+            role="option"
+            :aria-selected="Object.is(item.value, localValue)"
+            :aria-disabled="item.disabled || undefined"
+            @pointerdown.prevent
+            @click="selectItem(item)"
+          >
+            <span class="kima-select__option-copy">
+              <span class="kima-select__option-label">{{ item.label }}</span>
+              <span v-if="item.description" class="kima-select__option-description">{{ item.description }}</span>
+            </span>
+            <KimaIcon v-if="Object.is(item.value, localValue)" class="kima-select__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
+          </div>
+        </div>
+        <div v-if="visibleItems.length === 0" class="kima-select__empty" role="status">没有匹配选项</div>
       </div>
-      <div v-if="visibleItems.length === 0" class="kima-select__empty" role="status">没有匹配选项</div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -514,7 +517,6 @@ onBeforeUnmount(() => {
   /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
   background: var(--kima-color-popup);
   box-shadow: var(--kima-elevation-3);
-  animation: kima-select-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
 .kima-select__search-wrap {
@@ -565,6 +567,10 @@ onBeforeUnmount(() => {
   border-radius: var(--kima-radius-sm);
   color: var(--kima-color-on-surface);
   cursor: pointer;
+  /* 悬停/高亮是"亮起来"，得看得见过程：底色和文字色都过渡，不瞬切。 */
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:hover,
   &:focus-visible,
@@ -600,12 +606,9 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .kima-select__trigger,
-  .kima-select__arrow {
+  .kima-select__arrow,
+  .kima-select__option {
     transition: none;
-  }
-
-  .kima-select__popup {
-    animation: none;
   }
 }
 
@@ -625,17 +628,5 @@ onBeforeUnmount(() => {
 .kima-select__empty {
   padding: var(--kima-space-3);
   text-align: center;
-}
-
-@keyframes kima-select-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 </style>

@@ -371,6 +371,8 @@ watch([visibleNodes, () => props.modelValue], () => {
   color: inherit;
   background: var(--kima-color-transparent);
   cursor: pointer;
+  /* 悬停和展开箭头都要看得见过程。 */
+  transition: background-color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:hover:not(:disabled),
   &:focus-visible {
@@ -414,5 +416,13 @@ watch([visibleNodes, () => props.modelValue], () => {
   padding: var(--kima-space-4);
   color: var(--kima-color-on-surface-variant);
   text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kima-tree__item,
+  .kima-tree__toggle,
+  .kima-tree__toggle span {
+    transition: none;
+  }
 }
 </style>

@@ -405,67 +405,70 @@ onBeforeUnmount(() => {
       @invalid="handleInvalid"
     >
 
-    <div v-if="localOpen" class="kima-date-picker__popup" @keydown="handleGridKeydown">
-      <div class="kima-date-picker__head">
-        <button
-          class="kima-date-picker__nav"
-          type="button"
-          :aria-label="previousMonthLabel"
-          :title="previousMonthLabel"
-          :disabled="disabled || !canGoPrevious"
-          @click="changeMonth(-1)"
-        >
-          <KimaIcon :icon="ArrowLeft01Icon" :size="18" aria-hidden="true" />
-        </button>
-        <span :id="titleId" class="kima-date-picker__month">{{ monthTitle }}</span>
-        <button
-          class="kima-date-picker__nav"
-          type="button"
-          :aria-label="nextMonthLabel"
-          :title="nextMonthLabel"
-          :disabled="disabled || !canGoNext"
-          @click="changeMonth(1)"
-        >
-          <KimaIcon :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
-        </button>
-      </div>
-
-      <div :id="gridId" class="kima-date-picker__grid" role="grid" :aria-labelledby="titleId">
-        <div class="kima-date-picker__row" role="row">
-          <span
-            v-for="(weekday, index) in weekdayLabels"
-            :key="index"
-            class="kima-date-picker__weekday"
-            role="columnheader"
-          >{{ weekday }}</span>
-        </div>
-        <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="kima-date-picker__row" role="row">
-          <div
-            v-for="day in week"
-            :key="day.iso"
-            class="kima-date-picker__cell"
-            role="gridcell"
-            :aria-selected="day.iso === localValue"
+    <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+    <Transition name="kima-popup">
+      <div v-if="localOpen" class="kima-date-picker__popup" @keydown="handleGridKeydown">
+        <div class="kima-date-picker__head">
+          <button
+            class="kima-date-picker__nav"
+            type="button"
+            :aria-label="previousMonthLabel"
+            :title="previousMonthLabel"
+            :disabled="disabled || !canGoPrevious"
+            @click="changeMonth(-1)"
           >
-            <button
-              :id="`${gridId}-day-${day.iso}`"
-              class="kima-date-picker__day"
-              :class="{
-                'kima-date-picker__day--outside': day.outside,
-                'kima-date-picker__day--today': day.iso === todayKey,
-                'kima-date-picker__day--selected': day.iso === localValue,
-              }"
-              type="button"
-              :aria-label="day.label"
-              :aria-current="day.iso === todayKey ? 'date' : undefined"
-              :disabled="day.disabled"
-              :tabindex="day.iso === focusedIso ? 0 : -1"
-              @click="selectDay(day)"
-            >{{ day.day }}</button>
+            <KimaIcon :icon="ArrowLeft01Icon" :size="18" aria-hidden="true" />
+          </button>
+          <span :id="titleId" class="kima-date-picker__month">{{ monthTitle }}</span>
+          <button
+            class="kima-date-picker__nav"
+            type="button"
+            :aria-label="nextMonthLabel"
+            :title="nextMonthLabel"
+            :disabled="disabled || !canGoNext"
+            @click="changeMonth(1)"
+          >
+            <KimaIcon :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div :id="gridId" class="kima-date-picker__grid" role="grid" :aria-labelledby="titleId">
+          <div class="kima-date-picker__row" role="row">
+            <span
+              v-for="(weekday, index) in weekdayLabels"
+              :key="index"
+              class="kima-date-picker__weekday"
+              role="columnheader"
+            >{{ weekday }}</span>
+          </div>
+          <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="kima-date-picker__row" role="row">
+            <div
+              v-for="day in week"
+              :key="day.iso"
+              class="kima-date-picker__cell"
+              role="gridcell"
+              :aria-selected="day.iso === localValue"
+            >
+              <button
+                :id="`${gridId}-day-${day.iso}`"
+                class="kima-date-picker__day"
+                :class="{
+                  'kima-date-picker__day--outside': day.outside,
+                  'kima-date-picker__day--today': day.iso === todayKey,
+                  'kima-date-picker__day--selected': day.iso === localValue,
+                }"
+                type="button"
+                :aria-label="day.label"
+                :aria-current="day.iso === todayKey ? 'date' : undefined"
+                :disabled="day.disabled"
+                :tabindex="day.iso === focusedIso ? 0 : -1"
+                @click="selectDay(day)"
+              >{{ day.day }}</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -629,7 +632,6 @@ onBeforeUnmount(() => {
   /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
   background: var(--kima-color-popup);
   box-shadow: var(--kima-elevation-3);
-  animation: kima-date-picker-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
 .kima-date-picker__head {
@@ -751,23 +753,9 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .kima-date-picker__trigger,
-  .kima-date-picker__day {
+  .kima-date-picker__day,
+  .kima-date-picker__nav {
     transition: none;
-  }
-
-  .kima-date-picker__popup {
-    animation: none;
-  }
-}
-
-@keyframes kima-date-picker-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 </style>

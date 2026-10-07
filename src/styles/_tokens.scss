@@ -170,6 +170,10 @@
   --kima-slider-handle-height: 36px;
   --kima-progress-height: 8px;
   --kima-scrollbar-thickness: 8px;
+  /* 滚动条滑块：从主文字色派生，深浅两套主题自动适配，不写死颜色。
+   * 轨道透明，不割版面。悬停时加深，鼠标停在滚动条上时能看清位置。 */
+  --kima-color-scrollbar-thumb: color-mix(in srgb, var(--kima-color-on-surface) 24%, transparent);
+  --kima-color-scrollbar-thumb-hover: color-mix(in srgb, var(--kima-color-on-surface) 40%, transparent);
   --kima-dialog-max-width: 640px;
   --kima-drawer-max-width: 420px;
   --kima-tooltip-max-width: 480px;
@@ -248,4 +252,77 @@ kima-cascader,
 kima-date-picker,
 kima-time-picker {
   min-width: 0;
+}
+
+/* ---- 弹层进出场（全库共用一套）----
+ * 所有弹层（下拉、菜单、对话框、通知、提示）共用同一套进出场：淡入淡出 + 轻微缩放。
+ * 类名由 Vue 的 <Transition name="kima-popup"> 自动挂上，组件模板不用写动画，
+ * 加新弹层时套同一个 name 就自动生效。
+ *
+ * 为什么写在这个文件：每个 .vue 的 <style scoped> 都会给自己的选择器加 data-v 标记，
+ * 动画写在各组件里就无法共用；这个文件是唯一全库原样输出的样式，规则放这里才真的只有一份。
+ *
+ * 缩放用小值（0.96）：从"几乎原样"淡进来，比从 0.8 缩出来安静，不晃眼。
+ * 进入 200ms 用强调曲线（东西出现要看得见过程），离开 100ms 用标准曲线（退场要快，别挡下一步）。 */
+.kima-popup-enter-active {
+  transition:
+    opacity var(--kima-duration-medium) var(--kima-curve-emphasized),
+    scale var(--kima-duration-medium) var(--kima-curve-emphasized);
+}
+
+.kima-popup-leave-active {
+  transition:
+    opacity var(--kima-duration-fast) var(--kima-curve-standard),
+    scale var(--kima-duration-fast) var(--kima-curve-standard);
+}
+
+.kima-popup-enter-from,
+.kima-popup-leave-to {
+  opacity: 0;
+  scale: 0.96;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kima-popup-enter-active,
+  .kima-popup-leave-active {
+    transition-duration: 1ms;
+  }
+}
+
+/* ---- 库内滚动条（一次定义，全库自动生效）----
+ * 所有 kima- 前缀的元素只要自己会滚，滚动条就是这套细圆棒，不用逐个登记；
+ * 以后加新组件，只要是 kima- 类名，滚动条自动跟着换，不写任何额外样式。
+ * 宿主页面自己的滚动条不动——库里只管自己的容器。
+ * Firefox 用 scrollbar-width / scrollbar-color；Chromium 和 Safari 用 ::-webkit-scrollbar。 */
+[class^="kima-"],
+[class*=" kima-"] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--kima-color-scrollbar-thumb) transparent;
+}
+
+[class^="kima-"]::-webkit-scrollbar,
+[class*=" kima-"]::-webkit-scrollbar {
+  width: var(--kima-scrollbar-thickness);
+  height: var(--kima-scrollbar-thickness);
+}
+
+[class^="kima-"]::-webkit-scrollbar-track,
+[class*=" kima-"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 滑块两侧留 2px 透明边（background-clip 裁掉），滚动条看起来就是一根细圆棒。
+ * 悬停加深，鼠标停在滚动条上时能看清位置。 */
+[class^="kima-"]::-webkit-scrollbar-thumb,
+[class*=" kima-"]::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: var(--kima-radius-full);
+  background: var(--kima-color-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+[class^="kima-"]::-webkit-scrollbar-thumb:hover,
+[class*=" kima-"]::-webkit-scrollbar-thumb:hover {
+  background: var(--kima-color-scrollbar-thumb-hover);
+  background-clip: padding-box;
 }

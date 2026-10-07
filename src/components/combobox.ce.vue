@@ -343,31 +343,34 @@ onBeforeUnmount(() => {
       @invalid="handleInvalid"
     >
 
-    <div v-if="localOpen" class="kima-combobox__popup">
-      <div :id="listboxId" class="kima-combobox__options" role="listbox" :aria-labelledby="inputId">
-        <div
-          v-for="(item, index) in visibleItems"
-          :id="`${listboxId}-option-${index}`"
-          :key="index"
-          :ref="(element) => setOptionRef(element, index)"
-          class="kima-combobox__option"
-          :class="{ 'kima-combobox__option--active': index === activeIndex, 'kima-combobox__option--selected': Object.is(item.value, localValue) }"
-          role="option"
-          :aria-selected="Object.is(item.value, localValue)"
-          :aria-disabled="item.disabled || undefined"
-          tabindex="-1"
-          @pointerdown.prevent
-          @click="selectItem(item)"
-        >
-          <span class="kima-combobox__option-copy">
-            <span class="kima-combobox__option-label">{{ item.label }}</span>
-            <span v-if="item.description" class="kima-combobox__option-description">{{ item.description }}</span>
-          </span>
-          <KimaIcon v-if="Object.is(item.value, localValue)" class="kima-combobox__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
+    <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+    <Transition name="kima-popup">
+      <div v-if="localOpen" class="kima-combobox__popup">
+        <div :id="listboxId" class="kima-combobox__options" role="listbox" :aria-labelledby="inputId">
+          <div
+            v-for="(item, index) in visibleItems"
+            :id="`${listboxId}-option-${index}`"
+            :key="index"
+            :ref="(element) => setOptionRef(element, index)"
+            class="kima-combobox__option"
+            :class="{ 'kima-combobox__option--active': index === activeIndex, 'kima-combobox__option--selected': Object.is(item.value, localValue) }"
+            role="option"
+            :aria-selected="Object.is(item.value, localValue)"
+            :aria-disabled="item.disabled || undefined"
+            tabindex="-1"
+            @pointerdown.prevent
+            @click="selectItem(item)"
+          >
+            <span class="kima-combobox__option-copy">
+              <span class="kima-combobox__option-label">{{ item.label }}</span>
+              <span v-if="item.description" class="kima-combobox__option-description">{{ item.description }}</span>
+            </span>
+            <KimaIcon v-if="Object.is(item.value, localValue)" class="kima-combobox__check" :icon="Tick01Icon" :size="18" aria-hidden="true" />
+          </div>
+          <div v-if="visibleItems.length === 0" class="kima-combobox__empty" role="status">没有匹配选项</div>
         </div>
-        <div v-if="visibleItems.length === 0" class="kima-combobox__empty" role="status">没有匹配选项</div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -518,7 +521,6 @@ onBeforeUnmount(() => {
   /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
   background: var(--kima-color-popup);
   box-shadow: var(--kima-elevation-3);
-  animation: kima-combobox-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
 .kima-combobox__options {
@@ -536,6 +538,10 @@ onBeforeUnmount(() => {
   border-radius: var(--kima-radius-sm);
   color: var(--kima-color-on-surface);
   cursor: pointer;
+  /* 悬停/高亮是"亮起来"，得看得见过程：底色和文字色都过渡，不瞬切。 */
+  transition:
+    background-color var(--kima-duration-effects) var(--kima-curve-standard),
+    color var(--kima-duration-effects) var(--kima-curve-standard);
 
   &:hover,
   &--active {
@@ -597,23 +603,9 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kima-combobox__control,
   .kima-combobox__arrow,
-  .kima-combobox__popup {
+  .kima-combobox__option {
     transition: none;
-    animation: none;
-  }
-}
-
-@keyframes kima-combobox-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 </style>

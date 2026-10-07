@@ -8,7 +8,7 @@ KIMA 全览预览页：把全部组件集中在一个页面里展示样式和交
 搜索会按组件英文名和中文名过滤，只保留匹配的展示块。
 -->
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import {
   Add01Icon,
   FavouriteIcon,
@@ -53,6 +53,7 @@ import {
   KimaTree,
   KimaVirtualScroll,
 } from "@/index";
+import { componentNames } from "@/index";
 import { applyPalette, cssName, defaultSeed, defaultVariant, resetPalette } from "@/utils/theme.js";
 // --- 主题和配色 ---
 // 演示换主题色：点一下直接改写 CSS 变量，不用改文件、不用重新构建。
@@ -266,8 +267,19 @@ onMounted(() => {
   // 首屏用 _palette.scss 里的默认色，这里不重复算一遍。
 });
 
-const componentCount = 28;
+// 组件数量从导出清单自动算：加一个 .ce.vue 文件就自动 +1，这里不用改。
+const componentCount = componentNames.length;
 const isFiltering = computed(() => query.value.trim().length > 0);
+
+// 搜索无结果时显示空状态。判断依据是"页面上还有没有可见的展示块"：
+// 关键词都写在各自的展示块上（模板里的 visible(...)），这里读它们渲染后的实际状态，
+// 不再维护第二份关键词表——加一个组件块，空状态判断自动跟着对。
+// flush: "post" 保证在 DOM 更新完之后再读。
+const noResults = ref(false);
+watch(query, () => {
+  noResults.value = isFiltering.value
+    && ![...document.querySelectorAll(".kima-gallery__demo")].some((el) => el.getClientRects().length > 0);
+}, { flush: "post" });
 </script>
 
 <template>
@@ -690,15 +702,10 @@ const isFiltering = computed(() => query.value.trim().length > 0);
           </article>
         </section>
 
+        <!-- 有搜索词但一个展示块都没命中：提示换个词。
+         * 判断读的是各展示块渲染后的实际可见性（noResults），加组件时这里不用改。 -->
         <kima-empty-state
-          v-if="isFiltering && !visible(
-            'button', 'icon-button', 'button-group', 'badge', 'divider', 'card',
-            'text-field', 'checkbox', 'switch', 'slider', 'progress',
-            'select', 'combobox', 'cascader', 'date-picker', 'time-picker',
-            'notification', 'dialog', 'tooltip', 'empty-state',
-            'table', 'tree', 'pagination', 'virtual-scroll',
-            'layout', 'menu', 'tabs',
-          )"
+          v-if="noResults"
           heading="没有匹配的组件"
           description="换一个关键词试试，例如 button、日期或表格。"
           compact

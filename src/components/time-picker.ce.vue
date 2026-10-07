@@ -467,76 +467,79 @@ onBeforeUnmount(() => {
       @invalid="handleInvalid"
     >
 
-    <div v-if="localOpen" :id="popupId" class="kima-time-picker__popup" role="dialog" :aria-labelledby="label ? labelId : undefined" @keydown="handlePopupKeydown">
-      <div class="kima-time-picker__summary" aria-live="polite">{{ formatTime(draftHour, draftMinute) }}</div>
-      <div class="kima-time-picker__columns">
-        <div class="kima-time-picker__column">
-          <span class="kima-time-picker__column-label">Hour</span>
-          <div :id="hourListId" class="kima-time-picker__list" role="listbox" aria-label="Hour" :aria-activedescendant="activeColumn === 'hour' ? activeOptionId : undefined">
-            <button
-              v-for="(option, index) in hourOptions"
-              :id="`${baseId}-hour-${index}`"
-              :key="option.value"
-              :ref="(element) => setOptionRef('hour', index, element)"
-              class="kima-time-picker__option"
-              :class="{ 'kima-time-picker__option--active': activeColumn === 'hour' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftHour }"
-              type="button"
-              role="option"
-              :aria-selected="option.value === draftHour"
-              :aria-disabled="option.disabled || undefined"
-              :disabled="option.disabled"
-              :tabindex="activeColumn === 'hour' && activeIndex === index ? 0 : -1"
-              @click="selectHour(option, index)"
-              @keydown="handleOptionKeydown('hour', index, $event)"
-            >{{ option.label }}</button>
+    <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+    <Transition name="kima-popup">
+      <div v-if="localOpen" :id="popupId" class="kima-time-picker__popup" role="dialog" :aria-labelledby="label ? labelId : undefined" @keydown="handlePopupKeydown">
+        <div class="kima-time-picker__summary" aria-live="polite">{{ formatTime(draftHour, draftMinute) }}</div>
+        <div class="kima-time-picker__columns">
+          <div class="kima-time-picker__column">
+            <span class="kima-time-picker__column-label">Hour</span>
+            <div :id="hourListId" class="kima-time-picker__list" role="listbox" aria-label="Hour" :aria-activedescendant="activeColumn === 'hour' ? activeOptionId : undefined">
+              <button
+                v-for="(option, index) in hourOptions"
+                :id="`${baseId}-hour-${index}`"
+                :key="option.value"
+                :ref="(element) => setOptionRef('hour', index, element)"
+                class="kima-time-picker__option"
+                :class="{ 'kima-time-picker__option--active': activeColumn === 'hour' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftHour }"
+                type="button"
+                role="option"
+                :aria-selected="option.value === draftHour"
+                :aria-disabled="option.disabled || undefined"
+                :disabled="option.disabled"
+                :tabindex="activeColumn === 'hour' && activeIndex === index ? 0 : -1"
+                @click="selectHour(option, index)"
+                @keydown="handleOptionKeydown('hour', index, $event)"
+              >{{ option.label }}</button>
+            </div>
           </div>
-        </div>
 
-        <div class="kima-time-picker__column">
-          <span class="kima-time-picker__column-label">Minute</span>
-          <div :id="minuteListId" class="kima-time-picker__list" role="listbox" aria-label="Minute" :aria-activedescendant="activeColumn === 'minute' ? activeOptionId : undefined">
-            <button
-              v-for="(option, index) in minuteOptions"
-              :id="`${baseId}-minute-${index}`"
-              :key="option.value"
-              :ref="(element) => setOptionRef('minute', index, element)"
-              class="kima-time-picker__option"
-              :class="{ 'kima-time-picker__option--active': activeColumn === 'minute' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftMinute }"
-              type="button"
-              role="option"
-              :aria-selected="option.value === draftMinute"
-              :aria-disabled="option.disabled || undefined"
-              :disabled="option.disabled"
-              :tabindex="activeColumn === 'minute' && activeIndex === index ? 0 : -1"
-              @click="selectMinute(option, index)"
-              @keydown="handleOptionKeydown('minute', index, $event)"
-            >{{ option.label }}</button>
+          <div class="kima-time-picker__column">
+            <span class="kima-time-picker__column-label">Minute</span>
+            <div :id="minuteListId" class="kima-time-picker__list" role="listbox" aria-label="Minute" :aria-activedescendant="activeColumn === 'minute' ? activeOptionId : undefined">
+              <button
+                v-for="(option, index) in minuteOptions"
+                :id="`${baseId}-minute-${index}`"
+                :key="option.value"
+                :ref="(element) => setOptionRef('minute', index, element)"
+                class="kima-time-picker__option"
+                :class="{ 'kima-time-picker__option--active': activeColumn === 'minute' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftMinute }"
+                type="button"
+                role="option"
+                :aria-selected="option.value === draftMinute"
+                :aria-disabled="option.disabled || undefined"
+                :disabled="option.disabled"
+                :tabindex="activeColumn === 'minute' && activeIndex === index ? 0 : -1"
+                @click="selectMinute(option, index)"
+                @keydown="handleOptionKeydown('minute', index, $event)"
+              >{{ option.label }}</button>
+            </div>
           </div>
-        </div>
 
-        <div v-if="is12Hour" class="kima-time-picker__column kima-time-picker__column--period">
-          <span class="kima-time-picker__column-label">Period</span>
-          <div :id="periodListId" class="kima-time-picker__list kima-time-picker__list--period" role="listbox" aria-label="AM or PM" :aria-activedescendant="activeColumn === 'period' ? activeOptionId : undefined">
-            <button
-              v-for="(option, index) in periodOptions"
-              :id="`${baseId}-period-${index}`"
-              :key="option.value"
-              :ref="(element) => setOptionRef('period', index, element)"
-              class="kima-time-picker__option"
-              :class="{ 'kima-time-picker__option--active': activeColumn === 'period' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftPeriod }"
-              type="button"
-              role="option"
-              :aria-selected="option.value === draftPeriod"
-              :aria-disabled="option.disabled || undefined"
-              :disabled="option.disabled"
-              :tabindex="activeColumn === 'period' && activeIndex === index ? 0 : -1"
-              @click="selectPeriod(option, index)"
-              @keydown="handleOptionKeydown('period', index, $event)"
-            >{{ option.label }}</button>
+          <div v-if="is12Hour" class="kima-time-picker__column kima-time-picker__column--period">
+            <span class="kima-time-picker__column-label">Period</span>
+            <div :id="periodListId" class="kima-time-picker__list kima-time-picker__list--period" role="listbox" aria-label="AM or PM" :aria-activedescendant="activeColumn === 'period' ? activeOptionId : undefined">
+              <button
+                v-for="(option, index) in periodOptions"
+                :id="`${baseId}-period-${index}`"
+                :key="option.value"
+                :ref="(element) => setOptionRef('period', index, element)"
+                class="kima-time-picker__option"
+                :class="{ 'kima-time-picker__option--active': activeColumn === 'period' && activeIndex === index, 'kima-time-picker__option--selected': option.value === draftPeriod }"
+                type="button"
+                role="option"
+                :aria-selected="option.value === draftPeriod"
+                :aria-disabled="option.disabled || undefined"
+                :disabled="option.disabled"
+                :tabindex="activeColumn === 'period' && activeIndex === index ? 0 : -1"
+                @click="selectPeriod(option, index)"
+                @keydown="handleOptionKeydown('period', index, $event)"
+              >{{ option.label }}</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -714,7 +717,6 @@ onBeforeUnmount(() => {
   /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
   background: var(--kima-color-popup);
   box-shadow: var(--kima-elevation-3);
-  animation: kima-time-picker-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
 .kima-time-picker__summary {
@@ -806,22 +808,6 @@ onBeforeUnmount(() => {
   .kima-time-picker__arrow,
   .kima-time-picker__option {
     transition: none;
-  }
-
-  .kima-time-picker__popup {
-    animation: none;
-  }
-}
-
-@keyframes kima-time-picker-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 </style>

@@ -208,15 +208,18 @@ onBeforeUnmount(() => {
       </slot>
     </span>
 
-    <span
-      v-if="tooltipOpen"
-      :id="tooltipId"
-      class="kima-tooltip__content"
-      :class="`kima-tooltip__content--${tooltipPosition}`"
-      role="tooltip"
-    >
-      <slot name="content">{{ text }}</slot>
-    </span>
+    <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
+    <Transition name="kima-popup">
+      <span
+        v-if="tooltipOpen"
+        :id="tooltipId"
+        class="kima-tooltip__content"
+        :class="`kima-tooltip__content--${tooltipPosition}`"
+        role="tooltip"
+      >
+        <slot name="content">{{ text }}</slot>
+      </span>
+    </Transition>
   </span>
 </template>
 
@@ -255,7 +258,6 @@ onBeforeUnmount(() => {
   line-height: 1.4;
   white-space: normal;
   pointer-events: none;
-  animation: kima-tooltip-enter var(--kima-duration-fast) var(--kima-ease-emphasized);
 }
 
 .kima-tooltip__content--bottom {
@@ -282,13 +284,4 @@ onBeforeUnmount(() => {
   transform: translateY(-50%);
 }
 
-@keyframes kima-tooltip-enter {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
 </style>
