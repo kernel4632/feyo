@@ -1,8 +1,10 @@
 <!--
 进度条：使用原生 progress 元素，保留浏览器的进度语义和不确定状态。
+组件不画标签（和文本框、选择器、滑块一致）：可见的「下载进度」由使用者自己排版，
+label 属性只落到 progress 的 aria-label 上。
 调用示例：
-  <kima-progress :value="downloaded" label="下载进度" />
-  <kima-progress indeterminate label="正在连接" />
+  <kima-progress :value="downloaded" label="下载进度"></kima-progress>
+  <kima-progress indeterminate label="正在连接"></kima-progress>
 -->
 <script setup>
 import { computed, getCurrentInstance, useAttrs } from "vue";
@@ -24,11 +26,10 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
 </script>
 
 <template>
-  <label class="kima-progress">
-    <span v-if="label" class="kima-progress__label">{{ label }}</span>
+  <div class="kima-progress">
     <span class="kima-progress__track">
-       <progress
-         v-bind="forwardedAttrs"
+      <progress
+        v-bind="forwardedAttrs"
         class="kima-progress__bar"
         :value="indeterminate ? undefined : safeValue"
         :max="safeMax"
@@ -36,7 +37,7 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
       />
       <span v-if="indeterminate" class="kima-progress__motion" aria-hidden="true"><span /></span>
     </span>
-  </label>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -45,17 +46,10 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
   width: 100%;
   color: var(--kima-color-on-surface);
 
-  &__label {
-    display: block;
-    margin-bottom: var(--kima-space-2);
-    color: var(--kima-color-on-surface-variant);
-    line-height: 1.35;
-  }
-
   &__bar {
     display: block;
     width: 100%;
-    height: 8px;
+    height: var(--kima-progress-height);
     overflow: hidden;
     appearance: none;
     border: 0;
@@ -81,7 +75,7 @@ const safeValue = computed(() => Number.isFinite(props.value) ? Math.max(0, Math
   &__track {
     position: relative;
     display: block;
-    height: 8px;
+    height: var(--kima-progress-height);
     overflow: hidden;
     border-radius: var(--kima-radius-full);
   }
