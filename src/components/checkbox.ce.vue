@@ -132,6 +132,10 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   &__input {
     position: absolute;
     inset: 0;
+    /* 盖在视觉层之上，整块复选框才都点得动。
+     * 状态层把它的子元素提到 z-index 2，输入框必须比那个更高，
+     * 否则点在方框上时会被方框接走。 */
+    z-index: 3;
     width: 100%;
     height: 100%;
     margin: 0;

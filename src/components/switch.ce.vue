@@ -1,14 +1,16 @@
 <!--
-开关：用原生 checkbox 承担表单和辅助技术语义，再用 52×32 的轨道显示状态。
-几何和颜色照 DMS 的 DankToggle 对齐：轨道 52×32，滑块 16/24/28，选中轨道无描边。
+开关：用原生 checkbox 承担表单和辅助技术语义，再用 60×36 的轨道显示状态。
+形状和顺序跟复选框保持一致：控件在左、说明文字在右，外面的圆形光环承载悬停与涟漪。
 调用示例：
-  <kima-switch v-model="enabled" name="enabled"><span>启用同步</span></kima-switch>
+  <kima-switch v-model="enabled" name="enabled">启用同步</kima-switch>
+  <kima-switch :model-value="true" disabled>已锁定</kima-switch>
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
 import KimaIcon from "./icon.ce.vue";
 import { Tick02Icon } from "@hugeicons/core-free-icons";
 import { useNativeSlots } from "../utils/native-slots.js";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -23,12 +25,16 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "change"]);
 const attrs = useAttrs();
 const root = ref(null);
+const control = ref(null);
+const input = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 const localValue = ref(props.modelValue || attrs.checked === "" || attrs.checked === true);
-const input = ref(null);
 let resetValue;
 let ownerDocument;
+
+// 涟漪长在轨道外面那圈光环上；轨道本身要裁剪滑块，不能兼作涟漪宿主。
+useRipple(control);
 
 // 本地状态让没有立即回写 modelValue 的 Web Component 仍能完成点击反馈。
 watch(
@@ -69,11 +75,11 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   <label
     ref="root"
     class="kima-switch"
-    :class="{ 'kima-switch--disabled': disabled }"
+    :class="{ 'kima-switch--checked': localValue, 'kima-switch--disabled': disabled }"
   >
     <input
       ref="input"
-       v-bind="forwardedAttrs"
+      v-bind="forwardedAttrs"
       class="kima-switch__input"
       type="checkbox"
       role="switch"
@@ -85,33 +91,39 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       @input.stop
       @change.stop="handleChange"
     />
+    <span ref="control" class="kima-switch__control" aria-hidden="true">
+      <span class="kima-switch__track">
+        <span class="kima-switch__thumb">
+          <KimaIcon class="kima-switch__check" :icon="Tick02Icon" :size="16" />
+        </span>
+      </span>
+    </span>
     <span v-if="$slots.default || hasNativeSlot('default')" class="kima-switch__label">
       <slot />
-    </span>
-    <span class="kima-switch__track" aria-hidden="true">
-      <span class="kima-switch__thumb">
-        <KimaIcon class="kima-switch__check" :icon="Tick02Icon" :size="16" />
-      </span>
     </span>
   </label>
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .kima-switch {
   position: relative;
   display: inline-flex;
   align-items: center;
-  /* DMS 设置行：文字在左，开关在右，间距 spacingM 12。 */
-  gap: var(--kima-space-m);
-  min-height: var(--kima-switch-track-height);
+  gap: var(--kima-space-2);
   color: var(--kima-color-on-surface);
+  font-size: var(--kima-font-size-body-large);
   cursor: pointer;
   user-select: none;
 
   &__input {
     position: absolute;
     inset: 0;
-    z-index: 1;
+    /* 盖在视觉层之上，整块开关才都点得动。
+     * 状态层把它的子元素提到 z-index 2，输入框必须比那个更高，
+     * 否则点是点得动，但落在轨道上时会被轨道接走。 */
+    z-index: 3;
     width: 100%;
     height: 100%;
     margin: 0;
@@ -119,11 +131,24 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     cursor: inherit;
   }
 
+  /* 光环：给轨道外面留一圈落点，悬停、按下、涟漪都长在这里。
+   * 轨道自己裁剪滑块，不能同时当涟漪宿主。 */
+  &__control {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: var(--kima-radius-full);
+
+    @include kima-state-layer;
+    @include kima-ripple-host;
+  }
+
   &__label {
     min-width: 0;
-    font-size: var(--kima-font-size-medium);
-    font-weight: var(--kima-font-weight-medium);
-    line-height: 1.35;
+    line-height: 1.4;
   }
 
   /* 轨道：未选中是一圈描边（开关的范围靠它表达，是造型不是装饰），
@@ -131,6 +156,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   &__track {
     box-sizing: border-box;
     position: relative;
+    display: block;
     flex: 0 0 var(--kima-switch-track-width);
     width: var(--kima-switch-track-width);
     height: var(--kima-switch-track-height);
@@ -142,42 +168,45 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       border-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
-  /* 滑块：未选中 16，选中 24，按下 28；位置用 DMS 的 4px 内边距推算。 */
+  /* 滑块：未选中 28，选中 32，按下再撑到轨道边缘。
+   * 位置按"轨道内边距减去描边"算，选中时贴右边。 */
   &__thumb {
     box-sizing: border-box;
     position: absolute;
     top: 50%;
-    left: 8px;
+    /* 绝对定位的 left 从轨道"边框内侧"算起，所以这里减掉描边宽度，
+     * 未选中的滑块才会和选中时一样离外缘 4px。 */
+    left: 2px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
-    height: 16px;
+    width: var(--kima-switch-thumb-size);
+    height: var(--kima-switch-thumb-size);
     border-radius: var(--kima-radius-full);
     background: var(--kima-color-on-surface-variant);
     transform: translateY(-50%);
+    /* 位置和尺寸都用强调曲线：滑块"滑过去"的过程本身就是状态变化的说明。 */
     transition:
-      left var(--kima-duration-long) var(--kima-ease-emphasized),
-      width var(--kima-duration-medium) var(--kima-ease-emphasized),
-      height var(--kima-duration-medium) var(--kima-ease-emphasized),
-      background-color var(--kima-duration-effects) var(--kima-ease-effects);
+      left var(--kima-duration-slow) var(--kima-curve-emphasized),
+      width var(--kima-duration-medium) var(--kima-curve-emphasized),
+      height var(--kima-duration-medium) var(--kima-curve-emphasized),
+      background-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
   &__check {
-    color: var(--kima-color-on-primary-container);
+    color: var(--kima-color-on-primary);
     opacity: 0;
-    transition: opacity var(--kima-duration-effects) var(--kima-ease-effects);
+    transition: opacity var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
-  &__input:checked ~ .kima-switch__track {
-    /* 选中：轨道 primary 实色、描边同色（视觉上等于无描边），滑块 onPrimary 带对勾。 */
-    background: var(--kima-color-primary);
+  &--checked &__track {
     border-color: var(--kima-color-primary);
+    background: var(--kima-color-primary);
 
     .kima-switch__thumb {
-      left: 24px;
-      width: 24px;
-      height: 24px;
+      left: calc(100% - var(--kima-switch-thumb-selected) - 2px);
+      width: var(--kima-switch-thumb-selected);
+      height: var(--kima-switch-thumb-selected);
       background: var(--kima-color-on-primary);
     }
 
@@ -186,46 +215,30 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     }
   }
 
-  &__input:active ~ .kima-switch__track .kima-switch__thumb {
-    left: 2px;
+  /* 按下时滑块横向撑长——和 M3 一样，用形变而不是缩放表示"按住了"。
+   * 开关是横向控件，缩放会连轨道一起变小，看起来像整块沉下去。 */
+  &__input:active ~ .kima-switch__control &__track &__thumb {
     width: var(--kima-switch-thumb-pressed);
-    height: var(--kima-switch-thumb-pressed);
-    background: var(--kima-color-on-surface-variant);
   }
 
-  &__input:checked:active ~ .kima-switch__track .kima-switch__thumb {
-    left: 22px;
-    background: var(--kima-color-primary-container);
-  }
-
-  &__input:focus-visible ~ .kima-switch__track {
+  &__input:focus-visible ~ .kima-switch__control {
     outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
     outline-offset: var(--kima-focus-ring-offset);
   }
 
-  /* DMS 禁用：轨道选中用 onSurface_12，滑块降到 onSurface_38。 */
+  /* 禁用只是降低存在感，也不再响应悬停和按下。 */
   &--disabled {
+    color: var(--kima-color-on-surface-variant);
     cursor: not-allowed;
-  }
 
-  &--disabled &__label {
-    color: var(--kima-color-on-surface-38);
-  }
+    .kima-switch__control {
+      pointer-events: none;
+    }
 
-  &--disabled &__input:not(:checked) ~ .kima-switch__track {
-    background: var(--kima-color-on-surface-12);
-  }
-
-  &--disabled &__input:checked ~ .kima-switch__track {
-    background: var(--kima-color-on-surface-12);
-  }
-
-  &--disabled &__thumb {
-    background: var(--kima-color-on-surface-38);
-  }
-
-  &--disabled &__input:checked ~ .kima-switch__track .kima-switch__thumb {
-    background: var(--kima-color-layer-2);
+    .kima-switch__control,
+    .kima-switch__track {
+      opacity: var(--kima-opacity-disabled);
+    }
   }
 }
 </style>
