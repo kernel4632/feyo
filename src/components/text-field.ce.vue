@@ -1,11 +1,13 @@
 <!--
-文本框：管理原生输入、标签、说明文字和密码操作，同时允许 Web Component
-消费者只监听 update:modelValue/change，而不用每次输入都把 modelValue 写回组件。
-标签固定在输入框上方，不做浮动标签——那套做法要拿同色底遮边框，在透明背景上会露馅。
+文本框：只管输入本身——输入、清除、密码显示、说明与错误文字。
+视觉标签不由组件渲染：「昵称」这种字是一段普通排版文字，使用者写在自己的布局里就行，
+组件也就不必去猜它该待在哪、该怎么对齐。可访问名仍然可以用 label 属性给，
+它会落到内部输入框的 aria-label 上，读屏照样念得出来。
+输入区域是一块有底色的平面，跟卡片一样靠底色认出来，不画描边。
 调用示例：
   <kima-text-field label="邮箱" name="email" required></kima-text-field>
   <kima-text-field v-model="password" type="password" clearable></kima-text-field>
-  <kima-text-field label="备注" :outlined="false"></kima-text-field>
+  <kima-text-field label="备注" size="large"></kima-text-field>
 -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
@@ -19,6 +21,7 @@ import {
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
+  // 可访问名：不渲染成可见文字，只落到内部输入框的 aria-label 上。
   label: {
     type: String,
     default: "",
@@ -52,27 +55,21 @@ const props = defineProps({
     type: String,
     default: "default",
   },
-  outlined: {
-    type: Boolean,
-    default: true,
-  },
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const attrs = useAttrs();
 const baseId = useId();
 const input = ref(null);
-const focused = ref(false);
 const passwordVisible = ref(false);
 const localValue = ref(props.modelValue);
 let composing = false;
 let resetValue;
 let ownerDocument;
 
-// The host keeps its public id; labels and descriptions use a separate internal id.
-const inputId = `kima-text-field-${baseId}`;
-const hintId = `${inputId}-hint`;
-const errorId = `${inputId}-error`;
+// 说明和错误文字靠 id 关联到输入框，读屏时会跟着一起念。
+const hintId = `kima-text-field-${baseId}-hint`;
+const errorId = `kima-text-field-${baseId}-error`;
 const hasError = computed(() => props.error.length > 0);
 const isLarge = computed(() => props.size === "large");
 const canClear = computed(
@@ -81,6 +78,7 @@ const canClear = computed(
 const actualType = computed(() =>
   props.type === "password" && passwordVisible.value ? "text" : props.type,
 );
+
 function describedBy() {
   const ids = [];
   if (props.error) ids.push(errorId);
@@ -88,9 +86,12 @@ function describedBy() {
   if (attrs["aria-describedby"]) ids.push(attrs["aria-describedby"]);
   return ids.length > 0 ? ids.join(" ") : undefined;
 }
+
+// 组件不画标签，所以可访问名按这个顺序取：调用方的 aria-label > label 属性 > 占位符。
 function inputAriaLabel() {
-  return attrs["aria-label"] || attrs.ariaLabel || (!props.label ? props.placeholder || undefined : undefined);
+  return attrs["aria-label"] || attrs.ariaLabel || props.label || props.placeholder || undefined;
 }
+
 function inputAttrs() {
   const forwarded = { ...attrs };
   delete forwarded.id;
@@ -165,7 +166,6 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
         'kima-text-field--error': hasError,
         'kima-text-field--disabled': disabled,
         'kima-text-field--readonly': readonly,
-        'kima-text-field--filled': !outlined,
         'kima-text-field--password': type === 'password',
         'kima-text-field--has-clear': canClear,
       },
@@ -173,19 +173,10 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     ]"
     :style="attrs.style"
   >
-    <label
-      v-if="label"
-      class="kima-text-field__label"
-      :for="inputId"
-    >
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </label>
-
     <div class="kima-text-field__control">
       <input
         ref="input"
         v-bind="inputAttrs()"
-        :id="inputId"
         :name="name"
         :type="actualType"
         :value="localValue"
@@ -197,8 +188,6 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
         :aria-describedby="describedBy()"
         :aria-invalid="hasError || undefined"
         :aria-required="required || undefined"
-        @focus="focused = true"
-        @blur="focused = false"
         @input.stop="handleInput"
         @compositionstart="composing = true"
         @compositionend="composing = false; handleInput($event)"
@@ -250,98 +239,55 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
 <style scoped lang="scss">
 .kima-text-field {
-  position: relative;
   display: block;
   width: 100%;
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
 
-  /* M3 的两种输入框，靠"描边"和"底色"区分，各是一种造型，不是两档层次：
-   *   outlined（默认）—— 透明底 + 一圈描边，圈出输入区域
-   *   filled          —— 浅色底 + 只有下边线
-   * 这里的线是造型本身，别当成"多余的边框"一起去掉。 */
+  /* 输入区域是一块有底色的平面，跟卡片一样靠底色认出层次，不画描边——
+   * 线是用来切版面的，不该拿来圈一个输入框。
+   * 聚焦时叠上一圈主色（用 inset 阴影，不占位置也不会把元素撑大），
+   * 告诉键盘操作的人现在落在哪个框里。 */
   &__control {
     position: relative;
     height: var(--kima-field-height);
     box-sizing: border-box;
-    border: var(--kima-outline-width) solid var(--kima-color-outline);
     border-radius: var(--kima-radius-m);
-    background: var(--kima-color-transparent);
+    background: var(--kima-color-layer-2);
     transition:
       background-color var(--kima-duration-effects) var(--kima-curve-standard),
-      border-color var(--kima-duration-effects) var(--kima-curve-standard);
+      box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
   &--large &__control {
     height: var(--kima-button-height-l);
   }
 
-  /* 聚焦时描边换成主色，注意力就落到这个框上。 */
   &__control:focus-within {
-    border-color: var(--kima-color-primary);
-  }
-
-  /* 出错时描边换成危险色。 */
-  &--error &__control,
-  &--error &__control:focus-within {
-    border-color: var(--kima-color-error);
-  }
-
-  /* filled 变体：去掉四面描边，改成一整块浅底 + 只留一条下边线。 */
-  &--filled &__control {
-    border: 0;
-    border-bottom: var(--kima-outline-width) solid var(--kima-color-outline);
-    border-radius: var(--kima-radius-s) var(--kima-radius-s) 0 0;
-    background: var(--kima-color-layer-2);
-  }
-
-  &--filled &__control:focus-within {
-    border-bottom-color: var(--kima-color-primary);
     background: var(--kima-color-layer-3);
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 
-  /* filled 出错时下边线也换危险色。 */
-  &--filled.kima-text-field--error &__control {
-    border-bottom-color: var(--kima-color-error);
+  /* 出错不是"描一圈红"，而是这块底本身换成了危险容器的颜色，
+   * 一眼能看出这个框和别人不一样。 */
+  &--error &__control {
+    background: var(--kima-color-error-container);
+    box-shadow: none;
+  }
+
+  &--error &__control:focus-within {
+    background: var(--kima-color-error-container);
+    box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-error);
   }
 
   &--disabled {
     opacity: var(--kima-opacity-disabled);
   }
 
-  /* 标签永远待在输入框上方，位置不动。
-   * 不做 M3 那种"平时冒充占位符、聚焦时飞到边框上"的浮动标签：
-   * 那种做法要靠一层和控件同色的底把边框线遮住，在透明背景上会露馅，
-   * 阅读时也多了个要追踪的动效。现在的做法是标签本来就该在的地方——上面。 */
-  &__label {
-    display: block;
-    /* 缩进跟输入框内边距用同一个数，标签文字和输入文字落在同一条竖线上。 */
-    padding-inline: var(--kima-field-padding);
-    margin: 0 0 var(--kima-space-1);
-    overflow: hidden;
-    color: var(--kima-color-on-surface-variant);
-    font-size: var(--kima-font-size-label-medium);
-    line-height: 1.4;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: color var(--kima-duration-effects) var(--kima-curve-standard);
-  }
-
-  /* 聚焦时标签跟着变主色，和边框一起提示"当前在这个框里"。 */
-  &:focus-within &__label {
-    color: var(--kima-color-primary);
-  }
-
-  &--error &__label,
-  &--error:focus-within &__label {
-    color: var(--kima-color-error);
-  }
-
   &__control input {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    /* 左右内边距跟标签左右对齐，文字和标签在同一条竖线上。 */
     padding: 0 var(--kima-field-padding);
     border: 0;
     outline: 0;
@@ -351,9 +297,19 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     font-size: var(--kima-font-size-body-large);
   }
 
+  /* 错误底是浅红，文字得跟着换成这套红底上的颜色才看得清。 */
+  &--error &__control input {
+    color: var(--kima-color-on-error-container);
+  }
+
   &__control input::placeholder {
     color: var(--kima-color-on-surface-variant);
     opacity: 1;
+  }
+
+  &--error &__control input::placeholder {
+    color: var(--kima-color-on-error-container);
+    opacity: 0.7;
   }
 
   &__actions {
@@ -394,6 +350,12 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     }
   }
 
+  /* 错误底上的按钮也跟着换危险色，不然红底配蓝色图标很跳。 */
+  &--error &__action:hover:not(:disabled) {
+    color: var(--kima-color-error);
+    background: color-mix(in srgb, var(--kima-color-error) 12%, var(--kima-color-transparent));
+  }
+
   &--password &__control input,
   &--has-clear &__control input {
     padding-right: 48px;
@@ -405,7 +367,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 
   &__message {
     min-height: 1.2em;
-    /* 上边挨着输入框一段小间距，左右缩进跟标签、输入文字对齐。 */
+    /* 上边挨着输入框一段小间距，左右缩进跟输入文字对齐。 */
     margin: var(--kima-space-1) var(--kima-field-padding) 0;
     color: var(--kima-color-on-surface-variant);
     font-size: var(--kima-font-size-small);
@@ -413,7 +375,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   }
 
   &--error &__message {
-    color: var(--kima-color-danger);
+    color: var(--kima-color-error);
   }
 }
 </style>
