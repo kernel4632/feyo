@@ -8,6 +8,8 @@
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
+import KimaIcon from "./icon.ce.vue";
+import { MinusSignIcon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { useNativeSlots } from "../utils/native-slots.js";
 import { useRipple } from "../utils/ripple.js";
 
@@ -107,7 +109,8 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     />
     <span ref="control" class="kima-checkbox__control" aria-hidden="true">
       <span class="kima-checkbox__box">
-        <span class="kima-checkbox__mark" />
+        <KimaIcon class="kima-checkbox__mark kima-checkbox__mark--tick" :icon="Tick02Icon" :size="20" />
+        <KimaIcon class="kima-checkbox__mark kima-checkbox__mark--dash" :icon="MinusSignIcon" :size="20" />
       </span>
     </span>
     <span v-if="label || $slots.default || hasNativeSlot('default')" class="kima-checkbox__label">
@@ -176,15 +179,15 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       border-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
-  /* 勾：用两条边拼出来，不需要图标资源。
+  /* 勾与半选横杠直接用 Hugeicons 图标：跟全库其他图标同一套线条，
+   * 线头圆润、比例固定。手拼两条边框做勾会变成宽 V，线条也跟图标库对不上。
    * 用 spring-snappy 弹出来，让"选中了"这个动作有个看得见的落点。 */
   &__mark {
     position: absolute;
-    inset: 4px 4px 6px;
-    display: block;
-    border-right: 3px solid var(--kima-color-on-primary);
-    border-bottom: 3px solid var(--kima-color-on-primary);
-    transform: rotate(45deg) scale(0);
+    top: 50%;
+    left: 50%;
+    color: var(--kima-color-on-primary);
+    transform: translate(-50%, -50%) scale(0);
     transition: transform var(--kima-duration-medium) var(--kima-spring-snappy);
   }
 
@@ -202,19 +205,19 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     }
   }
 
-  &--checked .kima-checkbox__mark {
-    transform: rotate(45deg) scale(1);
+  &--checked .kima-checkbox__mark--tick {
+    transform: translate(-50%, -50%) scale(1);
   }
 
-  /* 半选用一根横杠，和勾区分开：看不出"部分选中"和"全选"的区别才是问题。 */
-  &--indeterminate .kima-checkbox__mark {
-    inset: 50% 0 0 50%;
-    width: 12px;
-    height: 3px;
-    margin: -1.5px 0 0 -6px;
-    border: 0;
-    background: var(--kima-color-on-primary);
-    transform: none;
+  /* 半选用横杠，和勾区分开：看不出"部分选中"和"全选"的区别才是问题。
+   * 原生 indeterminate 可以和 checked 并存，所以半选规则写在后面，压过勾。
+   * 两个图标一个缩进一个缩出，同一时长，切换是平滑的。 */
+  &--indeterminate .kima-checkbox__mark--tick {
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  &--indeterminate .kima-checkbox__mark--dash {
+    transform: translate(-50%, -50%) scale(1);
   }
 
   /* 键盘聚焦时方框外一圈主色；鼠标点击不出焦点环。 */
