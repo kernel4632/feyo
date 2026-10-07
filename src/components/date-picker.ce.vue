@@ -77,8 +77,9 @@ const emit = defineEmits(["update:modelValue", "change", "update:open"]);
 const root = ref(null);
 const trigger = ref(null);
 const nativeInput = ref(null);
-// 触发器是"点得动的东西"，按下时从指针位置长出涟漪。
-useRipple(trigger);
+// 整块场地（__control）是"点得动的东西"，按下时从指针位置长出涟漪。
+const control = ref(null);
+useRipple(control);
 const localValue = ref(props.modelValue);
 const localOpen = ref(false);
 const viewYear = ref(new Date().getFullYear());
@@ -354,7 +355,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="root" v-bind="{ ...attrs, id: host ? undefined : attrs.id }" class="kima-date-picker" :class="{ 'kima-date-picker--open': localOpen, 'kima-date-picker--disabled': disabled }">
-    <div class="kima-date-picker__control" :class="{ 'kima-date-picker__control--clearable': clearable && localValue }">
+    <div ref="control" class="kima-date-picker__control" :aria-disabled="disabled || undefined">
       <button
         :id="triggerId"
         ref="trigger"
@@ -483,59 +484,75 @@ onBeforeUnmount(() => {
   font-family: var(--kima-font-family);
 }
 
+/* 控件是一块完整的场地：触发器、日期图标、清除按钮都是场地里的排布项。
+ * 谁在谁就占自己那一格，多一个少一个由 flex 自动重排——
+ * 不用绝对定位去猜坐标，也就不会出现图标叠在一起的情况。 */
 .kima-date-picker__control {
   position: relative;
   display: flex;
-}
-
-/* 触发器跟文本框、选择器、组合框是同一类东西，就长成同一个样子：
- * 一档高度、圆角 M、半透明底，聚焦时叠一圈主色。 */
-.kima-date-picker__trigger {
-  box-sizing: border-box;
-  display: flex;
-  width: 100%;
-  height: var(--kima-field-height);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--kima-space-3);
-  padding: 0 var(--kima-field-padding);
-  border: 0;
+  gap: var(--kima-space-1);
+  height: var(--kima-field-height);
+  box-sizing: border-box;
+  padding-right: var(--kima-space-2);
   border-radius: var(--kima-radius-m);
-  color: var(--kima-color-on-surface);
   background: var(--kima-color-layer-2);
-  font: inherit;
-  font-size: var(--kima-font-size-body-large);
-  text-align: left;
-  cursor: pointer;
   transition:
     background-color var(--kima-duration-effects) var(--kima-curve-standard),
-    box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard),
+    opacity var(--kima-duration-effects) var(--kima-curve-standard);
 
   /* 点得动的东西都要有反馈：状态层、焦点环、涟漪，选择器只给这三样。
    * 不接按下回弹：点它是"展开面板"，触发器要一直停在打开状态，
    * 弹簧缩小再弹回的动势跟面板展开方向拧着，反而像点歪了。 */
   @include kima-state-layer;
-  @include kima-focus-ring;
   @include kima-ripple-host;
 
-  &:hover:not(:disabled),
+  &:hover:not([aria-disabled="true"]),
   .kima-date-picker--open & {
     background: var(--kima-color-layer-3);
   }
 
-  /* 打开日历时焦点在网格里，触发器不用再画第二圈线。 */
-  &:focus-visible {
+  /* 聚焦提示是一条内阴影：不占位置，也不会把元素撑大。
+   * 焦点落在触发器或清除按钮上都算"停在这个框里"，所以用 focus-within。 */
+  &:focus-within {
     box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 
-  &:disabled {
+  /* 打开日历时焦点在网格里，触发器不用再画第二圈线。 */
+  .kima-date-picker--open &:focus-within {
+    box-shadow: none;
+  }
+
+  .kima-date-picker--disabled & {
     cursor: not-allowed;
     opacity: var(--kima-opacity-disabled);
   }
 }
 
-.kima-date-picker__control--clearable .kima-date-picker__trigger {
-  padding-right: 44px;
+/* 触发器是场地里"占满剩余宽度"的一项：文字在左，日期图标在右。
+ * 底色和圆角在 __control 上，它自己不再画框。 */
+.kima-date-picker__trigger {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kima-space-3);
+  padding: 0 0 0 var(--kima-field-padding);
+  border: 0;
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-transparent);
+  font: inherit;
+  font-size: var(--kima-font-size-body-large);
+  text-align: left;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
 }
 
 .kima-date-picker__trigger-label {
@@ -551,16 +568,14 @@ onBeforeUnmount(() => {
 
 .kima-date-picker__icon {
   flex: 0 0 auto;
+  /* 单独放着时离右边缘 16px，跟旁边的清除按钮留出一个字的空。 */
+  margin-right: var(--kima-space-2);
   color: var(--kima-color-on-surface-variant);
 }
 
-/* 清除按钮压在触发器之上：它俩是并列关系，但触发器里的文字和图标
- * 会被状态层提到 z-index 2，清除按钮不站出来就会被盖住点不到。 */
+/* 清除按钮是场地里的普通一项，占 28px 的圆角格，谁也不压着谁。 */
 .kima-date-picker__clear {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  right: 36px;
+  flex: 0 0 auto;
   display: inline-flex;
   width: 28px;
   height: 28px;
@@ -572,7 +587,6 @@ onBeforeUnmount(() => {
   color: var(--kima-color-on-surface-variant);
   background: var(--kima-color-transparent);
   cursor: pointer;
-  transform: translateY(-50%);
 
   &:hover:not(:disabled),
   &:focus-visible {
@@ -587,7 +601,6 @@ onBeforeUnmount(() => {
 
   &:disabled {
     cursor: not-allowed;
-    opacity: var(--kima-opacity-disabled);
   }
 }
 

@@ -15,7 +15,11 @@ export function useRipple(host) {
   // 一次按下长一个圆。位置和大小按宿主尺寸和指针坐标算，
   // 直径取长边的两倍，保证从角落按下也能盖满整个控件。
   function onPointerDown(event) {
-    if (!element || element.disabled || event.button !== 0) return;
+    if (!element || event.button !== 0) return;
+
+    // 禁用中的控件不长圆。宿主可能是按钮（自己带 disabled），
+    // 也可能是整块场地（用 aria-disabled 表示禁用），两种都认。
+    if (element.matches(":disabled, [aria-disabled='true']")) return;
 
     // 宿主没套 kima-ripple-host 时不长圆。
     // 少了那个 mixin，这个 span 会变成一个没定位的普通子元素，被布局算进去，

@@ -228,3 +228,18 @@
   --kima-color-warning: #8a5200;
   --kima-color-on-warning: #ffffff;
 }
+
+/* ---- 字段类宿主的默认 ----
+ * 宿主（<kima-cascader> 这类标签本身）放进网格或弹性排版时，浏览器默认
+ * 最小宽度是"内容有多宽就多宽"（min-width: auto）。字段类的值是"电子/手机/安卓"
+ * 这种不换行的长文本，会把宿主撑得比容器还宽，整个页面跟着溢出，手机宽度下尤其明显。
+ * 这里给宿主放行一次：允许被容器压窄，内部再用省略号收尾。
+ * 只在字段类上放，不动其他组件，避免影响它们各自的大小表现。 */
+kima-text-field,
+kima-select,
+kima-combobox,
+kima-cascader,
+kima-date-picker,
+kima-time-picker {
+  min-width: 0;
+}

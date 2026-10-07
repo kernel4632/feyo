@@ -65,8 +65,9 @@ const forwardedAttrs = computed(() => host ? { ...attrs, id: undefined } : attrs
 const root = ref(null);
 const trigger = ref(null);
 const nativeInput = ref(null);
-// 触发器是"点得动的东西"，按下时从指针位置长出涟漪。
-useRipple(trigger);
+// 整块场地（__control）是"点得动的东西"，按下时从指针位置长出涟漪。
+const control = ref(null);
+useRipple(control);
 const optionElements = ref({ hour: [], minute: [], period: [] });
 const localValue = ref(props.modelValue);
 const localOpen = ref(false);
@@ -416,7 +417,7 @@ onBeforeUnmount(() => {
     class="kima-time-picker"
     :class="{ 'kima-time-picker--open': localOpen, 'kima-time-picker--disabled': disabled }"
   >
-    <div class="kima-time-picker__control" :class="{ 'kima-time-picker__control--clearable': clearable && localValue }">
+    <div ref="control" class="kima-time-picker__control" :aria-disabled="disabled || undefined">
       <button
         :id="triggerId"
         ref="trigger"
@@ -562,57 +563,70 @@ onBeforeUnmount(() => {
   font-weight: var(--kima-font-weight-medium);
 }
 
+/* 控件是一块完整的场地：触发器、箭头、清除按钮都是场地里的排布项。
+ * 谁在谁就占自己那一格，多一个少一个由 flex 自动重排——
+ * 不用绝对定位去猜坐标，也就不会出现图标叠在一起的情况。 */
 .kima-time-picker__control {
   position: relative;
   display: flex;
-}
-
-/* 触发器跟文本框、选择器、组合框、日期选择器统一：一档高度、圆角 M、半透明底。 */
-.kima-time-picker__trigger {
-  box-sizing: border-box;
-  display: flex;
-  width: 100%;
-  height: var(--kima-field-height);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--kima-space-3);
-  padding: 0 var(--kima-field-padding);
-  border: 0;
+  gap: var(--kima-space-1);
+  height: var(--kima-field-height);
+  box-sizing: border-box;
+  padding-right: var(--kima-space-2);
   border-radius: var(--kima-radius-m);
-  color: var(--kima-color-on-surface);
   background: var(--kima-color-layer-2);
-  font: inherit;
-  font-size: var(--kima-font-size-body-large);
-  text-align: left;
-  cursor: pointer;
   transition:
     background-color var(--kima-duration-effects) var(--kima-curve-standard),
-    box-shadow var(--kima-duration-effects) var(--kima-curve-standard);
+    box-shadow var(--kima-duration-effects) var(--kima-curve-standard),
+    opacity var(--kima-duration-effects) var(--kima-curve-standard);
 
   /* 点得动的东西都要有反馈：状态层、焦点环、涟漪，选择器只给这三样。
    * 不接按下回弹：点它是"展开面板"，触发器要一直停在打开状态，
    * 弹簧缩小再弹回的动势跟面板展开方向拧着，反而像点歪了。 */
   @include kima-state-layer;
-  @include kima-focus-ring;
   @include kima-ripple-host;
 
-  &:hover:not(:disabled),
+  &:hover:not([aria-disabled="true"]),
   .kima-time-picker--open & {
     background: var(--kima-color-layer-3);
   }
 
-  &:focus-visible {
+  /* 聚焦提示是一条内阴影：不占位置，也不会把元素撑大。
+   * 焦点落在触发器或清除按钮上都算"停在这个框里"，所以用 focus-within。 */
+  &:focus-within {
     box-shadow: inset 0 0 0 var(--kima-outline-width-focused) var(--kima-color-primary);
   }
 
-  &:disabled {
+  .kima-time-picker--disabled & {
     cursor: not-allowed;
     opacity: var(--kima-opacity-disabled);
   }
 }
 
-.kima-time-picker__control--clearable .kima-time-picker__trigger {
-  padding-right: 72px;
+/* 触发器是场地里"占满剩余宽度"的一项：文字在左，箭头在右。
+ * 底色和圆角在 __control 上，它自己不再画框。 */
+.kima-time-picker__trigger {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kima-space-3);
+  padding: 0 0 0 var(--kima-field-padding);
+  border: 0;
+  color: var(--kima-color-on-surface);
+  background: var(--kima-color-transparent);
+  font: inherit;
+  font-size: var(--kima-font-size-body-large);
+  text-align: left;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
 }
 
 .kima-time-picker__trigger-label {
@@ -630,6 +644,8 @@ onBeforeUnmount(() => {
   width: 8px;
   height: 8px;
   flex: 0 0 auto;
+  /* 单独放着时离右边缘 16px，跟旁边的清除按钮留出一个字的空。 */
+  margin-right: var(--kima-space-2);
   border-right: 1.5px solid currentColor;
   border-bottom: 1.5px solid currentColor;
   color: var(--kima-color-on-surface-variant);
@@ -641,13 +657,9 @@ onBeforeUnmount(() => {
   transform: translateY(2px) rotate(225deg);
 }
 
-/* 清除按钮压在触发器之上：它俩是并列关系，但触发器里的文字和图标
- * 会被状态层提到 z-index 2，清除按钮不站出来就会被盖住点不到。 */
+/* 清除按钮是场地里的普通一项，占 28px 的圆角格，谁也不压着谁。 */
 .kima-time-picker__clear {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  right: 36px;
+  flex: 0 0 auto;
   display: inline-flex;
   width: 28px;
   height: 28px;
@@ -660,7 +672,6 @@ onBeforeUnmount(() => {
   background: var(--kima-color-transparent);
   font: inherit;
   cursor: pointer;
-  transform: translateY(-50%);
 
   &:hover:not(:disabled),
   &:focus-visible {
@@ -671,6 +682,10 @@ onBeforeUnmount(() => {
   &:focus-visible {
     outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
   }
 }
 

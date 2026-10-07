@@ -287,7 +287,7 @@ onBeforeUnmount(() => {
     class="kima-combobox"
     :class="{ 'kima-combobox--open': localOpen, 'kima-combobox--disabled': disabled }"
   >
-    <div class="kima-combobox__control" :class="{ 'kima-combobox__control--clearable': canClear }">
+    <div class="kima-combobox__control">
       <KimaIcon v-if="searchable" class="kima-combobox__search-icon" :icon="Search01Icon" :size="18" aria-hidden="true" />
       <input
         :id="inputId"
@@ -384,13 +384,17 @@ onBeforeUnmount(() => {
   font-family: var(--kima-font-family);
 }
 
-/* 控件是一档高度、圆角 M、半透明底，和文本框、选择器触发器完全一致，
- * 这样并排摆放时几个输入控件顶边和底边都在同一条线上。 */
+/* 控件是一块完整的场地：搜索图标、输入框、清除按钮、下拉按钮都是场地里的排布项。
+ * 谁在谁就占自己那一格，多一个少一个由 flex 自动重排——
+ * 不用绝对定位去猜坐标，也就不会出现图标叠在一起的情况。 */
 .kima-combobox__control {
   position: relative;
   display: flex;
   height: var(--kima-field-height);
   align-items: center;
+  gap: var(--kima-space-1);
+  box-sizing: border-box;
+  padding-right: var(--kima-space-2);
   border: 0;
   border-radius: var(--kima-radius-m);
   background: var(--kima-color-layer-2);
@@ -409,11 +413,13 @@ onBeforeUnmount(() => {
   }
 }
 
+/* 输入框铺满剩下的宽度，左右都是并排项，不用留白给绝对定位的图标。 */
 .kima-combobox__input {
   box-sizing: border-box;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   height: 100%;
-  padding: 0 var(--kima-field-padding);
+  padding: 0 var(--kima-space-2) 0 var(--kima-field-padding);
   font-size: var(--kima-font-size-body-large);
   border: 0;
   border-radius: inherit;
@@ -433,24 +439,21 @@ onBeforeUnmount(() => {
 }
 
 .kima-combobox__search-icon {
-  position: absolute;
-  left: var(--kima-space-3);
+  flex: 0 0 auto;
+  margin-left: var(--kima-space-3);
   color: var(--kima-color-on-surface-variant);
   pointer-events: none;
 }
 
+/* 有搜索图标时，输入框左边的留白交给图标占位，文字挨着图标起步。 */
 .kima-combobox__search-icon + .kima-combobox__input {
-  padding-left: 40px;
+  padding-left: var(--kima-space-1);
 }
 
-.kima-combobox__control--clearable .kima-combobox__input {
-  padding-right: 72px;
-}
-
+/* 清除和下拉按钮都是场地里 28px 的圆角格，各占各的位置，谁也不压着谁。 */
 .kima-combobox__clear,
 .kima-combobox__toggle {
-  position: absolute;
-  top: 50%;
+  flex: 0 0 auto;
   display: inline-flex;
   width: 28px;
   height: 28px;
@@ -462,7 +465,6 @@ onBeforeUnmount(() => {
   color: var(--kima-color-on-surface-variant);
   background: var(--kima-color-transparent);
   cursor: pointer;
-  transform: translateY(-50%);
 
   &:hover:not(:disabled),
   &:focus-visible {
@@ -479,14 +481,6 @@ onBeforeUnmount(() => {
     cursor: not-allowed;
     opacity: var(--kima-opacity-disabled);
   }
-}
-
-.kima-combobox__clear {
-  right: 36px;
-}
-
-.kima-combobox__toggle {
-  right: var(--kima-space-2);
 }
 
 .kima-combobox__arrow {

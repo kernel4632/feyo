@@ -160,8 +160,6 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
         'kima-text-field--error': hasError,
         'kima-text-field--disabled': disabled,
         'kima-text-field--readonly': readonly,
-        'kima-text-field--password': type === 'password',
-        'kima-text-field--has-clear': canClear,
       },
       attrs.class,
     ]"
@@ -243,7 +241,8 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
    * 聚焦时叠上一圈主色（用 inset 阴影，不占位置也不会把元素撑大），
    * 告诉键盘操作的人现在落在哪个框里。 */
   &__control {
-    position: relative;
+    display: flex;
+    align-items: center;
     height: var(--kima-field-height);
     box-sizing: border-box;
     border-radius: var(--kima-radius-m);
@@ -274,8 +273,10 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     opacity: var(--kima-opacity-disabled);
   }
 
+  /* 输入框铺满剩下的宽度，右侧的按钮组各占各的位置，自动排开。 */
   &__control input {
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
     height: 100%;
     box-sizing: border-box;
     padding: 0 var(--kima-field-padding);
@@ -302,14 +303,13 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     opacity: 0.7;
   }
 
+  /* 右侧按钮组是输入框后面的并排项，不用绝对定位去猜坐标。 */
   &__actions {
-    position: absolute;
-    top: 0;
-    right: 4px;
-    bottom: 0;
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: var(--kima-space-1);
+    margin-right: var(--kima-space-1);
   }
 
   &__action {
@@ -346,13 +346,9 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     background: color-mix(in srgb, var(--kima-color-error) 12%, var(--kima-color-transparent));
   }
 
-  &--password &__control input,
-  &--has-clear &__control input {
-    padding-right: 48px;
-  }
-
-  &--password.kima-text-field--has-clear &__control input {
-    padding-right: 76px;
+  /* 单独一个清除按钮（非密码型）也是并排的一项，跟按钮组同一档右边距。 */
+  &__action--clear {
+    margin-right: var(--kima-space-1);
   }
 
   &__message {
