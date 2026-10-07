@@ -211,11 +211,17 @@ watch(pageCount, (count) => {
     outline: 2px solid var(--kima-color-primary);
     outline-offset: 1px;
   }
-
   &[aria-current="page"] {
     color: var(--kima-color-on-primary-container);
     background: var(--kima-color-primary-container);
     font-weight: var(--kima-font-weight-bold);
+  }
+
+  /* 当前页被悬停时，底色从容器色派生，不落回通用悬停色：
+   * 换回 layer-3 会让"容器文字 + 深灰底"配成一对，对比度就掉了。 */
+  &[aria-current="page"]:hover:not(:disabled),
+  &[aria-current="page"]:focus-visible {
+    background: var(--kima-color-primary-container-hover);
   }
 
   &:disabled {

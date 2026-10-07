@@ -104,6 +104,11 @@
   /* 未选中的控件底（开关轨道、复选框方框）：比 layer-3 淡一档，
    * 因为它要长期留在界面上，太实会跟选中态抢注意力。 */
   --kima-color-track: color-mix(in srgb, var(--kima-color-on-surface) 22%, transparent);
+  /* 选中项的悬停底：选中项的文字和底是"容器色 + 容器文字"的一整对，
+   * 悬停时不能换成通用悬停色（配对一拆开，深色主题下就成了黑字压深底）。
+   * 所以给它一个从容器色派生的档位：把容器文字色按 M3 悬停档 8% 叠回容器色，
+   * 深浅两套主题下都只挪一档明度，对比度不动。 */
+  --kima-color-primary-container-hover: color-mix(in srgb, var(--kima-color-on-primary-container) 8%, var(--kima-color-primary-container));
 
   /* ---- 层级 ----
    * M3 elevation：数字越大越浮起来。抽屉和弹层用 3 以上。 */

@@ -554,6 +554,13 @@ onBeforeUnmount(() => {
     background: var(--kima-color-primary-container);
   }
 
+  /* 选中项被悬停或键盘高亮时，底色从容器色派生，不落回通用悬停色：
+   * 换回 layer-3 会让"容器文字 + 深灰底"配成一对，对比度就掉了。 */
+  &--selected:hover,
+  &--selected.kima-combobox__option--active {
+    background: var(--kima-color-primary-container-hover);
+  }
+
   &[aria-disabled="true"] {
     cursor: not-allowed;
     opacity: var(--kima-opacity-disabled);
