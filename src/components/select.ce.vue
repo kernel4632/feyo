@@ -617,7 +617,9 @@ onBeforeUnmount(() => {
 
 .kima-select__check {
   flex: 0 0 auto;
-  color: var(--kima-color-primary);
+  /* 勾跟着所在行的文字色走：选中行是 primary（选中项不加底色），勾也用同一个色。
+   * 写死颜色的话，选中行换配色时勾会和文字对不上。 */
+  color: inherit;
 }
 
 .kima-select__empty {

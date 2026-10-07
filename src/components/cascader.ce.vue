@@ -594,8 +594,10 @@ onBeforeUnmount(() => {
     outline-offset: -2px;
   }
 
+  /* 选中项是"容器色底"，文字必须配 on-primary-container：
+   * 容器色在浅色主题下本身就是浅底，用 primary 当文字色就成了浅字浅底，看不清。 */
   &--selected {
-    color: var(--kima-color-primary);
+    color: var(--kima-color-on-primary-container);
     background: var(--kima-color-primary-container);
   }
 

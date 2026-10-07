@@ -547,8 +547,10 @@ onBeforeUnmount(() => {
     outline-offset: -2px;
   }
 
+  /* 选中项是"容器色底"，文字必须配 on-primary-container：
+   * 容器色在浅色主题下本身就是浅底，用 primary 当文字色就成了浅字浅底，看不清。 */
   &--selected {
-    color: var(--kima-color-primary);
+    color: var(--kima-color-on-primary-container);
     background: var(--kima-color-primary-container);
   }
 
@@ -577,7 +579,9 @@ onBeforeUnmount(() => {
 
 .kima-combobox__check {
   flex: 0 0 auto;
-  color: var(--kima-color-primary);
+  /* 勾跟着所在行的文字色走：选中行是 on-primary-container，勾也用同一个色。
+   * 不能写死成 primary——容器色底上 primary 也是浅色，勾会跟底色糊在一起。 */
+  color: inherit;
 }
 
 .kima-combobox__empty {
