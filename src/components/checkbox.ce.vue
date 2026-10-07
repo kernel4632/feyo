@@ -1,12 +1,15 @@
 <!--
 复选框：提供可参与表单提交的原生 checkbox，并显示 KIMA 的选中状态。
+标签由组件渲染（跟文本框不同）：复选框的说明文字就贴在方框右边，位置是它造型的一部分，
+交给页面排版反而要每个调用点自己算对齐。可访问名由原生 input 通过包住它的 label 提供。
 调用示例：
-  <kima-checkbox v-model="accepted" label="接受条款" name="accepted" required />
-  <kima-checkbox :model-value="true" label="已完成" indeterminate />
+  <kima-checkbox v-model="accepted" label="接受条款" name="accepted" required></kima-checkbox>
+  <kima-checkbox :model-value="true" label="已完成" indeterminate></kima-checkbox>
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
 import { useNativeSlots } from "../utils/native-slots.js";
+import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -23,14 +26,18 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "change"]);
 const attrs = useAttrs();
 const root = ref(null);
+const control = ref(null);
+const input = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
-const input = ref(null);
 const localValue = ref(props.modelValue || attrs.checked === "" || attrs.checked === true);
 const localIndeterminate = ref(props.indeterminate);
 let resetValue;
 let resetIndeterminate;
 let ownerDocument;
+
+// 涟漪长在方框外围那圈光环上，不是长在方框里——方框才 24px，裁进去几乎看不见。
+useRipple(control);
 
 // 外部值变化时同步显示；用户点击后先由本地值保证控件立即响应。
 watch(
@@ -86,7 +93,7 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
   >
     <input
       ref="input"
-       v-bind="forwardedAttrs"
+      v-bind="forwardedAttrs"
       class="kima-checkbox__input"
       type="checkbox"
       :checked="localValue"
@@ -98,8 +105,10 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
       @input.stop
       @change.stop="handleChange"
     />
-    <span class="kima-checkbox__box" aria-hidden="true">
-      <span class="kima-checkbox__mark" />
+    <span ref="control" class="kima-checkbox__control" aria-hidden="true">
+      <span class="kima-checkbox__box">
+        <span class="kima-checkbox__mark" />
+      </span>
     </span>
     <span v-if="label || $slots.default || hasNativeSlot('default')" class="kima-checkbox__label">
       <slot>{{ label }}</slot>
@@ -108,13 +117,15 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
 </template>
 
 <style scoped lang="scss">
+@use "../styles/mixins" as *;
+
 .kima-checkbox {
   position: relative;
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--kima-space-2);
-  min-height: 20px;
   color: var(--kima-color-on-surface);
+  font-size: var(--kima-font-size-body-large);
   cursor: pointer;
   user-select: none;
 
@@ -128,43 +139,61 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     cursor: inherit;
   }
 
+  /* 光环：方框只有 24px，手指和鼠标都嫌小，所以外面套一圈 40px 的圆形区域。
+   * 它同时也是悬停、按下、涟漪的落点——反馈出现在手指周围的圆圈里，
+   * 而不是硬挤进那个小方框。 */
+  &__control {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--kima-radius-full);
+
+    @include kima-state-layer;
+    @include kima-ripple-host;
+  }
+
   /* 方框：未选中是一圈描边（框的范围要靠它表达，是造型不是装饰），
    * 选中时整块切成主色。 */
   &__box {
     box-sizing: border-box;
     position: relative;
-    flex: 0 0 20px;
-    width: 20px;
-    height: 20px;
+    display: block;
+    width: 24px;
+    height: 24px;
     border: 2px solid var(--kima-color-outline);
-    border-radius: var(--kima-radius-sm);
+    border-radius: var(--kima-radius-xs);
     background: var(--kima-color-transparent);
     transition:
-      background var(--kima-duration-fast) var(--kima-ease-standard),
-      border-color var(--kima-duration-fast) var(--kima-ease-standard);
+      background-color var(--kima-duration-effects) var(--kima-curve-standard),
+      border-color var(--kima-duration-effects) var(--kima-curve-standard);
   }
 
+  /* 勾：用两条边拼出来，不需要图标资源。
+   * 用 spring-snappy 弹出来，让"选中了"这个动作有个看得见的落点。 */
   &__mark {
     position: absolute;
-    inset: 3px;
+    inset: 4px 4px 6px;
     display: block;
-    border-right: 2px solid var(--kima-color-on-primary);
-    border-bottom: 2px solid var(--kima-color-on-primary);
+    border-right: 3px solid var(--kima-color-on-primary);
+    border-bottom: 3px solid var(--kima-color-on-primary);
     transform: rotate(45deg) scale(0);
-    transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
+    transition: transform var(--kima-duration-medium) var(--kima-spring-snappy);
   }
 
   &__label {
     min-width: 0;
-    padding-top: 1px;
-    color: var(--kima-color-on-surface);
-    line-height: 1.35;
+    line-height: 1.4;
   }
 
   /* 勾选时整块换成主色，不靠描边加粗表示状态。 */
   &--checked,
   &--indeterminate {
     .kima-checkbox__box {
+      border-color: var(--kima-color-primary);
       background: var(--kima-color-primary);
     }
   }
@@ -173,22 +202,36 @@ onBeforeUnmount(() => ownerDocument.removeEventListener("reset", handleReset, tr
     transform: rotate(45deg) scale(1);
   }
 
+  /* 半选用一根横杠，和勾区分开：看不出"部分选中"和"全选"的区别才是问题。 */
   &--indeterminate .kima-checkbox__mark {
-    inset: 7px 3px;
+    inset: 50% 0 0 50%;
+    width: 12px;
+    height: 3px;
+    margin: -1.5px 0 0 -6px;
     border: 0;
     background: var(--kima-color-on-primary);
     transform: none;
   }
 
-  &__input:focus-visible + .kima-checkbox__box {
-    outline: 2px solid var(--kima-color-primary);
-    outline-offset: 2px;
+  /* 键盘聚焦时方框外一圈主色；鼠标点击不出焦点环。 */
+  &__input:focus-visible + .kima-checkbox__control {
+    outline: var(--kima-focus-ring-width) solid var(--kima-color-primary);
+    outline-offset: var(--kima-focus-ring-offset);
   }
 
+  /* 禁用只是降低存在感，也不再响应悬停和按下（那会让人以为还能点）。 */
   &--disabled {
     color: var(--kima-color-on-surface-variant);
-    opacity: var(--kima-opacity-disabled);
     cursor: not-allowed;
+
+    .kima-checkbox__control {
+      pointer-events: none;
+    }
+
+    .kima-checkbox__control,
+    .kima-checkbox__box {
+      opacity: var(--kima-opacity-disabled);
+    }
   }
 }
 </style>
