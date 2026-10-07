@@ -12,6 +12,8 @@ dist
 site-dist
 shots
 test-results
+# 会话快照（Roo 任务记录），不是项目内容。
+roo_task_*.md
 .playwright-mcp
 playwright-report
 dist-ssr
