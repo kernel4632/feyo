@@ -54,54 +54,47 @@
 }
 
 /* ---- 涟漪宿主 ----
- * 配合 utils/ripple.js 用：裁剪容器让圆不溢出圆角，圆盖在场地内容之上。
- * 用法：@include kima-ripple-host;  然后在 JS 里 useRipple(root)。 */
+ * 配合 utils/ripple.js 用：裁剪容器让光斑不溢出圆角，光斑盖在场地内容之上。
+ * 用法：@include kima-ripple-host;  然后在 JS 里 useRipple(root)。
+ *
+ * 不是"圆从按下点涨出来"：那种做法有一条会移动的圆边，
+ * 宽控件上一定会出现"左边已经被扫到、右边还没被扫到"这两块，
+ * 两眼就能看出割裂（把边柔化、把过程压快都只能减轻、消不掉）。
+ *
+ * 改成"整个场地从按下点方向亮起"：
+ *   光斑第一帧就铺满，几何形状从头到尾不动；
+ *   亮度靠近按下点最高、向远处连续衰减——没有任何会被看出来的边界。
+ *   按下点在哪儿，光就从哪儿来，方向感保留；扫过感消失。 */
 @mixin kima-ripple-host {
   position: relative;
   overflow: hidden;
 
-  /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有那个标记。
-   *
-   * 三个关键细节，缺一个就会"看起来不对劲"：
-   *   1. 柔边（radial-gradient 中心实、边缘渐隐）。实色圆的边是一条硬线，
-   *      扫过宽控件时会把场地切成"亮/暗"两半，看起来像两个独立的涟漪。
-   *      实心区取到 78%：圆铺满场地时，渐变的尾巴正好落在场地外，
-   *      场内每一处都是实心亮度，看不出圆的边界。
-   *   2. 铺满要快（150ms）。涟漪只该是"闪一下"，不是一道慢慢扫过去的波：
-   *      边扫边看才看得出"左边先亮、右边后亮"，快闪时眼睛只记得"整块亮了一下"。
-   *      —— 圆从按下点长出来，宽控件上必然有先后，唯一能做的就是把这个过程压到看不见。
-   *   3. 两个阶段分开：扫完之前保持亮度，之后整体淡出（总共 400ms 前后）。
-   *      挤在一条减速曲线里的话，扫到远角时已经快透明了，远端看起来就没涟漪。
-   * z-index 2：圆盖在场地所有内容之上，按钮边界处不会把圆切开。 */
+  /* :deep 让规则不加 data-v 作用域标记：光斑是 JS 动态插入的，没有那个标记。
+   * z-index 2：光斑盖在场地所有内容之上，按钮边界处不会把它切开。
+   * 半径和中心由 JS 按按下位置写进 --kima-ripple-* 三个变量。 */
   :deep(.kima-ripple) {
     position: absolute;
+    inset: 0;
     z-index: 2;
-    width: var(--kima-ripple-size);
-    height: var(--kima-ripple-size);
-    left: var(--kima-ripple-x);
-    top: var(--kima-ripple-y);
-    border-radius: var(--kima-radius-full);
-    background: radial-gradient(circle closest-side, currentColor 78%, transparent 100%);
     pointer-events: none;
-    transform: scale(0);
-    opacity: 0.14;
-    animation:
-      kima-ripple-spread 150ms var(--kima-curve-decelerate) forwards,
-      kima-ripple-fade var(--kima-duration-slower) linear forwards;
+    background: radial-gradient(
+      circle var(--kima-ripple-reach) at var(--kima-ripple-x) var(--kima-ripple-y),
+      currentColor,
+      transparent
+    );
+    animation: kima-ripple-glow var(--kima-duration-slower) linear forwards;
   }
 }
 
-@keyframes kima-ripple-spread {
-  to {
-    transform: scale(1);
-  }
-}
-
-/* 前 30%（约 150ms）保持亮度：那是圆铺满场地的时间；之后整体淡出。 */
-@keyframes kima-ripple-fade {
-  0%,
-  30% {
+/* 按下即亮起（瞬时，和手指同步），中段保持，尾段淡出。
+ * 全程只改透明度：形状不动，眼睛就没有"扫过"可追。 */
+@keyframes kima-ripple-glow {
+  0% {
     opacity: 0.14;
+  }
+
+  55% {
+    opacity: 0.1;
   }
 
   100% {
