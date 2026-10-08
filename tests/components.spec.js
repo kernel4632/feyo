@@ -621,6 +621,72 @@ test("drawer opens modal, traps Tab, closes on Escape and restores focus", async
   expect((await events(page, "drawer", "close"))[0].detail).toEqual(["escape"]);
 });
 
+test("drawer enters from its own side, not from the middle", async ({ page }) => {
+  // 三个方向必须各自从"自己那一侧"进来：
+  // 右边从屏右、左边从屏左、底部从屏下。全都从中间往外滑就成了另一种东西。
+  // 这条测试读的是面板相对视口的位置，不是 CSS 里的字面值。
+  for (const [placement, name] of [["bottom", "下"], ["right", "右"], ["left", "左"]]) {
+    await mount(page, `<button id="launch">Open</button><kima-drawer id="drawer" placement="${placement}" title="Sheet"><p>Body</p></kima-drawer>`);
+    await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+
+    // 装好观察器再点：抓打开后的第一帧位置。
+    await page.evaluate(() => {
+      window.__first = null;
+      const watch = () => {
+        const panel = document.querySelector("dialog.kima-drawer[open] .kima-drawer__panel");
+        if (panel) {
+          window.__first = panel.getBoundingClientRect().toJSON();
+          return;
+        }
+        requestAnimationFrame(watch);
+      };
+      requestAnimationFrame(watch);
+    });
+    await page.locator("#launch").click();
+    await page.waitForTimeout(120);
+
+    const first = await page.evaluate(() => window.__first);
+    const viewport = page.viewportSize();
+    let startOutside;
+    if (placement === "right") startOutside = first.x >= viewport.width;
+    else if (placement === "left") startOutside = first.x + first.width <= 1;
+    else startOutside = first.y >= viewport.height;
+    expect(startOutside, `${name}侧抽屉的第一帧应当还在屏幕外（first=${JSON.stringify(first)}）`).toBe(true);
+
+    // 落位后必须贴在自己那一侧。
+    await page.waitForTimeout(600);
+    const settled = await page.locator("#drawer .kima-drawer__panel").boundingBox();
+    if (placement === "right") expect(Math.round(settled.x + settled.width)).toBe(viewport.width);
+    else if (placement === "left") expect(Math.round(settled.x)).toBe(0);
+    else expect(Math.round(settled.y + settled.height)).toBe(viewport.height);
+
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(500);
+  }
+});
+
+test("drawer locks page scroll while open and restores it after", async ({ page }) => {
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+  const readRoot = () => page.evaluate(() => ({
+    overflowY: document.documentElement.style.overflowY,
+    paddingRight: document.documentElement.style.paddingRight,
+  }));
+
+  expect((await readRoot()).overflowY).toBe("");
+  await page.locator("#launch").click();
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+  // 打开期间页面不许滚：背景跟着滚会和"遮罩聚焦当前内容"的意图相反。
+  expect((await readRoot()).overflowY).toBe("hidden");
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#drawer dialog")).toBeHidden();
+  const restored = await readRoot();
+  expect(restored.overflowY).toBe("");
+  // 补宽的 padding 也要还原，否则页面会永久偏一点。
+  expect(restored.paddingRight).toBe("");
+});
+
 test("drawer drag handle snaps back short of the threshold and closes past it", async ({ page }) => {
   await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
   await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
