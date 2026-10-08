@@ -231,6 +231,7 @@ function sortLabel(column) {
 
 .kima-table__scroll {
   max-width: 100%;
+  border-radius: var(--kima-radius-m);
   overflow-x: auto;
 
   &:focus-visible {

@@ -1065,6 +1065,29 @@ test("notification duration changes, zero, reopen and unmount clean up timers", 
   expect(await events(page, "notice", "close")).toHaveLength(1);
 });
 
+test("table surface has rounded corners and keeps its scroll area rounded", async ({ page }) => {
+ await mount(page, '<kima-table id="table" striped></kima-table>', {
+   table: {
+     columns: [{ key: "name", label: "Name" }],
+     rows: [{ id: "a", name: "Alice" }],
+   },
+ });
+ const shape = await page.locator("#table").evaluate((host) => {
+   const scroll = host.querySelector(".kima-table__scroll");
+   const table = host.querySelector("table");
+   return {
+     hostRadius: getComputedStyle(host.querySelector(".kima-table")).borderRadius,
+     scrollRadius: getComputedStyle(scroll).borderRadius,
+     scrollOverflowX: getComputedStyle(scroll).overflowX,
+     tableRadius: getComputedStyle(table).borderRadius,
+   };
+ });
+ expect(shape.hostRadius).toBe("0px");
+ expect(shape.scrollRadius).toBe("12px");
+ expect(shape.scrollOverflowX).toBe("auto");
+ expect(shape.tableRadius).toBe("0px");
+});
+
 test("table selection is local, accessible, keyed and externally overridable", async ({ page }) => {
   await mount(page, '<kima-table id="table" selectable row-key="id"></kima-table>', { table: { columns: [{ key: "name", label: "Name" }], rows: [{ id: "a", name: "Alice" }, { id: "b", name: "Bob" }], modelValue: ["hidden"] } });
   const checks = page.locator("#table [role=checkbox]");
