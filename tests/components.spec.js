@@ -665,63 +665,125 @@ test("drawer enters from its own side, not from the middle", async ({ page }) =>
   }
 });
 
-test("drawer closing slides straight out without bouncing back", async ({ page }) => {
-  // 用户报过："关闭时收回去、又闪出来、再收回去一次。"
-  // 根因是关完把进场/退场状态清掉，内联位移一撤，面板带着过渡滑回终点，
-  // 而 dialog 还要一帧才真的隐藏——那一帧就是"闪回来"。
-  // 这条测试逐帧记录面板位置，要求关闭过程单调地往屏幕外走，不许走回头路。
-  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
-  await page.evaluate(() => {
-    const drawer = document.getElementById("drawer");
-    drawer.addEventListener("update:open", (event) => { drawer.open = event.detail[0]; });
-    document.getElementById("launch").addEventListener("click", () => { drawer.open = true; });
-  });
-  await page.locator("#launch").click();
-  await expect(page.locator("#drawer dialog")).toBeVisible();
-  await page.waitForTimeout(600);
+for (const placement of ["bottom", "right", "left"]) {
+  test(`drawer ${placement} closes once and clips offscreen panels`, async ({ page }) => {
+    await mount(page, `<button id="launch">Open</button><kima-drawer id="drawer" placement="${placement}" title="Sheet"><p>Body</p></kima-drawer>`);
+    await page.evaluate(() => {
+      const drawer = document.getElementById("drawer");
+      drawer.addEventListener("update:open", (event) => { drawer.open = event.detail[0]; });
+      document.getElementById("launch").addEventListener("click", () => { drawer.open = true; });
+    });
+    await page.locator("#launch").click();
+    await page.waitForTimeout(600);
 
-  await page.evaluate(() => {
-    window.__tracked = [];
-    const tick = () => {
-      const panel = document.querySelector("#drawer .kima-drawer__panel");
-      const dialog = document.querySelector("#drawer dialog");
-      if (panel) {
+    // 从关闭触发前采样到完全隐藏之后；open=false 不代表 display 已经是 none。
+    const frames = await page.locator("#drawer dialog").evaluate((dialog) => new Promise((resolve) => {
+      const panel = dialog.querySelector(".kima-drawer__panel");
+      const samples = [];
+      const start = performance.now();
+      const tick = () => {
         const rect = panel.getBoundingClientRect();
-        window.__tracked.push({ open: dialog?.open ?? null, y: Math.round(rect.y) });
-      }
-      if (window.__tracked.length < 240) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+        samples.push({
+          open: dialog.open,
+          visible: getComputedStyle(dialog).display !== "none",
+          x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+          gutterX: dialog.offsetWidth - dialog.clientWidth,
+          gutterY: dialog.offsetHeight - dialog.clientHeight,
+          scrollX: dialog.scrollLeft, scrollY: dialog.scrollTop,
+          overflowX: getComputedStyle(dialog).overflowX,
+          overflowY: getComputedStyle(dialog).overflowY,
+        });
+        if (samples.length === 1) dialog.querySelector(".kima-drawer__close").click();
+        if (performance.now() - start < 900) requestAnimationFrame(tick);
+        else resolve(samples);
+      };
+      requestAnimationFrame(tick);
+    }));
+
+    const visible = frames.filter((frame) => frame.visible);
+    expect(visible.length).toBeGreaterThan(3);
+    expect(frames.some((frame) => !frame.visible)).toBe(true);
+    // 移除 open 后必须立即隐藏，不能再靠离散过渡保留一段可见布局。
+    expect(frames.filter((frame) => !frame.open && frame.visible)).toEqual([]);
+    for (let index = 0; index < visible.length; index++) {
+      const frame = visible[index];
+      const previous = visible[index - 1];
+      expect(frame.gutterX, "全屏抽屉不应出现纵向滚动条").toBe(0);
+      expect(frame.gutterY, "全屏抽屉不应出现横向滚动条").toBe(0);
+      expect(frame.scrollX).toBe(0);
+      expect(frame.scrollY).toBe(0);
+      expect(frame.overflowX).toBe("clip");
+      expect(frame.overflowY).toBe("clip");
+      if (!previous) continue;
+      if (placement === "bottom") expect(frame.y).toBeGreaterThanOrEqual(previous.y - 2);
+      else if (placement === "right") expect(frame.x).toBeGreaterThanOrEqual(previous.x - 2);
+      else expect(frame.x).toBeLessThanOrEqual(previous.x + 2);
+    }
+    const last = visible.at(-1);
+    const viewport = page.viewportSize();
+    if (placement === "bottom") expect(last.y).toBeGreaterThanOrEqual(viewport.height - 2);
+    else if (placement === "right") expect(last.x).toBeGreaterThanOrEqual(viewport.width - 2);
+    else expect(last.x + last.width).toBeLessThanOrEqual(2);
+    expect(await events(page, "drawer", "close")).toHaveLength(1);
+    await expect(page.locator("#launch")).toBeFocused();
   });
+}
 
-  await page.keyboard.press("Escape");
-  await page.waitForTimeout(900);
+test("drawer clips its fullscreen layer while keeping long content scrollable", async ({ page }) => {
+  for (const placement of ["bottom", "right", "left"]) {
+    await mount(page, `<button id="launch">Open</button><kima-drawer id="drawer" placement="${placement}" title="Sheet"><div style="height: 2000px">Long body</div><button id="last">Last</button></kima-drawer>`);
+    await page.evaluate(() => { document.getElementById("drawer").open = true; });
+    await page.waitForTimeout(600);
+    const result = await page.locator("#drawer dialog").evaluate((dialog) => {
+      const content = dialog.querySelector(".kima-drawer__body");
+      const panel = dialog.querySelector(".kima-drawer__panel");
+      const scroller = getComputedStyle(content).overflowY === "auto" ? content : panel;
+      scroller.scrollTop = 100;
+      dialog.scrollTo(100, 100);
+      return {
+        contentScroll: scroller.scrollTop,
+        outerX: dialog.scrollLeft, outerY: dialog.scrollTop,
+      };
+    });
+    expect(result.contentScroll).toBeGreaterThan(0);
+    expect(result.outerX).toBe(0);
+    expect(result.outerY).toBe(0);
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#drawer dialog")).toBeHidden();
+  }
+});
 
-  const frames = await page.evaluate(() => window.__tracked);
-  // 关闭开始之后，面板的 y 只能增大（往下走出屏幕），不许回退。
-  // 只取"还在往下走"的那一段：dialog 真正关闭后元素不再布局，
-  // getBoundingClientRect 会返回全 0，那不是回退，是已经看不见了。
-  const closing = [];
-  let started = false;
-  for (const frame of frames) {
-    if (!started) {
-      if (frame.y > 100) started = true;
-      continue;
-    }
-    if (!frame.open) break;
-    closing.push(frame);
-  }
-  expect(closing.length).toBeGreaterThan(3);
-  let previous = null;
-  for (const frame of closing) {
-    if (previous != null && frame.y < previous.y - 2) {
-      throw new Error(`关闭过程中面板回退了：${previous.y} → ${frame.y}（就是那一下"闪回来"）`);
-    }
-    previous = frame;
-  }
-  // 收尾：面板被推到屏幕下缘以下（完全看不见），且 dialog 已关闭。
-  expect(closing.at(-1).y).toBeGreaterThanOrEqual(page.viewportSize().height - 2);
-  expect(await page.locator("#drawer dialog").evaluate((el) => el.open)).toBe(false);
+test("drawer keeps its expanded snap height throughout closing", async ({ page }) => {
+  await mount(page, '<kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>', {
+    drawer: { snapPoints: [0.4, 0.9] },
+  });
+  await page.evaluate(() => { document.getElementById("drawer").open = true; });
+  await page.waitForTimeout(600);
+  const handle = await page.locator("#drawer .kima-drawer__handle").boundingBox();
+  const viewport = page.viewportSize();
+  const x = handle.x + handle.width / 2;
+  await page.mouse.move(x, handle.y + handle.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(x, handle.y + handle.height / 2 - viewport.height * 0.5, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(500);
+  const frames = await page.locator("#drawer dialog").evaluate((dialog) => new Promise((resolve) => {
+    const panel = dialog.querySelector(".kima-drawer__panel");
+    const samples = [];
+    const start = performance.now();
+    const tick = () => {
+      const rect = panel.getBoundingClientRect();
+      if (getComputedStyle(dialog).display !== "none") samples.push({ height: rect.height, y: rect.y });
+      if (performance.now() - start < 800) requestAnimationFrame(tick);
+      else resolve(samples);
+    };
+    tick();
+    dialog.querySelector(".kima-drawer__close").click();
+  }));
+  expect(frames.length).toBeGreaterThan(3);
+  for (const frame of frames) expect(Math.abs(frame.height - viewport.height * 0.9)).toBeLessThanOrEqual(2);
+  expect(frames.at(-1).y).toBeGreaterThanOrEqual(viewport.height - 2);
+  await expect(page.locator("#drawer dialog")).toBeHidden();
 });
 
 test("drawer reopens cleanly right after closing", async ({ page }) => {

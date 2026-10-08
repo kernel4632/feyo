@@ -193,7 +193,6 @@ const panelStyle = computed(() => {
   if (stage.value) {
     style.transform = shiftFrom.value;
     if (stage.value === "entering") style.transition = "none";
-    return style;
   }
 
   // 2 + 3 只对底部抽屉成立（侧抽屉全高、不拖拽）。
@@ -209,7 +208,7 @@ const panelStyle = computed(() => {
     return style;
   }
 
-  if (dragOffset.value > 0) {
+  if (!stage.value && dragOffset.value > 0) {
     style.transform = `translateY(${dragOffset.value}px)`;
     if (isDragging.value) style.transition = "none";
   }
@@ -240,8 +239,7 @@ function measureShift() {
 
 // 面板当前处在哪一段："" 常态 / "entering" 在屏幕外待入场 / "leaving" 正在退场。
 // 一个字符串同时给样式（类名）和内联样式（panelStyle 的位移）用，两边不会跑偏。
-// 注意关闭后 stage 会停在 "leaving"（面板留在屏外，见 leaveDialog），
-// 所以下次打开前必须先切到 "entering"——同一个字符串，不会同时挂两个类。
+// 退场结束后先隐藏 dialog，再清掉 stage；下次打开时重新设置入场起点。
 const stage = ref("");
 const stageClass = computed(() => (stage.value ? `kima-drawer--${stage.value}` : ""));
 let playToken = 0;
@@ -319,6 +317,8 @@ async function leaveDialog() {
   const element = dialog.value;
   if (!element?.open) return;
   const token = ++playToken;
+  // 档位可能已经变高，关闭位移要按当前面板尺寸重算。
+  measureShift();
   stage.value = "leaving";
   await new Promise((resolve) => setTimeout(resolve, slideDuration()));
   // 退场途中又被重新打开（快速连点）时，别把刚打开的面板关掉。
@@ -331,6 +331,8 @@ async function leaveDialog() {
   // 可以安全地回到干净状态（而不是把面板永久留在屏外）。
   await nextTick();
   stage.value = "";
+  // 隐藏后才恢复默认档位，避免退场过程中高度突然变矮。
+  if (snaps.value.length && props.activeSnapPoint == null) innerSnap.value = null;
   lockPageScroll(false);
 }
 
@@ -338,8 +340,6 @@ async function leaveDialog() {
 function close(reason = "close") {
   if (!localOpen.value) return;
   dragOffset.value = 0;
-  // 吸附模式下关掉再打开，回到第一档（最矮那档），而不是留在上次拖到的高度。
-  if (snaps.value.length && props.activeSnapPoint == null) innerSnap.value = null;
   localOpen.value = false;
   emit("update:open", false);
   emit("close", reason);
@@ -491,16 +491,14 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 0;
   border: 0;
+  /* 全屏层只裁切屏外面板，不承担滚动；正文在面板内部滚动。 */
+  overflow: clip;
   background: transparent;
   color: var(--kima-color-on-surface);
   font-family: var(--kima-font-family);
-  /* 原生 dialog 的 open 属性切换是 display 离散变化，
-   * allow-discrete 才能让关闭时面板有机会播完滑出动画再消失。
-   * opacity 1ms 是为了让 :not([open]) 的状态能触发 allow-discrete 机制。 */
-  transition:
-    opacity 1ms allow-discrete,
-    display var(--kima-duration-slow) allow-discrete,
-    overlay var(--kima-duration-slow) allow-discrete;
+  /* display 由 JS 的 enterDialog / leaveDialog 状态机全权控制：
+   * showModal() 打开、element.close() 关闭，时机由 JS setTimeout 保证；
+   * 不用 allow-discrete 延迟 display，否则两套机制叠加会产生闪回。 */
 
   &[open] {
     display: grid;
@@ -733,10 +731,6 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .kima-drawer__panel {
-    transition-duration: 1ms;
-  }
-
-  .kima-drawer {
     transition-duration: 1ms;
   }
 }
