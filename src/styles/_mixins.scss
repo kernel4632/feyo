@@ -54,32 +54,55 @@
 }
 
 /* ---- 涟漪宿主 ----
- * 配合 utils/ripple.js 用：裁剪容器让圆不溢出圆角，圆压在内容之下。
+ * 配合 utils/ripple.js 用：裁剪容器让圆不溢出圆角，圆盖在场地内容之上。
  * 用法：@include kima-ripple-host;  然后在 JS 里 useRipple(root)。 */
 @mixin kima-ripple-host {
   position: relative;
   overflow: hidden;
 
-  /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有那个标记。 */
+  /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有那个标记。
+   *
+   * 扩散和淡出分开写两条动画：
+   *   扩散用 decelerate（快起慢收），铺满整块场地的时间看得见；
+   *   淡出用晚开始的线性曲线——前 60% 保持住，最后 40% 才淡走。
+   * 挤在一条减速曲线里的话，圆还没涨到远角就已经快透明了，
+   * 从左侧按下时右侧（清除按钮一带）几乎看不到涟漪——实测量到那一瞬只剩 4% 透明度。
+   * z-index 提到 2：清空按钮曾经用 z-index 3 压过状态层，现在涟漪在场地所有内容之上，
+   * 圆铺满时整块场地是一层完整的反馈，不会在按钮边界处被切开。 */
   :deep(.kima-ripple) {
     position: absolute;
-    z-index: 0;
+    z-index: 2;
     width: var(--kima-ripple-size);
     height: var(--kima-ripple-size);
     left: var(--kima-ripple-x);
     top: var(--kima-ripple-y);
     border-radius: var(--kima-radius-full);
     background: currentColor;
-    opacity: 0.16;
     pointer-events: none;
     transform: scale(0);
-    animation: kima-ripple-spread var(--kima-duration-slower) var(--kima-curve-decelerate) forwards;
+    animation:
+      kima-ripple-spread var(--kima-duration-slower) var(--kima-curve-decelerate) forwards,
+      kima-ripple-fade var(--kima-duration-slower) linear forwards;
   }
 }
 
 @keyframes kima-ripple-spread {
   to {
     transform: scale(1);
+  }
+}
+
+/* 前 60% 基本保持初始透明度，尾段才淡出：保证圆铺到哪儿，哪儿就看得见。 */
+@keyframes kima-ripple-fade {
+  0% {
+    opacity: 0.16;
+  }
+
+  60% {
+    opacity: 0.14;
+  }
+
+  100% {
     opacity: 0;
   }
 }

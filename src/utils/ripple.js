@@ -12,8 +12,7 @@ import { onBeforeUnmount, onMounted } from "vue";
 export function useRipple(host) {
   let element = null;
 
-  // 一次按下长一个圆。位置和大小按宿主尺寸和指针坐标算，
-  // 直径取长边的两倍，保证从角落按下也能盖满整个控件。
+  // 一次按下长一个圆。位置和大小按宿主尺寸和指针坐标算。
   function onPointerDown(event) {
     if (!element || event.button !== 0) return;
 
@@ -29,7 +28,20 @@ export function useRipple(host) {
     if (position !== "relative" && position !== "absolute" && position !== "fixed") return;
 
     const bounds = element.getBoundingClientRect();
-    const diameter = Math.max(bounds.width, bounds.height) * 2;
+    // 半径 = 按下点到最远那只角的距离 × 1.25。
+    // 公式有两层意思，缺一层就会出现"远端没有涟漪"：
+    //   1. 必须按"最远那只角"算：从左边按下时，要盖住的是右沿，用长边乘 2 从边缘按下够不到；
+    //   2. 必须多留 1.25 的余量：圆按减速曲线长大，盖到最远角需要缩放达到"距离 / 半径"。
+    //      余量是 1 时这一比就是 0.99，等于动画快结束才盖满——波到得太晚，右侧（清除按钮一带）
+    //      看起来就没有涟漪。留 25% 后盖满发生在前 35% 处，那时透明度还在高位，
+    //      整块场地会在同一个亮面里亮起来（实测：320 宽的控件从左侧按下，右沿 176ms 被盖到、
+    //      透明度 0.149；改前同一时刻只剩 0.036，看起来就是"右侧没有涟漪"）。
+    const farCorner = {
+      x: Math.max(event.clientX - bounds.left, bounds.right - event.clientX),
+      y: Math.max(event.clientY - bounds.top, bounds.bottom - event.clientY),
+    };
+    const radius = Math.hypot(farCorner.x, farCorner.y) * 1.25;
+    const diameter = radius * 2;
     const ripple = document.createElement("span");
     ripple.className = "kima-ripple";
     // 用 CSS 自定义属性传值，比逐个写内联样式好读，也方便动画里引用。
