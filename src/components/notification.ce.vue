@@ -13,7 +13,13 @@ position 支持 top/bottom 和 top-left/top-center/top-right/bottom-left/bottom-
 <script setup>
 import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch, useAttrs, useHost, useId } from "vue";
 import KimaIcon from "./icon.ce.vue";
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import {
+  Alert02Icon,
+  AlertCircleIcon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  InformationCircleIcon,
+} from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
 
@@ -46,6 +52,11 @@ const props = defineProps({
     type: String,
     default: "top-right",
   },
+  // 换掉按 variant 自动配的图标。原生用法传不了对象，走默认的语义图标即可。
+  icon: {
+    type: [Object, Array],
+    default: null,
+  },
 });
 
 const emit = defineEmits(["update:open", "close"]);
@@ -73,6 +84,16 @@ const notificationPosition = computed(() => {
 const notificationRole = computed(() => ["warning", "danger"].includes(notificationVariant.value) ? "alert" : "status");
 const notificationLive = computed(() => notificationRole.value === "alert" ? "assertive" : "polite");
 const durationMs = computed(() => Number.isFinite(props.duration) ? Math.max(0, props.duration) : 0);
+
+// 每种语义配一个图标：状态不靠颜色单独承担（色盲用户看形状也能分出来）。
+// neutral 不给图标——"普通消息"没有语义，硬塞一个反而像有话说。
+const variantIcons = {
+  info: InformationCircleIcon,
+  success: CheckmarkCircle02Icon,
+  warning: Alert02Icon,
+  danger: AlertCircleIcon,
+};
+const notificationIcon = computed(() => props.icon ?? variantIcons[notificationVariant.value] ?? null);
 
 // --- 关闭计时器：重开、修改时长和卸载都取消旧计时 ---
 function clearCloseTimer() {
@@ -145,8 +166,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- 出场/退场走全库共用的 kima-popup 过渡（定义在 _tokens.scss）。 -->
-  <Transition name="kima-popup">
+  <!-- 通知自带一套滑入过渡（见下方 style 说明）：从它所在的那一侧滑进来。 -->
+  <Transition name="kima-notification">
     <div
       v-show="localOpen"
       v-bind="{ ...attrs, id: host ? undefined : attrs.id, title: undefined }"
@@ -162,11 +183,20 @@ onBeforeUnmount(() => {
       @focusin="handleFocus"
       @focusout="handleFocus"
     >
+      <!-- 三栏横向排：图标 / 正文 / 关闭按钮。
+       * 图标和关闭按钮都是 flex: none，只有正文会被压窄——
+       * 长消息换行时它们不会被挤扁或推出容器。 -->
+      <span v-if="localOpen && notificationIcon" class="kima-notification__icon" aria-hidden="true">
+        <KimaIcon :icon="notificationIcon" :size="22" />
+      </span>
+
       <div v-if="localOpen" class="kima-notification__copy">
         <strong v-if="heading || attrs.title" :id="titleId" class="kima-notification__title">{{ heading || attrs.title }}</strong>
         <span v-if="message" :id="messageId" class="kima-notification__message">{{ message }}</span>
+        <!-- 操作按钮单独换行、跟正文左对齐；不跟关闭按钮抢同一行。 -->
         <div v-if="$slots.action || host" class="kima-notification__action"><slot name="action" /></div>
       </div>
+
       <button
         v-if="localOpen && closable"
         class="kima-notification__close"
@@ -182,25 +212,86 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+/* ---- 出场：从所在的那一侧滑进来 ----
+ * 通知是从屏幕边缘来的，横向位移比通用弹层的"原地放大"更贴合它的来处。
+ * 退场短、进场长：进场要让人看清是什么，退场别挡着看别的。
+ * 通用 .kima-popup 只做淡入，这里额外加位移，所以自带一套。 */
+.kima-notification-enter-active {
+  transition:
+    opacity var(--kima-duration-medium) var(--kima-curve-emphasized),
+    transform var(--kima-duration-medium) var(--kima-curve-emphasized);
+}
+
+.kima-notification-leave-active {
+  transition:
+    opacity var(--kima-duration-fast) var(--kima-curve-standard),
+    transform var(--kima-duration-fast) var(--kima-curve-standard);
+}
+
+.kima-notification-enter-from,
+.kima-notification-leave-to {
+  opacity: 0;
+}
+
+/* 右边来的从右边滑入，左边来的从左边滑入，居中的从上面/下面滑入。 */
+.kima-notification--top-right.kima-notification-enter-from,
+.kima-notification--top-right.kima-notification-leave-to,
+.kima-notification--bottom-right.kima-notification-enter-from,
+.kima-notification--bottom-right.kima-notification-leave-to {
+  transform: translateX(calc(100% + 24px));
+}
+
+.kima-notification--top-left.kima-notification-enter-from,
+.kima-notification--top-left.kima-notification-leave-to,
+.kima-notification--bottom-left.kima-notification-enter-from,
+.kima-notification--bottom-left.kima-notification-leave-to {
+  transform: translateX(calc(-100% - 24px));
+}
+
+.kima-notification--top.kima-notification-enter-from,
+.kima-notification--top-center.kima-notification-enter-from,
+.kima-notification--top.kima-notification-leave-to,
+.kima-notification--top-center.kima-notification-leave-to {
+  transform: translateX(-50%) translateY(calc(-100% - 24px));
+}
+
+.kima-notification--bottom.kima-notification-enter-from,
+.kima-notification--bottom-center.kima-notification-enter-from,
+.kima-notification--bottom.kima-notification-leave-to,
+.kima-notification--bottom-center.kima-notification-leave-to {
+  transform: translateX(-50%) translateY(calc(100% + 24px));
+}
+
 .kima-notification {
   box-sizing: border-box;
   position: fixed;
   z-index: 1100;
+  /* 三栏横排：图标 / 正文 / 关闭。正文吃掉剩余宽度，另两栏固定不缩。 */
   display: flex;
+  align-items: flex-start;
+  gap: var(--kima-space-3);
   width: min(420px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
   overflow: auto;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--kima-space-4);
   padding: var(--kima-space-4);
   border: 0;
-  border-radius: var(--kima-radius-lg);
+  border-radius: var(--kima-radius-l);
   color: var(--kima-color-on-surface);
-  /* 弹层是实色：它是浮在内容之上的一层，必须挡住背后，不能透。 */
+  /* 弹层是实色：浮在内容之上，必须挡住背后。 */
   background: var(--kima-color-popup);
-  box-shadow: var(--kima-elevation-3);
+  box-shadow: var(--kima-elevation-4);
   font-family: var(--kima-font-family);
+}
+
+/* 语义图标：跟首行文字对齐（不是跟整块对齐），文字行高 1.3 时视觉最正。 */
+.kima-notification__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: calc(var(--kima-font-size-md) * 1.3);
+  opacity: 0.9;
 }
 
 .kima-notification--top,
@@ -239,14 +330,18 @@ onBeforeUnmount(() => {
   right: var(--kima-space-4);
 }
 
+/* 变体只有两种做法，都必须是实色：
+ * 信息类用容器的实色底（容器色本来就是不透明的色板角色）；
+ * 语义类用固定的语义色（成功绿 / 警告橙 / 危险红），不跟种子变。
+ * 之前 warning 用 layer-2 当底——那是半透明的叠层，通知浮在页面上会透出背后内容。 */
 .kima-notification--info {
   color: var(--kima-color-on-primary-container);
   background: var(--kima-color-primary-container);
 }
 
 .kima-notification--warning {
-  color: var(--kima-color-on-surface);
-  background: color-mix(in srgb, var(--kima-color-danger) 12%, var(--kima-color-layer-2));
+  color: var(--kima-color-on-warning);
+  background: var(--kima-color-warning);
 }
 
 .kima-notification--success {
@@ -259,9 +354,12 @@ onBeforeUnmount(() => {
   background: var(--kima-color-danger);
 }
 
+/* 正文吃掉剩余宽度；min-width: 0 才能让它真的被压窄而不是撑破容器。 */
 .kima-notification__copy {
+  display: flex;
+  flex: 1 1 auto;
   min-width: 0;
-  display: grid;
+  flex-direction: column;
   gap: var(--kima-space-1);
   overflow-wrap: anywhere;
 }
@@ -288,16 +386,13 @@ onBeforeUnmount(() => {
   display: none;
 }
 
-.kima-notification__close:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
 .kima-notification__close {
   display: inline-flex;
-  flex: 0 0 32px;
+  flex: none;
   width: 32px;
   height: 32px;
+  /* 往上提一点：图标栏高是按首行文字算的 20 来 px，32 的按钮不提起会显得整体偏低。 */
+  margin: calc((var(--kima-font-size-md) * 1.3 - 32px) / 2) calc(var(--kima-space-1) * -1) 0 0;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -317,6 +412,17 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .kima-notification__close {
     transition: none;
+  }
+
+  /* 关掉位移动画，只留最短的淡入淡出。 */
+  .kima-notification-enter-active,
+  .kima-notification-leave-active {
+    transition-duration: 1ms;
+  }
+
+  .kima-notification-enter-from,
+  .kima-notification-leave-to {
+    transform: none;
   }
 }
 

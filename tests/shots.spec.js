@@ -5,6 +5,9 @@
 */
 import { expect, test } from "@playwright/test";
 
+// 这个测试要跑完预览页一整轮（含抽屉拖拽、通知各种变体），30 秒不够。
+test.setTimeout(90_000);
+
 test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1200 });
   await page.goto("/", { waitUntil: "networkidle" });
@@ -94,6 +97,23 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
     });
     await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
+  }
+
+  // 通知：四种语义各拍一张，确认实色底挡住背后、图标和布局对位。
+  // 通知不是模态弹层，Escape 关不掉；拍完直接点它自己的关闭按钮，
+  // 否则下一条通知叠上来、还会挡住后面要点的抽屉按钮。
+  const noticeRow = page.locator("#feedback .kima-gallery__demo").filter({ hasText: "Notification 通知" });
+  if (await noticeRow.count()) {
+    await noticeRow.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const noticeButtons = noticeRow.locator(".kima-button");
+    for (const [index, name] of [[0, "success"], [1, "warning"], [2, "danger"]]) {
+      await noticeButtons.nth(index).click();
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: `shots/notification-${name}.png` });
+      await page.locator(".kima-notification__close").click();
+      await page.waitForTimeout(300);
+    }
   }
 
   // 抽屉：三个方向各拍一张。这里是"背景 dim + 模糊、只聚焦面板"最集中的地方，

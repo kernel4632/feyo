@@ -596,6 +596,7 @@ watch(query, () => {
               <kima-button variant="tonal" @click="noticeVariant = 'success'; noticeOpen = true">成功通知</kima-button>
               <kima-button variant="tonal" @click="noticeVariant = 'warning'; noticeOpen = true">警告通知</kima-button>
               <kima-button variant="tonal" @click="noticeVariant = 'danger'; noticeOpen = true">错误通知</kima-button>
+              <kima-button variant="outlined" @click="noticeVariant = 'info'; noticeOpen = true">信息通知</kima-button>
             </div>
           </article>
 
@@ -732,13 +733,14 @@ watch(query, () => {
         />
       </main>
     </div>
-
-    <kima-notification
-      v-model:open="noticeOpen"
-      :variant="noticeVariant"
-      heading="操作完成"
-      message="这是一个可以自动关闭的通知示例。"
-      position="top-right"
+<kima-notification
+  v-model:open="noticeOpen"
+  :variant="noticeVariant"
+  :duration="8000"
+  heading="操作完成"
+  message="四种语义各配一个图标，状态不只靠颜色表达。"
+  position="top-right"
+/>
     />
 
     <kima-dialog v-model:open="dialogOpen" title="确认操作" description="这个示例展示对话框的标题、说明和按钮区。">

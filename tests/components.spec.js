@@ -746,6 +746,28 @@ test("notification timeout, hover and focus use remaining time", async ({ page }
   expect(await events(page, "notice", "close")).toHaveLength(1);
 });
 
+test("notification variants keep an opaque background and a semantic icon", async ({ page }) => {
+  await mount(page, '<kima-notification id="notice" open heading="Saved" message="Body" duration="0" variant="warning"></kima-notification>');
+  const notice = page.locator("#notice .kima-notification");
+  await expect(notice).toBeVisible();
+  // 通知是浮在页面上的弹层，底必须实色：半透明会把背后内容透上来。
+  // 用 getComputedStyle 读回的是解析后的 rgba，alpha 必须为 1。
+  const alpha = await notice.evaluate((el) => {
+    const [r, g, b, a = 1] = getComputedStyle(el).backgroundColor.match(/[\d.]+/g).map(Number);
+    return { r, g, b, a };
+  });
+  expect(alpha.a).toBe(1);
+  // 语义图标要出现（状态不只靠颜色表达）。
+  await expect(page.locator("#notice .kima-notification__icon svg")).toHaveCount(1);
+  // 三栏都在：图标 / 正文 / 关闭。
+  await expect(page.locator("#notice .kima-notification__copy")).toHaveCount(1);
+  await expect(page.locator("#notice .kima-notification__close")).toHaveCount(1);
+
+  // neutral 没有语义，不给图标——硬塞一个反而像有话说。
+  await page.evaluate(() => { const notice = document.getElementById("notice"); notice.variant = "neutral"; });
+  await expect(page.locator("#notice .kima-notification__icon")).toHaveCount(0);
+});
+
 test("notification duration changes, zero, reopen and unmount clean up timers", async ({ page }) => {
   await page.clock.install();
   await page.clock.pauseAt(new Date());
