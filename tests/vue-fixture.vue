@@ -6,11 +6,13 @@ import Select from "../src/components/select.ce.vue";
 import Notification from "../src/components/notification.ce.vue";
 import Table from "../src/components/table.ce.vue";
 import EmptyState from "../src/components/empty-state.ce.vue";
+import Drawer from "../src/components/drawer.ce.vue";
 
 const clicks = ref(0);
 const choice = ref(null);
 const selected = ref([]);
 const open = ref(true);
+const drawerOpen = ref(false);
 const title = ref("Legacy title");
 const options = [{ value: 1, label: "One" }, { value: 2, label: "Two" }];
 </script>
@@ -28,4 +30,11 @@ const options = [{ value: 1, label: "One" }, { value: 2, label: "Two" }];
   <Notification id="vue-notification" v-model:open="open" :title="title" :duration="0" position="bottom-right" />
   <button id="vue-title" type="button" @click="title = 'Updated title'">Rename</button>
   <output id="vue-open">{{ open }}</output>
+  <!-- 抽屉走 v-model:open，验证 Vue 侧的双向绑定和插槽跟原生用法一致。 -->
+  <Drawer id="vue-drawer" v-model:open="drawerOpen" title="Vue drawer" placement="right">
+    <p>Body</p>
+    <template #footer><button id="vue-drawer-close" type="button" @click="drawerOpen = false">Close</button></template>
+  </Drawer>
+  <button id="vue-drawer-open" type="button" @click="drawerOpen = true">Open drawer</button>
+  <output id="vue-drawer-state">{{ drawerOpen }}</output>
 </template>

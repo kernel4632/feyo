@@ -776,6 +776,17 @@ test("Vue consumers retain v-model, title attrs, scoped slots and component styl
   await expect(page.locator("#vue-notification .kima-notification__title")).toHaveText("Updated title");
   await page.getByRole("button", { name: "关闭通知" }).click();
   await expect(page.locator("#vue-open")).toHaveText("false");
+
+  // 抽屉：Vue 侧的 v-model:open 双向绑定、具名插槽都要跟原生用法一致。
+  // Vue 非自定义元素模式下组件根节点就是 dialog 本身（原生模式下它在 shadow DOM 里，
+  // 所以那边要写 "#drawer dialog"，这里不用）。
+  await page.locator("#vue-drawer-open").click();
+  await expect(page.locator("#vue-drawer")).toBeVisible();
+  await expect(page.locator("#vue-drawer .kima-drawer__title")).toHaveText("Vue drawer");
+  await expect(page.locator("#vue-drawer-state")).toHaveText("true");
+  await page.locator("#vue-drawer-close").click();
+  await expect(page.locator("#vue-drawer")).toBeHidden();
+  await expect(page.locator("#vue-drawer-state")).toHaveText("false");
 });
 
 test("IDs stay unique across elements, updates and disconnect/reconnect", async ({ page }) => {
