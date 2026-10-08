@@ -232,7 +232,9 @@ function sortLabel(column) {
 .kima-table__scroll {
   max-width: 100%;
   border-radius: var(--kima-radius-m);
+  background: var(--kima-color-layer-1);
   overflow-x: auto;
+  overflow-y: hidden;
 
   &:focus-visible {
     outline: 2px solid var(--kima-color-primary);
@@ -243,12 +245,14 @@ function sortLabel(column) {
 table {
   width: 100%;
   min-width: 32rem;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
-
 caption {
   padding: var(--kima-space-3) var(--kima-space-4);
+  border-radius: var(--kima-radius-m) var(--kima-radius-m) 0 0;
   color: var(--kima-color-on-surface-variant);
+  background: var(--kima-color-layer-2);
   text-align: start;
   caption-side: top;
 }
@@ -269,6 +273,16 @@ th {
   font-weight: var(--kima-font-weight-bold);
 }
 
+/* caption 在表头上方，外壳的顶部圆角到不了真正有底色的表头；
+ * 圆角落在首尾单元格上，表头的底色才会跟着轮廓收圆。 */
+thead tr:first-child th:first-child {
+  border-top-left-radius: var(--kima-radius-m);
+}
+
+thead tr:first-child th:last-child {
+  border-top-right-radius: var(--kima-radius-m);
+}
+
 tbody tr {
   transition: background-color var(--kima-duration-fast) var(--kima-ease-standard);
 
@@ -280,6 +294,15 @@ tbody tr {
 
 .kima-table--striped tbody tr:nth-child(even) {
   background: var(--kima-color-layer-2);
+}
+
+/* 表格有多个 tbody（加载、数据、空状态）时，最后一个 tbody 才是底边。 */
+.kima-table tbody:last-child tr:last-child td:first-child {
+  border-bottom-left-radius: var(--kima-radius-m);
+}
+
+.kima-table tbody:last-child tr:last-child td:last-child {
+  border-bottom-right-radius: var(--kima-radius-m);
 }
 
 .kima-table--hoverable tbody tr:hover {

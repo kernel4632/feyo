@@ -1065,27 +1065,55 @@ test("notification duration changes, zero, reopen and unmount clean up timers", 
   expect(await events(page, "notice", "close")).toHaveLength(1);
 });
 
-test("table surface has rounded corners and keeps its scroll area rounded", async ({ page }) => {
- await mount(page, '<kima-table id="table" striped></kima-table>', {
-   table: {
-     columns: [{ key: "name", label: "Name" }],
-     rows: [{ id: "a", name: "Alice" }],
-   },
- });
- const shape = await page.locator("#table").evaluate((host) => {
-   const scroll = host.querySelector(".kima-table__scroll");
-   const table = host.querySelector("table");
-   return {
-     hostRadius: getComputedStyle(host.querySelector(".kima-table")).borderRadius,
-     scrollRadius: getComputedStyle(scroll).borderRadius,
-     scrollOverflowX: getComputedStyle(scroll).overflowX,
-     tableRadius: getComputedStyle(table).borderRadius,
-   };
- });
- expect(shape.hostRadius).toBe("0px");
- expect(shape.scrollRadius).toBe("12px");
- expect(shape.scrollOverflowX).toBe("auto");
- expect(shape.tableRadius).toBe("0px");
+test("table with caption paints four rounded corners and remains scrollable", async ({ page }) => {
+  // 标题位于表头上方，必须验证有底色的表面，不能只读外壳的 radius。
+  await page.setViewportSize({ width: 900, height: 700 });
+  await mount(page, '<kima-table id="table" caption="Team members" selectable striped></kima-table>', {
+    table: {
+      columns: [{ key: "name", label: "Name" }, { key: "role", label: "Role" }],
+      rows: [{ id: "a", name: "Alice", role: "Design" }, { id: "b", name: "Bob", role: "Development" }],
+      modelValue: ["a", "b"],
+    },
+  });
+  for (const theme of ["dark", "light"]) {
+    await page.evaluate((value) => {
+      document.documentElement.dataset.kimaTheme = value;
+      document.body.style.background = "var(--kima-color-surface)";
+    }, theme);
+    const table = await page.locator("#table .kima-table").boundingBox();
+    const image = await page.screenshot({ clip: table, scale: "css" });
+    const colors = await page.evaluate(async (base64) => {
+      const blob = await (await fetch(`data:image/png;base64,${base64}`)).blob();
+      const bitmap = await createImageBitmap(blob);
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const context = canvas.getContext("2d");
+      context.drawImage(bitmap, 0, 0);
+      const pixel = (x, y) => Array.from(context.getImageData(x, y, 1, 1).data);
+      const { width, height } = canvas;
+      return {
+        corners: [pixel(1, 1), pixel(width - 2, 1), pixel(1, height - 2), pixel(width - 2, height - 2)],
+        header: pixel(width / 2, 1),
+        bottom: pixel(width / 2, height - 2),
+      };
+    }, image.toString("base64"));
+    expect(colors.corners.every((color) => JSON.stringify(color) === JSON.stringify(colors.corners[0]))).toBe(true);
+    expect(colors.header).not.toEqual(colors.corners[0]);
+    expect(colors.bottom).not.toEqual(colors.corners[0]);
+  }
+  await page.setViewportSize({ width: 360, height: 700 });
+  await page.locator("#table").evaluate((element) => {
+    element.style.display = "block";
+    element.style.width = "320px";
+  });
+  const scroll = page.locator("#table .kima-table__scroll");
+  expect(await scroll.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+    return element.scrollLeft;
+  })).toBeGreaterThan(0);
+  await scroll.focus();
+  await expect(scroll).toBeFocused();
 });
 
 test("table selection is local, accessible, keyed and externally overridable", async ({ page }) => {
