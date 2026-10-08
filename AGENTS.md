@@ -147,7 +147,7 @@ pnpm test:ssr    # SSR 测试
    色板由 `src/utils/theme.js` 定义（唯一来源），`scripts/palette.js` 用它生成
    `src/styles/_palette.scss` 作为首屏默认色；运行时换色用 `applyPalette()`，不用重新构建。
    图标统一走 `src/components/icon.ce.vue`（线宽 `iconStrokeWidth`，配 `absolute-stroke-width`）。
-3. ✅ **逐组件重做**：28 个组件全部按新方向重写。交互反馈的分配规则：
+3. ✅ **逐组件重做**：全部组件已按新方向重写（清单见 `src/components/`，数量以目录为准）。交互反馈的分配规则：
    - **按钮类**（`button`、`icon-button`）：状态层 + 焦点环 + 涟漪 + 按下回弹（幅度 2%，几乎看不出）。
    - `button-group` / `card`：状态层 + 焦点环 + 涟漪；卡片回弹与按钮同档。
    - **字段类**（`text-field`、`select`、`combobox`、`cascader`、`date-picker`、`time-picker`）：

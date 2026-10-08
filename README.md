@@ -48,7 +48,7 @@ import "@kernel4632/kima/style.css";
 ```
 
 当前导出的组件包括：按钮、文本框、复选框、开关、滑块、进度条、选择器、菜单、
-通知、对话框、标签页、按钮组、布局容器、卡片、分割线、提示、图标按钮、徽章、
+通知、对话框、抽屉、标签页、按钮组、布局容器、卡片、分割线、提示、图标按钮、徽章、
 数据表、空状态、日期选择器、树、分页、虚拟滚动、时间选择器、级联选择器和组合框。
 
 自定义元素使用普通页面 DOM（light DOM）。注册入口会将组件样式安装到页面中的一个
@@ -62,6 +62,10 @@ import "@kernel4632/kima/style.css";
 - `KimaSlider` / `<kima-slider>`：拖动或键盘修改时发送 `update:modelValue`，提交修改时发送 `change`，值为数字。
 - `KimaButton` / `<kima-button>`：保留原生 `click`，点击一次只收到一个事件，不额外发送同名自定义事件。
 - `KimaProgress` / `<kima-progress>`：没有组件自定义事件。
+- `KimaDialog` / `<kima-dialog>`、`KimaDrawer` / `<kima-drawer>`：开关状态变时发送 `update:open`，
+  关闭时发送 `close`，`close` 的值说明关闭原因：`escape` / `backdrop` / `button` / `drag` / `native`。
+  拖拽关闭（抽屉）的 `close` 值是 `drag`。
+- `KimaDrawer` / `<kima-drawer>` 用吸附点时，换档发送 `update:activeSnapPoint`，值为档位比例（如 `0.4`）。
 
 在 Vue 组件中，`v-model` 使用 `update:modelValue`，`@change` 直接收到新值。
 在自定义元素上，Vue 发出的事件是 `CustomEvent`，参数放在 `event.detail` **数组**中，
