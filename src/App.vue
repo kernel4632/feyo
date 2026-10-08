@@ -204,6 +204,9 @@ const dialogOpen = ref(false);
 const drawerBottomOpen = ref(false);
 const drawerRightOpen = ref(false);
 const drawerLeftOpen = ref(false);
+// 吸附版：四档高度，拖一下就换档。当前档位让组件自己管，这里只读不回写。
+const drawerSnapOpen = ref(false);
+const drawerSnap = ref(0.4);
 const noticeOpen = ref(true);
 const noticeVariant = ref("success");
 
@@ -607,6 +610,9 @@ watch(query, () => {
               <kima-button variant="tonal" @click="drawerBottomOpen = true">底部抽屉</kima-button>
               <kima-button variant="tonal" @click="drawerRightOpen = true">右侧抽屉</kima-button>
               <kima-button variant="tonal" @click="drawerLeftOpen = true">左侧抽屉</kima-button>
+              <kima-button variant="outlined" @click="drawerSnapOpen = true">
+                吸附抽屉（四档 · 当前 {{ Math.round(drawerSnap * 100) }}%）
+              </kima-button>
             </div>
           </article>
 
@@ -760,6 +766,21 @@ watch(query, () => {
       <p>方向和右侧抽屉镜像，其余行为完全一致。</p>
       <template #footer>
         <kima-button variant="text" @click="drawerLeftOpen = false">知道了</kima-button>
+      </template>
+    </kima-drawer>
+
+    <kima-drawer
+      v-model:open="drawerSnapOpen"
+      v-model:active-snap-point="drawerSnap"
+      title="吸附抽屉"
+      :snap-points="[0.4, 0.6, 0.8, 0.95]"
+      description="往上拖长高、往下拖变矮，松手吸到最近的一档；拖过最矮一档的 40% 就关闭。"
+    >
+      <kima-layout>
+        <kima-card v-for="index in 6" :key="index">第 {{ index }} 张卡片：档位换了但内容位置不变，只是看到的部分多少不同。</kima-card>
+      </kima-layout>
+      <template #footer>
+        <kima-button variant="text" @click="drawerSnapOpen = false">关闭</kima-button>
       </template>
     </kima-drawer>
   </div>

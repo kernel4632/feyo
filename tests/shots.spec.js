@@ -101,12 +101,32 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
   const drawerRow = page.locator("#feedback .kima-gallery__demo").filter({ hasText: "Drawer 抽屉" });
   if (await drawerRow.count()) {
     await drawerRow.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(300);
     for (const [index, name] of [[0, "bottom"], [1, "right"], [2, "left"]]) {
       await drawerRow.locator(".kima-button").nth(index).click();
       await page.waitForTimeout(700);
       await page.screenshot({ path: `shots/drawer-${name}.png` });
       // 底部抽屉的焦点在面板里，Escape 就能关；侧抽屉同理。
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(500);
+    }
+
+    // 吸附抽屉：拍最矮和最高两档，确认换档只改露出多少，内容布局不动。
+    const snapButton = drawerRow.locator(".kima-button").nth(3);
+    if (await snapButton.count()) {
+      await snapButton.click();
+      await page.waitForTimeout(700);
+      await page.screenshot({ path: "shots/drawer-snap-low.png" });
+
+      // 关掉的抽屉还留在 DOM 里，所以要限定到当前打开的那个。
+      const handle = await page.locator(".kima-drawer--bottom[open] .kima-drawer__handle").boundingBox();
+      const viewport = await page.evaluate(() => window.innerHeight);
+      const x = handle.x + handle.width / 2;
+      await page.mouse.move(x, handle.y + handle.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(x, handle.y + handle.height / 2 - viewport * 0.5, { steps: 8 });
+      await page.mouse.up();
+      await page.waitForTimeout(700);
+      await page.screenshot({ path: "shots/drawer-snap-high.png" });
       await page.keyboard.press("Escape");
       await page.waitForTimeout(500);
     }

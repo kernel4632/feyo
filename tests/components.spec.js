@@ -611,6 +611,73 @@ test("drawer drag handle snaps back short of the threshold and closes past it", 
   expect((await events(page, "drawer", "close"))[0].detail).toEqual(["drag"]);
 });
 
+test("drawer snap points resize the sheet, snap to the nearest one and stay open", async ({ page }) => {
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>', {
+    drawer: { snapPoints: [0.4, 0.9] },
+  });
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+  await page.locator("#launch").click();
+  const sheet = page.locator("#drawer .kima-drawer__panel");
+  const dialog = page.locator("#drawer dialog");
+  await expect(dialog).toBeVisible();
+
+  const viewport = await page.evaluate(() => window.innerHeight);
+  // 打开时落在第一档（0.4），不是内容高度。
+  expect(Math.round((await sheet.boundingBox()).height)).toBe(Math.round(viewport * 0.4));
+
+  async function dragBy(pixels) {
+    const handle = await page.locator("#drawer .kima-drawer__handle").boundingBox();
+    const x = handle.x + handle.width / 2;
+    await page.mouse.move(x, handle.y + handle.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(x, handle.y + handle.height / 2 - pixels, { steps: 6 });
+    await page.mouse.up();
+  }
+
+  // 往上拖过中点：吸到第二档（0.9），而且不关闭。
+  await dragBy(viewport * 0.5);
+  await expect(async () => {
+    expect(Math.round((await sheet.boundingBox()).height)).toBe(Math.round(viewport * 0.9));
+  }).toPass();
+  expect(await dialog.evaluate((el) => el.open)).toBe(true);
+  expect(await events(page, "drawer", "close")).toHaveLength(0);
+
+  // 再往下拖回中点以上：吸回第一档。
+  await dragBy(-viewport * 0.5);
+  await expect(async () => {
+    expect(Math.round((await sheet.boundingBox()).height)).toBe(Math.round(viewport * 0.4));
+  }).toPass();
+  expect(await dialog.evaluate((el) => el.open)).toBe(true);
+
+  // 从第一档再往下拖过它自身高的 40%：这次是关闭。
+  await dragBy(-viewport * 0.3);
+  await expect(dialog).toBeHidden();
+  expect((await events(page, "drawer", "close"))[0].detail).toEqual(["drag"]);
+});
+
+test("drawer exposes the active snap point to the caller", async ({ page }) => {
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>', {
+    drawer: { snapPoints: [0.3, 0.75] },
+  });
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+  await page.locator("#launch").click();
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+
+  const handle = await page.locator("#drawer .kima-drawer__handle").boundingBox();
+  const viewport = await page.evaluate(() => window.innerHeight);
+  const x = handle.x + handle.width / 2;
+  await page.mouse.move(x, handle.y + handle.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(x, handle.y + handle.height / 2 - viewport * 0.35, { steps: 6 });
+  await page.mouse.up();
+
+  // update:activeSnapPoint 带出新的档位，调用方能拿来做别的（比如换图标、改标题）。
+  await expect(async () => {
+    const updates = await events(page, "drawer", "update:activeSnapPoint");
+    expect(updates.at(-1)?.detail?.[0]).toBe(0.75);
+  }).toPass();
+});
+
 test("drawer closes from the backdrop unless disabled, and the close button always works", async ({ page }) => {
   // closeOnBackdrop 是 Boolean，原生用法下要写 property；属性串 "false" 会被当成 true。
   await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>', { drawer: { closeOnBackdrop: false } });

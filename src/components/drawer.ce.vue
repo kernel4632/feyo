@@ -15,9 +15,14 @@ title 沿用原生属性，作为 attrs 读取，不声明同名组件 prop。
   // 右侧抽屉
   <kima-drawer v-model:open="open" placement="right" title="详情">...</kima-drawer>
 
+  // 带吸附点的底部抽屉：给几档高度，拖到哪就近吸到哪
+  <kima-drawer v-model:open="open" title="操作" :snap-points="[0.4, 0.9]">...</kima-drawer>
+
 placement 可选值：bottom（默认）| left | right
 底部抽屉从顶部的拖拽把手往下拖可以关闭（拖过面板高度 40% 即触发）；
 把手以外的地方照常滚动、选字，不会被拖拽抢走。
+给了 snapPoints 就是吸附模式：往上拖长高、往下拖变矮，松手吸到最近一档，
+拖过最矮一档的 40% 才关闭。第一档是打开时的默认高度。
 -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
@@ -51,9 +56,20 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  // 底部抽屉的多档高度，按视口高度的比例给，例如 [0.4, 0.9]。
+  // 只对底部抽屉生效；侧抽屉是全高的，没有档位可言。
+  snapPoints: {
+    type: Array,
+    default: () => [],
+  },
+  // 当前档位（比例值）。不传就自己管；传了就听调用方的，配合 v-model:active-snap-point。
+  activeSnapPoint: {
+    type: Number,
+    default: null,
+  },
 });
 
-const emit = defineEmits(["update:open", "close"]);
+const emit = defineEmits(["update:open", "close", "update:activeSnapPoint"]);
 const attrs = useAttrs();
 const dialog = ref(null);
 const panel = ref(null);
@@ -68,16 +84,46 @@ const placement = computed(() => {
 
 const dialogId = useId();
 const titleId = `kima-drawer-title-${dialogId}`;
-const descriptionId = `kima-drawer-description-${dialogId}`;
-
-// ---- 拖拽关闭（仅底部抽屉）----
-// 用户向下拖超过面板高度 40% 时触发关闭，否则弹回原位。
-// isDragging 为 true 期间关闭 CSS transition，避免鼠标移动时卡顿。
+// ---- 拖拽与吸附（仅底部抽屉）----
+// 两种模式走同一条路径：
+//   没给 snapPoints —— 一档（打开时的高度），往下拖过 40% 关闭；
+//   给了 snapPoints —— 多档，拖到哪就近吸到哪，拖过最矮一档的 40% 关闭。
+// 拖动过程中面板实时跟手，松手才落地到某一档：半路不跳档，手感是连续的。
 // 拖拽只挂在把手上，不挂整块面板：正文要能选字、要能竖向滚动，
 // 整块接拖拽会把这两件事一起抢掉（触摸端尤其明显）。
 const dragOffset = ref(0);
 const isDragging = ref(false);
 let pointerStartY = 0;
+
+// 档位去重、排序、夹到 (0, 1]：写反或写重的输入不该出错。
+const snaps = computed(() => {
+  if (placement.value !== "bottom" || !props.snapPoints.length) return [];
+  return [...new Set(props.snapPoints.map(Number))]
+    .filter((value) => Number.isFinite(value) && value > 0 && value <= 1)
+    .sort((a, b) => a - b);
+});
+
+// 当前档位。调用方传了 activeSnapPoint 就听调用方的，否则自己管。
+const innerSnap = ref(null);
+const currentSnap = computed(() => {
+  if (props.activeSnapPoint != null) return props.activeSnapPoint;
+  if (innerSnap.value != null) return innerSnap.value;
+  return snaps.value[0] ?? null;
+});
+
+// 视口高随窗口变化：用 ref 才能让依赖它的高度计算跟着重算。
+const viewportHeight = ref(typeof window === "undefined" ? 0 : window.innerHeight);
+function onViewportResize() {
+  viewportHeight.value = window.innerHeight;
+}
+
+// 吸附模式下面板的像素高度：正在拖就按位移算，否则按当前档位算。
+// 单档模式不吃 height，靠 CSS 的 max-height + 内容撑开，这里返回 null。
+const panelHeightPx = computed(() => {
+  if (placement.value !== "bottom" || currentSnap.value == null) return null;
+  const rest = currentSnap.value * viewportHeight.value;
+  return isDragging.value ? Math.max(0, rest - dragOffset.value) : rest;
+});
 
 function onDragStart(event) {
   if (placement.value !== "bottom" || event.button !== 0) return;
@@ -90,25 +136,60 @@ function onDragStart(event) {
 function onDragMove(event) {
   if (!isDragging.value) return;
   const delta = event.clientY - pointerStartY;
-  // 只允许向下拖（关闭方向），向上过度拉不动。
-  dragOffset.value = Math.max(0, delta);
+  // 吸附模式向上拖是负数（长高），两个方向都跟手；
+  // 单档模式向上拉不动，只往下走（关闭方向）。
+  dragOffset.value = snaps.value.length ? delta : Math.max(0, delta);
 }
 
 function onDragEnd() {
   if (!isDragging.value) return;
   isDragging.value = false;
-  const panelHeight = panel.value?.offsetHeight ?? 300;
-  if (dragOffset.value > panelHeight * 0.4) {
-    close("drag");
-  } else {
-    // 没达到关闭阈值，弹回原位（CSS transition 此时已重新开启）。
-    dragOffset.value = 0;
+  const delta = dragOffset.value;
+  dragOffset.value = 0;
+  if (placement.value !== "bottom") return;
+
+  if (!snaps.value.length) {
+    // 单档：拖过自身高的 40% 就关。
+    const height = panel.value?.offsetHeight ?? 300;
+    if (delta > height * 0.4) close("drag");
+    return;
   }
+
+  // 多档：把离手时的高度换算成比例，找最近的一档。
+  const viewport = viewportHeight.value || 1;
+  const height = currentSnap.value * viewport - delta;
+  const lowest = snaps.value[0] * viewport;
+  // 比最矮一档还矮、且超了它自身高的 40%：当成"拖出去了"，关闭。
+  if (height < lowest * 0.6) {
+    close("drag");
+    return;
+  }
+  const nearest = snaps.value.reduce((best, snap) =>
+    Math.abs(snap * viewport - height) < Math.abs(best * viewport - height) ? snap : best
+  );
+  setSnap(nearest);
 }
 
-// 拖拽时 transform 直接跟指针走（不走 CSS transition），松手后弹回。
+function setSnap(snap) {
+  innerSnap.value = snap;
+  emit("update:activeSnapPoint", snap);
+}
+
+// 拖动时面板要实时跟手，所以两种模式各用自己那个维度：
+//   单档 —— 平移（transform），面板高度不变，拖过头就等它弹回；
+//   吸附 —— 改高度（height），因为档位本身就是高度的不同。
+// 松手后内联样式清掉，交给 CSS 的过渡吸回去。
 const panelStyle = computed(() => {
-  if (placement.value !== "bottom" || dragOffset.value === 0) return {};
+  if (placement.value !== "bottom") return {};
+  if (snaps.value.length) {
+    const height = panelHeightPx.value;
+    if (height == null) return {};
+    return {
+      height: `${height}px`,
+      transition: isDragging.value ? "none" : undefined,
+    };
+  }
+  if (dragOffset.value === 0) return {};
   return {
     transform: `translateY(${dragOffset.value}px)`,
     transition: isDragging.value ? "none" : undefined,
@@ -119,6 +200,8 @@ const panelStyle = computed(() => {
 function close(reason = "close") {
   if (!localOpen.value) return;
   dragOffset.value = 0;
+  // 吸附模式下关掉再打开，回到第一档（最矮那档），而不是留在上次拖到的高度。
+  if (snaps.value.length && props.activeSnapPoint == null) innerSnap.value = null;
   localOpen.value = false;
   if (dialog.value?.open) dialog.value.close();
   emit("update:open", false);
@@ -167,8 +250,12 @@ watch(
   },
 );
 watch(localOpen, syncDialog, { flush: "post" });
-onMounted(syncDialog);
+onMounted(() => {
+  syncDialog();
+  window.addEventListener("resize", onViewportResize);
+});
 onBeforeUnmount(() => {
+  window.removeEventListener("resize", onViewportResize);
   if (dialog.value?.open) dialog.value.close();
 });
 </script>
@@ -179,7 +266,7 @@ onBeforeUnmount(() => {
     v-bind="forwardedAttrs"
     :title="undefined"
     class="kima-drawer"
-    :class="`kima-drawer--${placement}`"
+    :class="[`kima-drawer--${placement}`, { 'kima-drawer--snapping': snaps.length > 0 }]"
     :aria-labelledby="attrs.title ? titleId : attrs['aria-labelledby']"
     :aria-describedby="
       [attrs['aria-describedby'], description ? descriptionId : undefined].filter(Boolean).join(' ') ||
@@ -293,7 +380,7 @@ onBeforeUnmount(() => {
 
 /* ---- 底部抽屉 ----
  * 面板贴底边，从下往上滑入。顶部大圆角，底部平齐屏幕边缘。
- * 最高 90vh：超过后内容区滚动，而不是把面板撑出屏幕。 */
+ * 默认（单档）最高 90vh：超过后内容区滚动，而不是把面板撑出屏幕。 */
 .kima-drawer--bottom {
   align-items: end;
 
@@ -302,12 +389,29 @@ onBeforeUnmount(() => {
     max-height: 90dvh;
     border-radius: var(--kima-radius-xl) var(--kima-radius-xl) 0 0;
     /* 打开：从屏幕外滑入。关闭：滑回屏幕外。
-     * 比 opacity 多一层空间感，符合"从底下来"的认知。 */
-    transition: transform var(--kima-duration-slow) var(--kima-curve-emphasized);
+     * 比 opacity 多一层空间感，符合"从底下来"的认知。
+     * height 也进这条：吸附模式换档要有段落感，不能瞬移。 */
+    transition:
+      transform var(--kima-duration-slow) var(--kima-curve-emphasized),
+      height var(--kima-duration-slow) var(--kima-spring-snappy);
 
     @starting-style {
       transform: translateY(100%);
     }
+  }
+
+  /* 吸附模式（JS 写了 height）：高度就是这个档位，max-height 让位。
+   * 面板改成纵向排布，正文吃掉剩余高度并自己滚，档位不会被内容顶破。 */
+  &.kima-drawer--snapping .kima-drawer__panel {
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  &.kima-drawer--snapping .kima-drawer__body {
+    flex: 1 1 auto;
+    overflow: auto;
   }
 
   /* 关闭时面板滑回屏幕底部（dialog 的 allow-discrete 保证它有时间播完）。 */

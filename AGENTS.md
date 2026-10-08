@@ -169,8 +169,10 @@ pnpm test:ssr    # SSR 测试
 6. ✅ **抽屉**：bottom sheet / 侧抽屉（`drawer.ce.vue`）。原生 modal dialog + `@starting-style`
    滑入 + 遮罩 dim/模糊；底部抽屉抓着把手往下拖过面板高 40% 关闭，没到就弹回。
    拖拽只挂把手上，正文照常滚动选字。三个方向：`placement="bottom|right|left"`。
-7. **下一步**：把抽屉的拖拽做成带吸附点的多档高度（Vaul 的 snap points）。
-8. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
+   **吸附点**：给 `:snap-points="[0.4, 0.9]"`（视口高度比例）就是多档模式，
+   拖到哪就近吸到哪，拖过最矮一档的 40% 才关闭；`v-model:active-snap-point` 读当前档。
+7. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
+8. 每步之后：预览页加演示、测试补用例、`pnpm shots` 出图给人看，再提交推送。
 
 ### 复用旧资产时的注意
 
