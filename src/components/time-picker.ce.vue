@@ -9,6 +9,8 @@ modelValue 是 HH:mm 或 null；min、max 是同样格式，step 是分钟间隔
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useHost, useId, watch } from "vue";
+import KimaIcon from "./icon.ce.vue";
+import { ArrowDown01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useRipple } from "../utils/ripple.js";
 
 defineOptions({ inheritAttrs: false });
@@ -436,7 +438,7 @@ onBeforeUnmount(() => {
         <span class="kima-time-picker__trigger-label" :class="{ 'kima-time-picker__trigger-label--placeholder': parseTime(localValue) === null }">
           {{ displayText }}
         </span>
-        <span class="kima-time-picker__arrow" aria-hidden="true"></span>
+        <KimaIcon class="kima-time-picker__arrow" :icon="ArrowDown01Icon" :size="20" aria-hidden="true" />
       </button>
       <button
         v-if="clearable && localValue"
@@ -447,7 +449,7 @@ onBeforeUnmount(() => {
         :disabled="disabled"
         @click.stop="clearValue"
       >
-        <span aria-hidden="true">×</span>
+        <KimaIcon :icon="Cancel01Icon" :size="18" aria-hidden="true" />
       </button>
     </div>
 
@@ -643,21 +645,18 @@ onBeforeUnmount(() => {
   color: var(--kima-color-on-surface-variant);
 }
 
+/* 箭头用库里的图标：跟下拉、菜单、级联的触发器箭头是同一套线条，
+ * 手拼边框的箭头跟图标库对不上。展开时转 180°，跟其它选择器一致。 */
 .kima-time-picker__arrow {
-  width: 8px;
-  height: 8px;
   flex: 0 0 auto;
   /* 单独放着时离右边缘 16px，跟旁边的清除按钮留出一个字的空。 */
   margin-right: var(--kima-space-2);
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
   color: var(--kima-color-on-surface-variant);
-  transform: translateY(-2px) rotate(45deg);
   transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
 }
 
 .kima-time-picker--open .kima-time-picker__arrow {
-  transform: translateY(2px) rotate(225deg);
+  transform: rotate(180deg);
 }
 
 /* 清除按钮是场地里的普通一项，占 28px 的圆角格，谁也不压着谁。 */

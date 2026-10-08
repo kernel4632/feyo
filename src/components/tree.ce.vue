@@ -12,6 +12,8 @@ items 格式为 { value, label, children, disabled }，value 必须在整棵树�
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, ref, shallowRef, useAttrs, useHost, useId, watch } from "vue";
+import KimaIcon from "./icon.ce.vue";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
 
@@ -279,7 +281,7 @@ watch([visibleNodes, () => props.modelValue], () => {
           :aria-expanded="node.expanded"
           @click.stop="toggleExpanded(node)"
         >
-          <span aria-hidden="true" />
+          <KimaIcon class="kima-tree__toggle-icon" :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
         </button>
         <span v-else class="kima-tree__toggle kima-tree__toggle--empty" aria-hidden="true" />
         <span class="kima-tree__label">
@@ -388,17 +390,14 @@ watch([visibleNodes, () => props.modelValue], () => {
     cursor: not-allowed;
   }
 
-  span {
-    width: 7px;
-    height: 7px;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(-45deg);
+  /* 展开箭头用库里的图标：跟级联选项右侧的箭头是同一个，线条跟全库一致。
+   * 手拼边框做箭头会跟图标库对不上。 */
+  &-icon {
     transition: transform var(--kima-duration-fast) var(--kima-ease-standard);
   }
 
-  &[aria-expanded="true"] span {
-    transform: rotate(45deg);
+  &[aria-expanded="true"] .kima-tree__toggle-icon {
+    transform: rotate(90deg);
   }
 
   &--empty {
@@ -421,7 +420,7 @@ watch([visibleNodes, () => props.modelValue], () => {
 @media (prefers-reduced-motion: reduce) {
   .kima-tree__item,
   .kima-tree__toggle,
-  .kima-tree__toggle span {
+  .kima-tree__toggle-icon {
     transition: none;
   }
 }

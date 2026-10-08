@@ -7,6 +7,8 @@ total 是总条目数，pageSize 是每页条目数；modelValue 从 1 开始。
 -->
 <script setup>
 import { computed, getCurrentInstance, nextTick, ref, useAttrs, useHost, watch } from "vue";
+import KimaIcon from "./icon.ce.vue";
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 defineOptions({ inheritAttrs: false });
 
@@ -130,7 +132,7 @@ watch(pageCount, (count) => {
         aria-label="上一页"
         @click="goTo(currentPage - 1)"
       >
-        <span class="kima-pagination__arrow kima-pagination__arrow--previous" aria-hidden="true" />
+        <KimaIcon :icon="ArrowLeft01Icon" :size="18" aria-hidden="true" />
       </button>
 
       <template v-for="item in pageItems" :key="item.key">
@@ -159,7 +161,7 @@ watch(pageCount, (count) => {
         aria-label="下一页"
         @click="goTo(currentPage + 1)"
       >
-        <span class="kima-pagination__arrow kima-pagination__arrow--next" aria-hidden="true" />
+        <KimaIcon :icon="ArrowRight01Icon" :size="18" aria-hidden="true" />
       </button>
     </div>
   </nav>
@@ -233,21 +235,6 @@ watch(pageCount, (count) => {
 
 .kima-pagination__button--direction {
   color: var(--kima-color-primary);
-}
-
-.kima-pagination__arrow {
-  width: 8px;
-  height: 8px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-
-  &--previous {
-    transform: rotate(135deg);
-  }
-
-  &--next {
-    transform: rotate(-45deg);
-  }
 }
 
 .kima-pagination__ellipsis {
