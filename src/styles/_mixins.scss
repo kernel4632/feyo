@@ -62,13 +62,17 @@
 
   /* :deep 让规则不加 data-v 作用域标记：涟漪是 JS 动态插入的，没有那个标记。
    *
-   * 扩散和淡出分开写两条动画：
-   *   扩散用 decelerate（快起慢收），铺满整块场地的时间看得见；
-   *   淡出用晚开始的线性曲线——前 60% 保持住，最后 40% 才淡走。
-   * 挤在一条减速曲线里的话，圆还没涨到远角就已经快透明了，
-   * 从左侧按下时右侧（清除按钮一带）几乎看不到涟漪——实测量到那一瞬只剩 4% 透明度。
-   * z-index 提到 2：清空按钮曾经用 z-index 3 压过状态层，现在涟漪在场地所有内容之上，
-   * 圆铺满时整块场地是一层完整的反馈，不会在按钮边界处被切开。 */
+   * 三个关键细节，缺一个就会"看起来不对劲"：
+   *   1. 柔边（radial-gradient 中心实、边缘渐隐）。实色圆的边是一条硬线，
+   *      扫过宽控件时会把场地切成"亮/暗"两半，看起来像两个独立的涟漪。
+   *      实心区取到 78%：圆铺满场地时，渐变的尾巴正好落在场地外，
+   *      场内每一处都是实心亮度，看不出圆的边界。
+   *   2. 铺满要快（150ms）。涟漪只该是"闪一下"，不是一道慢慢扫过去的波：
+   *      边扫边看才看得出"左边先亮、右边后亮"，快闪时眼睛只记得"整块亮了一下"。
+   *      —— 圆从按下点长出来，宽控件上必然有先后，唯一能做的就是把这个过程压到看不见。
+   *   3. 两个阶段分开：扫完之前保持亮度，之后整体淡出（总共 400ms 前后）。
+   *      挤在一条减速曲线里的话，扫到远角时已经快透明了，远端看起来就没涟漪。
+   * z-index 2：圆盖在场地所有内容之上，按钮边界处不会把圆切开。 */
   :deep(.kima-ripple) {
     position: absolute;
     z-index: 2;
@@ -77,11 +81,12 @@
     left: var(--kima-ripple-x);
     top: var(--kima-ripple-y);
     border-radius: var(--kima-radius-full);
-    background: currentColor;
+    background: radial-gradient(circle closest-side, currentColor 78%, transparent 100%);
     pointer-events: none;
     transform: scale(0);
+    opacity: 0.14;
     animation:
-      kima-ripple-spread var(--kima-duration-slower) var(--kima-curve-decelerate) forwards,
+      kima-ripple-spread 150ms var(--kima-curve-decelerate) forwards,
       kima-ripple-fade var(--kima-duration-slower) linear forwards;
   }
 }
@@ -92,13 +97,10 @@
   }
 }
 
-/* 前 60% 基本保持初始透明度，尾段才淡出：保证圆铺到哪儿，哪儿就看得见。 */
+/* 前 30%（约 150ms）保持亮度：那是圆铺满场地的时间；之后整体淡出。 */
 @keyframes kima-ripple-fade {
-  0% {
-    opacity: 0.16;
-  }
-
-  60% {
+  0%,
+  30% {
     opacity: 0.14;
   }
 

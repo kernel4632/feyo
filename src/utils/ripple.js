@@ -49,7 +49,15 @@ export function useRipple(host) {
     ripple.style.setProperty("--kima-ripple-x", `${event.clientX - bounds.left - diameter / 2}px`);
     ripple.style.setProperty("--kima-ripple-y", `${event.clientY - bounds.top - diameter / 2}px`);
     // 动画播完自己摘掉，不留垃圾节点。
-    ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
+    // 涟漪有两条动画（扩散 150ms + 淡出 500ms），时长不一样：
+    // 只等第一条结束就摘（once: true 时代的做法）会把淡出拦腰砍断，圆突然消失。
+    // 所以等最后一条播完再摘；长按跨过整个动画时 animationend 不会再触发，补一个定时器兜底。
+    const remove = () => {
+      if (ripple.getAnimations().some((animation) => animation.playState === "running")) return;
+      ripple.remove();
+    };
+    ripple.addEventListener("animationend", remove);
+    setTimeout(remove, 700);
     element.append(ripple);
   }
 
