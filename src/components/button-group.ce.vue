@@ -220,7 +220,7 @@ function moveFocus(index, event) {
 
   @include kima-state-layer;
   @include kima-focus-ring;
-  /* 每段各自带涟漪：整条不裁剪，才能让相邻两段的圆看起来是各自长出来的。 */
+  /* 每段各自带涟漪：整条不裁剪，相邻两段的亮层才能各自贴着圆角收边。 */
   @include kima-ripple-host;
 
   /* 段与段之间用一条弱描边分开，避免相邻两段同色糊成一块。 */

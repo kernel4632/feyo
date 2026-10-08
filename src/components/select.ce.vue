@@ -48,8 +48,8 @@ const emit = defineEmits(["update:modelValue", "change", "update:open"]);
 
 const root = ref(null);
 const trigger = ref(null);
-// 整块场地（__control）是"点得动的东西"，按下时从指针位置长出涟漪。
-// 圆从整块底上长，边界由场地自己的圆角裁，触发器或清除按钮都算在场地上。
+// 整块场地（__control）是"点得动的东西"，按下时整块亮一下。
+// 亮层铺满整块底、由场地自己的圆角裁边，触发器或清除按钮都算在场地上。
 const control = ref(null);
 useRipple(control);
 const searchInput = ref(null);

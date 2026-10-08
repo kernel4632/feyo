@@ -3,7 +3,7 @@
  *
  * - kima-state-layer：内容色按透明度叠一层，悬停 8%、聚焦 10%、按下 10%。
  * - kima-focus-ring：键盘聚焦时的 2px 主色描边，偏移 3px，鼠标点击不出现。
- * - kima-ripple-host：配合 utils/ripple.js，从按下位置扩散一个圆。
+ * - kima-ripple-host：配合 utils/ripple.js，按下时整块场地均匀亮一下。
  * - kima-press：按下缩小、松开弹回，让点击有"按下去"的手感。
  * - kima-layer：页面内组件的表面，用半透明叠出层次（不用边框）。
  * - kima-popup：弹层表面，用实色（浮在内容之上，必须挡住背后）。
@@ -54,34 +54,26 @@
 }
 
 /* ---- 涟漪宿主 ----
- * 配合 utils/ripple.js 用：裁剪容器让光斑不溢出圆角，光斑盖在场地内容之上。
+ * 配合 utils/ripple.js 用：裁剪容器让亮层不溢出圆角，亮层盖在场地内容之上。
  * 用法：@include kima-ripple-host;  然后在 JS 里 useRipple(root)。
  *
- * 不是"圆从按下点涨出来"：那种做法有一条会移动的圆边，
- * 宽控件上一定会出现"左边已经被扫到、右边还没被扫到"这两块，
- * 两眼就能看出割裂（把边柔化、把过程压快都只能减轻、消不掉）。
- *
- * 改成"整个场地从按下点方向亮起"：
- *   光斑第一帧就铺满，几何形状从头到尾不动；
- *   亮度靠近按下点最高、向远处连续衰减——没有任何会被看出来的边界。
- *   按下点在哪儿，光就从哪儿来，方向感保留；扫过感消失。 */
+ * 涟漪就是"整块场地亮一下"：铺满整个宿主、全程只改透明度。
+ * 没有形状、没有移动的边、没有方向——所以不可能出现"两块"。
+ * 早期版本从按下点涨一个大圆，圆边扫过宽控件（选择器、卡片）时，
+ * 画面里同时有"已扫到"和"没扫到"两块，一眼看出割裂；
+ * 柔化圆边、加快扫速都只能减轻，消不掉。 */
 @mixin kima-ripple-host {
   position: relative;
   overflow: hidden;
 
-  /* :deep 让规则不加 data-v 作用域标记：光斑是 JS 动态插入的，没有那个标记。
-   * z-index 2：光斑盖在场地所有内容之上，按钮边界处不会把它切开。
-   * 半径和中心由 JS 按按下位置写进 --kima-ripple-* 三个变量。 */
+  /* :deep 让规则不加 data-v 作用域标记：亮层是 JS 动态插入的，没有那个标记。
+   * z-index 2：亮层盖在场地所有内容之上，按钮边界处不会把它切开。 */
   :deep(.kima-ripple) {
     position: absolute;
     inset: 0;
     z-index: 2;
+    background: currentColor;
     pointer-events: none;
-    background: radial-gradient(
-      circle var(--kima-ripple-reach) at var(--kima-ripple-x) var(--kima-ripple-y),
-      currentColor,
-      transparent
-    );
     animation: kima-ripple-glow var(--kima-duration-slower) linear forwards;
   }
 }

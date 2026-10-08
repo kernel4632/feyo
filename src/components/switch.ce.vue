@@ -33,7 +33,7 @@ const localValue = ref(props.modelValue || attrs.checked === "" || attrs.checked
 let resetValue;
 let ownerDocument;
 
-// 涟漪长在轨道外面那圈光环上；轨道本身要裁剪滑块，不能兼作涟漪宿主。
+// 涟漪落在轨道外面那圈光环上；轨道本身要裁剪滑块，不能兼作涟漪宿主。
 useRipple(control);
 
 // 本地状态让没有立即回写 modelValue 的 Web Component 仍能完成点击反馈。

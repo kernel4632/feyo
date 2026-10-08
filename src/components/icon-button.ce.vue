@@ -45,7 +45,7 @@ const root = ref(null);
 const isCustomElement = Boolean(getCurrentInstance()?.ce);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 
-// 点击时从指针位置长出涟漪。
+// 点击时整块亮一下。
 useRipple(root);
 
 // standard 是 DMS 的默认外观，text 作为等价别名保留。

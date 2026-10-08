@@ -77,7 +77,7 @@ const emit = defineEmits(["update:modelValue", "change", "update:open"]);
 const root = ref(null);
 const trigger = ref(null);
 const nativeInput = ref(null);
-// 整块场地（__control）是"点得动的东西"，按下时从指针位置长出涟漪。
+// 整块场地（__control）是"点得动的东西"，按下时整块亮一下。
 const control = ref(null);
 useRipple(control);
 const localValue = ref(props.modelValue);

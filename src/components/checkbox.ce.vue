@@ -38,7 +38,7 @@ let resetValue;
 let resetIndeterminate;
 let ownerDocument;
 
-// 涟漪长在方框外围那圈光环上，不是长在方框里——方框才 24px，裁进去几乎看不见。
+// 涟漪落在方框外围那圈光环上，不是方框里——方框才 24px，裁进去几乎看不见。
 useRipple(control);
 
 // 外部值变化时同步显示；用户点击后先由本地值保证控件立即响应。

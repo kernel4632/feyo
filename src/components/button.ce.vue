@@ -37,7 +37,7 @@ const root = ref(null);
 const { hasNativeSlot, isCustomElement } = useNativeSlots(root);
 const forwardedAttrs = computed(() => isCustomElement ? { ...attrs, id: undefined } : attrs);
 
-// 点击时从指针位置长出涟漪。
+// 点击时整块亮一下。
 useRipple(root);
 
 const buttonVariant = computed(() => {
