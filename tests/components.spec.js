@@ -559,6 +559,86 @@ test("dialog Escape closes once and independently restores launcher focus", asyn
   expect(await events(page, "dialog", "close")).toHaveLength(1);
 });
 
+test("drawer opens modal, traps Tab, closes on Escape and restores focus", async ({ page }) => {
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><button id="first" autofocus>First</button><button id="last">Last</button></kima-drawer>');
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+  await page.locator("#launch").click();
+  const panel = page.locator("#drawer dialog");
+  await expect(panel).toBeVisible();
+  await expect(page.locator("#first")).toBeFocused();
+  await page.locator("#last").focus();
+  await page.keyboard.press("Tab");
+  await expect(page.locator("#drawer .kima-drawer__close")).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.locator("#last")).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(page.locator("#launch")).toBeFocused();
+  expect((await events(page, "drawer", "close"))[0].detail).toEqual(["escape"]);
+});
+
+test("drawer drag handle snaps back short of the threshold and closes past it", async ({ page }) => {
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+  await page.locator("#launch").click();
+  const sheet = page.locator("#drawer .kima-drawer__panel");
+  const isOpen = () => page.locator("#drawer dialog").evaluate((el) => el.open);
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+
+  // 从把手正中起步，往下拖到面板高度的指定比例处松手。
+  async function drag(ratio) {
+    const handle = await page.locator("#drawer .kima-drawer__handle").boundingBox();
+    const panel = await sheet.boundingBox();
+    const x = handle.x + handle.width / 2;
+    await page.mouse.move(x, handle.y + handle.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(x, handle.y + panel.height * ratio, { steps: 5 });
+    await page.mouse.up();
+  }
+
+  // 拖 20%：够不着关闭阈值（40%），松手弹回，不关。
+  await drag(0.2);
+  // 弹回后内联 transform 应被清掉，且弹回动画（300ms）走完再拖下一次，
+  // 否则第二次按下时把手还在半路，会抓空。
+  await expect(sheet).toHaveAttribute("style", "");
+  await page.waitForTimeout(350);
+  expect(await isOpen()).toBe(true);
+  expect(await events(page, "drawer", "close")).toHaveLength(0);
+
+  // 拖 60%：过阈值，关闭，reason 是 drag。
+  await drag(0.6);
+  await expect(page.locator("#drawer dialog")).toBeHidden();
+  expect((await events(page, "drawer", "close"))[0].detail).toEqual(["drag"]);
+});
+
+test("drawer closes from the backdrop unless disabled, and the close button always works", async ({ page }) => {
+  // closeOnBackdrop 是 Boolean，原生用法下要写 property；属性串 "false" 会被当成 true。
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>', { drawer: { closeOnBackdrop: false } });
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+  await page.locator("#launch").click();
+  const dialog = page.locator("#drawer dialog");
+  await expect(dialog).toBeVisible();
+
+  // 底部抽屉只占下缘，点屏幕顶部落在遮罩上；关掉 closeOnBackdrop 后不关。
+  await page.mouse.click(400, 20);
+  await expect(dialog).toBeVisible();
+  expect(await events(page, "drawer", "close")).toHaveLength(0);
+
+  // 关闭按钮照常工作，即使遮罩点击被关掉。
+  await page.locator("#drawer .kima-drawer__close").click();
+  await expect(dialog).toBeHidden();
+  expect((await events(page, "drawer", "close"))[0].detail).toEqual(["button"]);
+
+  // 换回默认（遮罩可关），点遮罩能关。
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
+  await page.locator("#launch").click();
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+  await page.mouse.click(400, 20);
+  await expect(page.locator("#drawer dialog")).toBeHidden();
+  expect((await events(page, "drawer", "close"))[0].detail).toEqual(["backdrop"]);
+});
+
 test("notification title attrs and heading do not fight native title", async ({ page }) => {
   await mount(page, '<kima-notification id="notice" open title="Legacy title" duration="0"></kima-notification>');
   await expect(page.locator("#notice .kima-notification__title")).toHaveText("Legacy title");

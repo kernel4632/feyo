@@ -159,15 +159,18 @@ pnpm test:ssr    # SSR 测试
    - **选中态配色**：容器色底必须配 `on-*-container` 文字（`primary-container` +
      `on-primary-container`），悬停时底色从容器色派生（`--kima-color-primary-container-hover`），
      不能落回通用 `layer-3`——那会把配对拆开，深色主题下成黑字压深底。
-4. ✅ **弹层**：全部弹层（下拉 / 菜单 / 日期 / 时间 / 提示 / 通知 / 对话框 / 级联）共用同一套
+4. ✅ **弹层**：全部弹层（下拉 / 菜单 / 日期 / 时间 / 提示 / 通知 / 对话框 / 级联 / 抽屉）共用同一套
    进出场过渡 `.kima-popup-enter/leave-*`，定义在 `_tokens.scss`（唯一全库原样输出、
    不被 scoped 加 data-v 的文件）。模板套 `<Transition name="kima-popup">` 即生效；
    原生 dialog 用 `@starting-style` + `allow-discrete`。加新弹层不用写动画。
 5. ✅ **滚动条**：`_tokens.scss` 里按 `[class^="kima-"]` 前缀的一次全局规则 + 两个派生 token
    （`--kima-color-scrollbar-thumb` / `-hover`）。任何 kima 容器自己会滚就是细圆棒样式，
    新组件零配置，宿主页面的滚动条不动。
-6. **下一步**：bottom sheet / 侧抽屉（Vaul 式）。
-7. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
+6. ✅ **抽屉**：bottom sheet / 侧抽屉（`drawer.ce.vue`）。原生 modal dialog + `@starting-style`
+   滑入 + 遮罩 dim/模糊；底部抽屉抓着把手往下拖过面板高 40% 关闭，没到就弹回。
+   拖拽只挂把手上，正文照常滚动选字。三个方向：`placement="bottom|right|left"`。
+7. **下一步**：把抽屉的拖拽做成带吸附点的多档高度（Vaul 的 snap points）。
+8. 每步 `pnpm build` / `build:lib` / `verify:lib` / `test` 通过即提交推送。
 
 ### 复用旧资产时的注意
 

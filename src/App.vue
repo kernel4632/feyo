@@ -34,6 +34,7 @@ import {
   KimaDatePicker,
   KimaDialog,
   KimaDivider,
+  KimaDrawer,
   KimaEmptyState,
   KimaIcon,
   KimaIconButton,
@@ -199,6 +200,10 @@ const timeOpen = ref(false);
 
 // --- 反馈与提示 ---
 const dialogOpen = ref(false);
+// 抽屉的三个方向各一个开关：并排展示，方便对比滑入方向。
+const drawerBottomOpen = ref(false);
+const drawerRightOpen = ref(false);
+const drawerLeftOpen = ref(false);
 const noticeOpen = ref(true);
 const noticeVariant = ref("success");
 
@@ -579,7 +584,7 @@ watch(query, () => {
         </section>
 
         <!-- 反馈与提示 -->
-        <section v-show="visible('反馈与提示', 'notification', 'dialog', 'tooltip', 'empty-state')" id="feedback" class="kima-gallery__section">
+        <section v-show="visible('反馈与提示', 'notification', 'dialog', 'drawer', 'tooltip', 'empty-state')" id="feedback" class="kima-gallery__section">
           <h2>反馈与提示</h2>
 
           <article v-show="visible('notification', '通知')" class="kima-gallery__demo">
@@ -594,6 +599,15 @@ watch(query, () => {
           <article v-show="visible('dialog', '对话框')" class="kima-gallery__demo">
             <header><h3>Dialog 对话框</h3><p>模态弹层，按 Esc 或点遮罩关闭。</p></header>
             <kima-button @click="dialogOpen = true">打开对话框</kima-button>
+          </article>
+
+          <article v-show="visible('drawer', '抽屉')" class="kima-gallery__demo">
+            <header><h3>Drawer 抽屉</h3><p>从底边或侧边滑入，背景变暗模糊。底部抽屉可抓着把手往下拖关闭。</p></header>
+            <div class="kima-gallery__row">
+              <kima-button variant="tonal" @click="drawerBottomOpen = true">底部抽屉</kima-button>
+              <kima-button variant="tonal" @click="drawerRightOpen = true">右侧抽屉</kima-button>
+              <kima-button variant="tonal" @click="drawerLeftOpen = true">左侧抽屉</kima-button>
+            </div>
           </article>
 
           <article v-show="visible('tooltip', '提示')" class="kima-gallery__demo">
@@ -728,6 +742,26 @@ watch(query, () => {
         <kima-button @click="dialogOpen = false">确定</kima-button>
       </template>
     </kima-dialog>
+
+    <kima-drawer v-model:open="drawerBottomOpen" title="底部抽屉" description="抓住顶部的把手往下拖，可以拖动关闭；没拖到一半会弹回原位。">
+      <kima-text-field label="名称" :model-value="'新建项目'" />
+      <kima-text-field label="负责人" :model-value="'林一'" />
+      <template #footer>
+        <kima-button variant="text" @click="drawerBottomOpen = false">取消</kima-button>
+        <kima-button @click="drawerBottomOpen = false">完成</kima-button>
+      </template>
+    </kima-drawer>
+
+    <kima-drawer v-model:open="drawerRightOpen" placement="right" title="右侧抽屉" description="侧抽屉适合导航和详情，全高、最宽 420px。">
+      <p>按 Esc、点遮罩或点右上角的关闭按钮都能收起它。</p>
+    </kima-drawer>
+
+    <kima-drawer v-model:open="drawerLeftOpen" placement="left" title="左侧抽屉">
+      <p>方向和右侧抽屉镜像，其余行为完全一致。</p>
+      <template #footer>
+        <kima-button variant="text" @click="drawerLeftOpen = false">知道了</kima-button>
+      </template>
+    </kima-drawer>
   </div>
 </template>
 

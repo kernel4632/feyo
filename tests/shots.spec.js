@@ -96,6 +96,22 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
     await page.waitForTimeout(300);
   }
 
+  // 抽屉：三个方向各拍一张。这里是"背景 dim + 模糊、只聚焦面板"最集中的地方，
+  // 一眼能看出遮罩有没有真的挡住背后内容。
+  const drawerRow = page.locator("#feedback .kima-gallery__demo").filter({ hasText: "Drawer 抽屉" });
+  if (await drawerRow.count()) {
+    await drawerRow.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    for (const [index, name] of [[0, "bottom"], [1, "right"], [2, "left"]]) {
+      await drawerRow.locator(".kima-button").nth(index).click();
+      await page.waitForTimeout(700);
+      await page.screenshot({ path: `shots/drawer-${name}.png` });
+      // 底部抽屉的焦点在面板里，Escape 就能关；侧抽屉同理。
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(500);
+    }
+  }
+
   // 纵向那一条单独放大拍，用来确认首末段的圆角和内部分隔线。
   const verticalGroup = page.locator(".kima-button-group--vertical").first();
   await page.waitForTimeout(300);

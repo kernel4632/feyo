@@ -15,6 +15,7 @@ export { default as KimaCombobox } from "./components/combobox.ce.vue";
 export { default as KimaDatePicker } from "./components/date-picker.ce.vue";
 export { default as KimaDialog } from "./components/dialog.ce.vue";
 export { default as KimaDivider } from "./components/divider.ce.vue";
+export { default as KimaDrawer } from "./components/drawer.ce.vue";
 export { default as KimaEmptyState } from "./components/empty-state.ce.vue";
 export { default as KimaIcon } from "./components/icon.ce.vue";
 export { default as KimaIconButton } from "./components/icon-button.ce.vue";
@@ -45,6 +46,7 @@ export const componentNames = [
   "KimaDatePicker",
   "KimaDialog",
   "KimaDivider",
+  "KimaDrawer",
   "KimaEmptyState",
   "KimaIcon",
   "KimaIconButton",
