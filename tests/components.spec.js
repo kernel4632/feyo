@@ -559,6 +559,50 @@ test("dialog Escape closes once and independently restores launcher focus", asyn
   expect(await events(page, "dialog", "close")).toHaveLength(1);
 });
 
+test("dialog backdrop dims with blur and fades out instead of vanishing", async ({ page }) => {
+  await mount(page, '<button id="launch">Open</button><kima-dialog id="dialog" title="Confirm"></kima-dialog>');
+  await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("dialog").open = true; }));
+  await page.locator("#launch").click();
+  const dialog = page.locator("#dialog dialog");
+  await expect(dialog).toBeVisible();
+
+  const readBackdrop = () => dialog.evaluate((el) => {
+    const style = getComputedStyle(el, "::backdrop");
+    return {
+      opacity: Number(style.opacity),
+      filter: style.backdropFilter || style.webkitBackdropFilter || "",
+      duration: style.transitionDuration,
+      properties: style.transitionProperty,
+    };
+  });
+
+  // 等遮罩的入场过渡播完再断言，否则读到的是中间帧（比如 0.74）。
+  await expect.poll(async () => (await readBackdrop()).opacity).toBe(1);
+  // 打开状态：遮罩不透明，且带模糊（背后内容要退成背景）。
+  const opened = await readBackdrop();
+  expect(opened.opacity).toBe(1);
+  expect(opened.filter).toContain("blur");
+  // 遮罩必须自己带 opacity 过渡——缺了它关闭时遮罩会瞬间消失（用户报过的 bug）。
+  expect(opened.properties).toContain("opacity");
+  expect(parseFloat(opened.duration)).toBeGreaterThan(0);
+
+  // 关闭过程中采样：遮罩应该出现"半透明"的中间帧，而不是一步跳到 0。
+  await page.keyboard.press("Escape");
+  const samples = await dialog.evaluate((el) => {
+    const frames = [];
+    return new Promise((resolve) => {
+      const step = () => {
+        frames.push(Number(getComputedStyle(el, "::backdrop").opacity));
+        if (frames.length >= 10) resolve(frames);
+        else requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  });
+  // 至少有一帧落在 0 和 1 之间：说明它是渐变下去的，不是"啪"一下没了。
+  expect(samples.some((value) => value > 0 && value < 1)).toBe(true);
+});
+
 test("drawer opens modal, traps Tab, closes on Escape and restores focus", async ({ page }) => {
   await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><button id="first" autofocus>First</button><button id="last">Last</button></kima-drawer>');
   await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));

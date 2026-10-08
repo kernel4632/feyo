@@ -116,6 +116,18 @@ test("拍下基础层与按钮组的深色、浅色效果", async ({ page }) => 
     }
   }
 
+  // 对话框：遮罩暗度 + 模糊是否到位，背后内容有没有真的退成背景。
+  const dialogRow = page.locator("#feedback .kima-gallery__demo").filter({ hasText: "Dialog 对话框" });
+  if (await dialogRow.count()) {
+    await dialogRow.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await dialogRow.locator(".kima-button").first().click();
+    await page.waitForTimeout(600);
+    await page.screenshot({ path: "shots/dialog-open.png" });
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(500);
+  }
+
   // 抽屉：三个方向各拍一张。这里是"背景 dim + 模糊、只聚焦面板"最集中的地方，
   // 一眼能看出遮罩有没有真的挡住背后内容。
   const drawerRow = page.locator("#feedback .kima-gallery__demo").filter({ hasText: "Drawer 抽屉" });

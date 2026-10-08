@@ -162,11 +162,12 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   &[open] { display: grid; }
 
   &::backdrop {
-    background: color-mix(in srgb, var(--kima-color-surface) 72%, var(--kima-color-transparent));
-    /* 遮罩也是"出现/消失"的一部分，根面板同一条曲线、同一时长。 */
-    transition:
-      background-color var(--kima-duration-medium) var(--kima-curve-emphasized),
-      opacity var(--kima-duration-medium) var(--kima-curve-emphasized);
+    /* dim + 模糊：聚焦到面板，背后内容退为背景。
+     * 遮罩暗度走 token，和抽屉同一个来源，全库弹层不会各暗各的。 */
+    background: color-mix(in srgb, var(--kima-color-scrim) var(--kima-scrim-opacity), transparent);
+    backdrop-filter: blur(var(--kima-backdrop-blur));
+    /* 遮罩只改透明度（底色从头到尾不变），所以只需过渡 opacity，跟面板同一时长。 */
+    transition: opacity var(--kima-duration-medium) var(--kima-curve-emphasized);
     opacity: 1;
   }
 
@@ -184,6 +185,14 @@ onBeforeUnmount(() => { if (dialog.value?.open) dialog.value.close(); });
   /* 关闭（open 属性被移除）时，display 会立刻变 none；
    * 这条把关闭也纳入离散过渡，面板有机会淡出。 */
   &:not([open]) {
+    opacity: 0;
+  }
+
+  /* 关闭时遮罩要跟着淡出。
+   * 缺了这一条时：::backdrop 的 opacity 恒为 1，关闭时它不参与任何过渡，
+   * 一直停在满不透明，直到 display 变成 none 那一帧整块消失——看起来就是"唰一下没了"。
+   * dialog 的 overlay allow-discrete 保证这 200ms 里遮罩还活着，来得及播完。 */
+  &:not([open])::backdrop {
     opacity: 0;
   }
 }
