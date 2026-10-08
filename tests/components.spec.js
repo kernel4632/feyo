@@ -665,6 +665,102 @@ test("drawer enters from its own side, not from the middle", async ({ page }) =>
   }
 });
 
+test("drawer closing slides straight out without bouncing back", async ({ page }) => {
+  // 用户报过："关闭时收回去、又闪出来、再收回去一次。"
+  // 根因是关完把进场/退场状态清掉，内联位移一撤，面板带着过渡滑回终点，
+  // 而 dialog 还要一帧才真的隐藏——那一帧就是"闪回来"。
+  // 这条测试逐帧记录面板位置，要求关闭过程单调地往屏幕外走，不许走回头路。
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
+  await page.evaluate(() => {
+    const drawer = document.getElementById("drawer");
+    drawer.addEventListener("update:open", (event) => { drawer.open = event.detail[0]; });
+    document.getElementById("launch").addEventListener("click", () => { drawer.open = true; });
+  });
+  await page.locator("#launch").click();
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+  await page.waitForTimeout(600);
+
+  await page.evaluate(() => {
+    window.__tracked = [];
+    const tick = () => {
+      const panel = document.querySelector("#drawer .kima-drawer__panel");
+      const dialog = document.querySelector("#drawer dialog");
+      if (panel) {
+        const rect = panel.getBoundingClientRect();
+        window.__tracked.push({ open: dialog?.open ?? null, y: Math.round(rect.y) });
+      }
+      if (window.__tracked.length < 240) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(900);
+
+  const frames = await page.evaluate(() => window.__tracked);
+  // 关闭开始之后，面板的 y 只能增大（往下走出屏幕），不许回退。
+  // 只取"还在往下走"的那一段：dialog 真正关闭后元素不再布局，
+  // getBoundingClientRect 会返回全 0，那不是回退，是已经看不见了。
+  const closing = [];
+  let started = false;
+  for (const frame of frames) {
+    if (!started) {
+      if (frame.y > 100) started = true;
+      continue;
+    }
+    if (!frame.open) break;
+    closing.push(frame);
+  }
+  expect(closing.length).toBeGreaterThan(3);
+  let previous = null;
+  for (const frame of closing) {
+    if (previous != null && frame.y < previous.y - 2) {
+      throw new Error(`关闭过程中面板回退了：${previous.y} → ${frame.y}（就是那一下"闪回来"）`);
+    }
+    previous = frame;
+  }
+  // 收尾：面板被推到屏幕下缘以下（完全看不见），且 dialog 已关闭。
+  expect(closing.at(-1).y).toBeGreaterThanOrEqual(page.viewportSize().height - 2);
+  expect(await page.locator("#drawer dialog").evaluate((el) => el.open)).toBe(false);
+});
+
+test("drawer reopens cleanly right after closing", async ({ page }) => {
+  // 关掉之后不进场的残留状态必须被清干净：再打开时还能正常滑进。
+  // 这里按 v-model 的语义接住 update:open 写回属性——组件内部关闭时
+  // 只负责 emit，宿主不写回的话外部值会一直停在 true，第二次点就"没反应"了。
+  await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
+  await page.evaluate(() => {
+    const drawer = document.getElementById("drawer");
+    drawer.addEventListener("update:open", (event) => { drawer.open = event.detail[0]; });
+    document.getElementById("launch").addEventListener("click", () => { drawer.open = true; });
+  });
+  const isOpen = () => page.locator("#drawer dialog").evaluate((el) => el.open);
+
+  await page.locator("#launch").click();
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+  await page.waitForTimeout(600);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(700);
+  expect(await isOpen()).toBe(false);
+
+  // 再开一次：应当还能滑进来并落位。
+  await page.locator("#launch").click();
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+  await page.waitForTimeout(600);
+  const settled = await page.locator("#drawer .kima-drawer__panel").boundingBox();
+  const viewport = page.viewportSize();
+  expect(Math.round(settled.y + settled.height)).toBe(viewport.height);
+
+  // 第三次也一样（确认状态没有累积）。
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(700);
+  await page.locator("#launch").click();
+  await expect(page.locator("#drawer dialog")).toBeVisible();
+  await page.waitForTimeout(600);
+  const again = await page.locator("#drawer .kima-drawer__panel").boundingBox();
+  expect(Math.round(again.y + again.height)).toBe(viewport.height);
+});
+
 test("drawer locks page scroll while open and restores it after", async ({ page }) => {
   await mount(page, '<button id="launch">Open</button><kima-drawer id="drawer" title="Sheet"><p>Body</p></kima-drawer>');
   await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
@@ -730,10 +826,14 @@ test("drawer snap points resize the sheet, snap to the nearest one and stay open
   const sheet = page.locator("#drawer .kima-drawer__panel");
   const dialog = page.locator("#drawer dialog");
   await expect(dialog).toBeVisible();
+  // 入场是"起点帧 + 下一帧过渡回位"两段，等它落定再量，否则量到中间值。
+  await page.waitForTimeout(500);
 
+  // 高度基准读组件真正用的那个值（视口高），跟它自己一致地比较。
   const viewport = await page.evaluate(() => window.innerHeight);
+  const near = (actual, expected) => Math.abs(actual - expected) <= 2;
   // 打开时落在第一档（0.4），不是内容高度。
-  expect(Math.round((await sheet.boundingBox()).height)).toBe(Math.round(viewport * 0.4));
+  expect(near((await sheet.boundingBox()).height, viewport * 0.4)).toBe(true);
 
   async function dragBy(pixels) {
     const handle = await page.locator("#drawer .kima-drawer__handle").boundingBox();
@@ -747,7 +847,7 @@ test("drawer snap points resize the sheet, snap to the nearest one and stay open
   // 往上拖过中点：吸到第二档（0.9），而且不关闭。
   await dragBy(viewport * 0.5);
   await expect(async () => {
-    expect(Math.round((await sheet.boundingBox()).height)).toBe(Math.round(viewport * 0.9));
+    expect(near((await sheet.boundingBox()).height, viewport * 0.9)).toBe(true);
   }).toPass();
   expect(await dialog.evaluate((el) => el.open)).toBe(true);
   expect(await events(page, "drawer", "close")).toHaveLength(0);
@@ -755,7 +855,7 @@ test("drawer snap points resize the sheet, snap to the nearest one and stay open
   // 再往下拖回中点以上：吸回第一档。
   await dragBy(-viewport * 0.5);
   await expect(async () => {
-    expect(Math.round((await sheet.boundingBox()).height)).toBe(Math.round(viewport * 0.4));
+    expect(near((await sheet.boundingBox()).height, viewport * 0.4)).toBe(true);
   }).toPass();
   expect(await dialog.evaluate((el) => el.open)).toBe(true);
 
@@ -772,6 +872,8 @@ test("drawer exposes the active snap point to the caller", async ({ page }) => {
   await page.evaluate(() => document.getElementById("launch").addEventListener("click", () => { document.getElementById("drawer").open = true; }));
   await page.locator("#launch").click();
   await expect(page.locator("#drawer dialog")).toBeVisible();
+  // 等入场两段动画落定，把手的位置才是最终值。
+  await page.waitForTimeout(500);
 
   const handle = await page.locator("#drawer .kima-drawer__handle").boundingBox();
   const viewport = await page.evaluate(() => window.innerHeight);

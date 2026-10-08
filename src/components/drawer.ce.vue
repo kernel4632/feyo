@@ -25,7 +25,7 @@ placement 可选值：bottom（默认）| left | right
 拖过最矮一档的 40% 才关闭。第一档是打开时的默认高度。
 -->
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, useId, watch } from "vue";
 import KimaIcon from "./icon.ce.vue";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useNativeSlots } from "../utils/native-slots.js";
@@ -175,37 +175,45 @@ function setSnap(snap) {
   emit("update:activeSnapPoint", snap);
 }
 
-// 面板的内联样式。只在"需要时才写"，其余交给 CSS：
+// 面板的内联样式。三件事各自独立地叠加，不是三选一：
 //   1. 进出场位移（从屏幕外滑进来那一段）；
-//   2. 拖拽跟手、吸附档位高度。
-// 不需要时返回空对象，让 CSS 的常态规则说了算——
-// "面板在终点位置"只有一个来源，不会两边打架。
+//   2. 拖拽跟手（单档时按下拖出去的那段位移）；
+//   3. 吸附档位高度。
+// 早先写成"三选一"（stage 有值就整个接管），结果是：
+// 吸附/拖拽时一开一关，高度和位移会在动画中被撤掉又写回，画面跳一下。
+// 现在各写各的键，谁也不需要让位给谁；都不需要时返回空对象，交给 CSS。
 const panelStyle = computed(() => {
-  // 进出场位移。两段的差别就在 transition 上：
+  const style = {};
+
+  // 1. 进出场位移。两段的差别只在 transition：
   //   入场开头那一帧必须"瞬移"到屏幕外（transition: none）——
   //     不禁的话，浏览器会把它当成"从 0 过渡到 392px"，面板先当着人面滑出去、
   //     再滑回来，看起来就是"从中间出现、往外滑"。
-  //   退场正好相反：就是要过渡着滑出去。
+  //   退场正好相反：就是要过渡着滑出去（用 CSS 里的 transform 过渡）。
   if (stage.value) {
-    return {
-      transform: shiftFrom.value,
-      transition: stage.value === "entering" ? "none" : undefined,
-    };
+    style.transform = shiftFrom.value;
+    if (stage.value === "entering") style.transition = "none";
+    return style;
   }
-  if (placement.value !== "bottom") return {};
+
+  // 2 + 3 只对底部抽屉成立（侧抽屉全高、不拖拽）。
+  if (placement.value !== "bottom") return style;
+
   if (snaps.value.length) {
     const height = panelHeightPx.value;
-    if (height == null) return {};
-    return {
-      height: `${height}px`,
-      transition: isDragging.value ? "none" : undefined,
-    };
+    if (height != null) {
+      style.height = `${height}px`;
+      // 拖拽中要跟手，别的时刻让 CSS 的 height 过渡把档位吸回去。
+      if (isDragging.value) style.transition = "none";
+    }
+    return style;
   }
-  if (dragOffset.value === 0) return {};
-  return {
-    transform: `translateY(${dragOffset.value}px)`,
-    transition: isDragging.value ? "none" : undefined,
-  };
+
+  if (dragOffset.value > 0) {
+    style.transform = `translateY(${dragOffset.value}px)`;
+    if (isDragging.value) style.transition = "none";
+  }
+  return style;
 });
 
 // ---- 进出场动画 ----
@@ -232,6 +240,8 @@ function measureShift() {
 
 // 面板当前处在哪一段："" 常态 / "entering" 在屏幕外待入场 / "leaving" 正在退场。
 // 一个字符串同时给样式（类名）和内联样式（panelStyle 的位移）用，两边不会跑偏。
+// 注意关闭后 stage 会停在 "leaving"（面板留在屏外，见 leaveDialog），
+// 所以下次打开前必须先切到 "entering"——同一个字符串，不会同时挂两个类。
 const stage = ref("");
 const stageClass = computed(() => (stage.value ? `kima-drawer--${stage.value}` : ""));
 let playToken = 0;
@@ -280,16 +290,25 @@ function slideDuration() {
 
 async function enterDialog() {
   const element = dialog.value;
-  if (!element || element.open) return;
+  if (!element) return;
+  // ++playToken 同时也是"取消上一次未播完的退场"的信号：
+  // leaveDialog 醒来发现 token 变了就会直接收手，不会再把 dialog 关掉。
   const token = ++playToken;
-  // 先锁滚动再 showModal：顺序反了的话，中间那一下页面是能滚的。
-  lockPageScroll(true);
-  element.showModal();
+  // 两种入口：从未打开过，或上一次的退场还没播完又要打开。
+  if (!element.open) {
+    // 先锁滚动再 showModal：顺序反了的话，中间那一下页面是能滚的。
+    lockPageScroll(true);
+    element.showModal();
+  }
   // 量出面板尺寸当起点位移（像素值，不依赖布局盒百分比）。
   measureShift();
-  // 起点：面板停在屏幕外。等两帧确保这一帧真的画出来了，
-  // 再清掉 stage 让 CSS 过渡把它送回终点——这样才有"滑进来"的过程。
+  // 从"正在退场"直接切回"待入场"：同一个 stage 字符串，类名不会打架，
+  // 而且进入面板时会连同 --leaving 一起换掉（两者互斥）。
   stage.value = "entering";
+  // nextTick 让 stage 落到 DOM 的类和内联样式上；
+  // nextFrame 再保证那一帧真的被画出来了（transition: none + 屏外位移）。
+  // 少了 nextTick，"屏外"这一帧根本不存在，动画就又变成从中间往外滑。
+  await nextTick();
   await nextFrame();
   // 这两帧之间被关掉了就别再往下走，否则会把正在退场的东西又推回终点。
   if (token !== playToken || stage.value !== "entering") return;
@@ -304,8 +323,14 @@ async function leaveDialog() {
   await new Promise((resolve) => setTimeout(resolve, slideDuration()));
   // 退场途中又被重新打开（快速连点）时，别把刚打开的面板关掉。
   if (token !== playToken) return;
-  stage.value = "";
+  // 顺序很重要：先关 dialog（元素立刻不可见），再撤掉退场状态。
+  // 反过来的话，撤状态会让面板带着过渡滑回终点，而 dialog 还看得见那一帧——
+  // 就是"收回去 → 闪出来 → 再收回去"。
   if (element.open) element.close();
+  // close() 之后元素已经 display:none，此刻内联样式怎么变都不会被看见，
+  // 可以安全地回到干净状态（而不是把面板永久留在屏外）。
+  await nextTick();
+  stage.value = "";
   lockPageScroll(false);
 }
 
@@ -325,6 +350,16 @@ function syncDialog() {
   if (localOpen.value) enterDialog();
   else leaveDialog();
 }
+
+// 外部 open 变化 → 同步内部状态。
+// 这里不直接调 enterDialog：内部状态变化由下面的 watch 统一驱动，
+// 两个入口各调一次会让 playToken 连跳、退场取消逻辑失灵。
+watch(
+  () => props.open,
+  (open) => {
+    localOpen.value = open;
+  },
+);
 
 function handleCancel(event) {
   event.preventDefault();
@@ -359,12 +394,6 @@ function handleKeydown(event) {
   }
 }
 
-watch(
-  () => props.open,
-  (open) => {
-    localOpen.value = open;
-  },
-);
 watch(localOpen, syncDialog, { flush: "post" });
 onMounted(() => {
   syncDialog();
